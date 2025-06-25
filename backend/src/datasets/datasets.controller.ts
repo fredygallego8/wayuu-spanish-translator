@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 
@@ -35,5 +35,39 @@ export class DatasetsController {
       data: response,
       message: 'Dictionary statistics retrieved successfully'
     };
+  }
+
+  @Post('reload')
+  @ApiOperation({ summary: 'Reload dataset from Hugging Face' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dataset reloaded successfully',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Failed to reload dataset',
+  })
+  async reloadDataset() {
+    try {
+      await this.datasetsService.reloadDataset();
+      const stats = await this.datasetsService.getDictionaryStats();
+      
+      return {
+        success: true,
+        data: {
+          message: 'Dataset reload completed',
+          timestamp: new Date().toISOString(),
+          totalEntries: stats.totalEntries,
+          loadingMethods: stats.loadingMethods
+        },
+        message: 'Dataset reloaded successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to reload dataset'
+      };
+    }
   }
 }

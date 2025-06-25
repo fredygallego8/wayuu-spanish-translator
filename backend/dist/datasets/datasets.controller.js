@@ -33,6 +33,29 @@ let DatasetsController = class DatasetsController {
             message: 'Dictionary statistics retrieved successfully'
         };
     }
+    async reloadDataset() {
+        try {
+            await this.datasetsService.reloadDataset();
+            const stats = await this.datasetsService.getDictionaryStats();
+            return {
+                success: true,
+                data: {
+                    message: 'Dataset reload completed',
+                    timestamp: new Date().toISOString(),
+                    totalEntries: stats.totalEntries,
+                    loadingMethods: stats.loadingMethods
+                },
+                message: 'Dataset reloaded successfully'
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: 'Failed to reload dataset'
+            };
+        }
+    }
 };
 exports.DatasetsController = DatasetsController;
 __decorate([
@@ -57,6 +80,21 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DatasetsController.prototype, "getDictionaryStats", null);
+__decorate([
+    (0, common_1.Post)('reload'),
+    (0, swagger_1.ApiOperation)({ summary: 'Reload dataset from Hugging Face' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Dataset reloaded successfully',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 500,
+        description: 'Failed to reload dataset',
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], DatasetsController.prototype, "reloadDataset", null);
 exports.DatasetsController = DatasetsController = __decorate([
     (0, swagger_1.ApiTags)('Datasets'),
     (0, common_1.Controller)('datasets'),

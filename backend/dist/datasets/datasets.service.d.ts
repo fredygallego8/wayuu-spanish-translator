@@ -17,10 +17,16 @@ export declare class DatasetsService implements OnModuleInit {
     private readonly logger;
     private wayuuDictionary;
     private isLoaded;
+    private totalEntries;
+    private loadingPromise;
     constructor(configService: ConfigService);
     onModuleInit(): Promise<void>;
-    private loadWayuuDictionary;
+    loadWayuuDictionary(): Promise<void>;
+    private _performDatasetLoad;
+    private loadViaRowsAPI;
+    private loadViaParquet;
     private loadSampleData;
+    reloadDataset(): Promise<void>;
     findExactMatch(text: string, direction: TranslationDirection, preferredDataset?: string): Promise<TranslationResult | null>;
     findFuzzyMatch(text: string, direction: TranslationDirection, preferredDataset?: string): Promise<TranslationResult | null>;
     private normalizeText;
