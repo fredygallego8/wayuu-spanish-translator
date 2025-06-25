@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayuu-Spanish Translator / Traductor Wayuu-Español</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-language text-blue-600"></i>
+                Wayuu ↔ Español
+            </h1>
+            <p class="text-gray-600 text-lg">Traductor de Wayuunaiki a Español / Wayuunaiki-Spanish Translator</p>
+            <p class="text-sm text-gray-500 mt-2">Basado en el diccionario de Gaxys • Based on Gaxys dictionary</p>
+        </header>
+
+        <!-- Main Translator Interface -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <!-- Translation Direction Toggle -->
+                <div class="flex justify-center mb-6">
+                    <div class="bg-gray-100 p-1 rounded-lg">
+                        <button id="wayuu-to-spanish" class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-blue-600 text-white">
+                            Wayuu → Español
+                        </button>
+                        <button id="spanish-to-wayuu" class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-700 hover:text-gray-900">
+                            Español → Wayuu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Translation Interface -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Input Section -->
+                    <div class="space-y-3">
+                        <label for="input-text" class="block text-sm font-medium text-gray-700" id="input-label">
+                            Texto en Wayuu
+                        </label>
+                        <textarea 
+                            id="input-text" 
+                            rows="6" 
+                            class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-lg"
+                            placeholder="Escribe en Wayuunaiki..."
+                        ></textarea>
+                        <button 
+                            id="translate-btn" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                        >
+                            <i class="fas fa-exchange-alt mr-2"></i>
+                            Traducir / Translate
+                        </button>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700" id="output-label">
+                            Traducción al Español
+                        </label>
+                        <div 
+                            id="output-text" 
+                            class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 min-h-[150px] text-lg"
+                        >
+                            <span class="text-gray-500 italic">La traducción aparecerá aquí...</span>
+                        </div>
+                        <div id="confidence-bar" class="hidden">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Confidence / Confianza</span>
+                                <span id="confidence-value">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="confidence-fill" class="bg-green-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternatives Section -->
+                <div id="alternatives-section" class="mt-6 hidden">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Traducciones alternativas:</h3>
+                    <div id="alternatives-list" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Context Info -->
+                <div id="context-section" class="mt-4 hidden">
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p id="context-info" class="text-sm text-blue-700"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dataset Information -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-database text-green-600 mr-2"></i>
+                    Información del Diccionario / Dictionary Information
+                </h2>
+                <div id="dataset-info" class="grid md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="total-entries">Loading...</div>
+                        <div class="text-sm text-gray-600">Total Entries</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="wayuu-words">-</div>
+                        <div class="text-sm text-gray-600">Wayuu Words</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-600" id="spanish-words">-</div>
+                        <div class="text-sm text-gray-600">Spanish Words</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <div class="flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <span class="text-gray-700">Traduciendo...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
