@@ -129,4 +129,30 @@ export declare class DatasetsController {
         };
         message: string;
     }>;
+    toggleHuggingFaceSource(id: string): Promise<{
+        success: boolean;
+        data: {
+            success: boolean;
+            isActive?: boolean;
+            source?: import("./datasets.service").HuggingFaceSource;
+        };
+        message: string;
+    } | {
+        success: boolean;
+        message: string;
+        data?: undefined;
+    }>;
+    loadAdditionalDataset(id: string): Promise<{
+        success: boolean;
+        data: {
+            success: boolean;
+            message: string;
+            data?: any;
+        };
+        message: string;
+    } | {
+        success: boolean;
+        message: string;
+        data?: undefined;
+    }>;
 }

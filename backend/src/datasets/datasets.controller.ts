@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 
@@ -335,5 +335,56 @@ export class DatasetsController {
       },
       message: 'Active Hugging Face sources retrieved successfully'
     };
+  }
+
+  @Post('sources/:id/toggle')
+  @ApiOperation({ summary: 'Toggle Hugging Face source active status' })
+  @ApiResponse({
+    status: 200,
+    description: 'Source status toggled successfully',
+  })
+  async toggleHuggingFaceSource(@Param('id') id: string) {
+    try {
+      const result = this.datasetsService.toggleHuggingFaceSource(id);
+      if (result.success) {
+        return {
+          success: true,
+          data: result,
+          message: `Source ${id} ${result.isActive ? 'activated' : 'deactivated'} successfully`
+        };
+      } else {
+        return {
+          success: false,
+          message: `Source ${id} not found`
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error toggling source: ${error.message}`
+      };
+    }
+  }
+
+  @Post('sources/:id/load')
+  @ApiOperation({ summary: 'Load additional dataset from Hugging Face source' })
+  @ApiResponse({
+    status: 200,
+    description: 'Additional dataset loaded successfully',
+  })
+  async loadAdditionalDataset(@Param('id') id: string) {
+    try {
+      const result = await this.datasetsService.loadAdditionalDataset(id);
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error loading additional dataset: ${error.message}`
+      };
+    }
   }
 }

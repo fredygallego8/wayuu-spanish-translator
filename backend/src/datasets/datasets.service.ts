@@ -92,6 +92,18 @@ export class DatasetsService implements OnModuleInit {
       priority: 1
     },
     {
+      id: 'wayuu_parallel_corpus',
+      name: 'Wayuu-Spanish Parallel Corpus',
+      dataset: 'weezygeezer/Wayuu-Spanish_Parallel-Corpus',
+      config: 'default',
+      split: 'train',
+      type: 'dictionary',
+      description: 'Large parallel corpus with 42,687 Wayuu-Spanish sentence pairs for enhanced translation',
+      url: 'https://huggingface.co/datasets/weezygeezer/Wayuu-Spanish_Parallel-Corpus',
+      isActive: false, // Inicialmente inactivo para testing
+      priority: 2
+    },
+    {
       id: 'wayuu_audio',
       name: 'Wayuu Audio Dataset',
       dataset: 'orkidea/wayuu_CO_test',
@@ -101,7 +113,7 @@ export class DatasetsService implements OnModuleInit {
       description: 'Wayuu audio recordings with transcriptions (810 entries)',
       url: 'https://huggingface.co/datasets/orkidea/wayuu_CO_test',
       isActive: true,
-      priority: 2
+      priority: 3
     }
   ];
   
@@ -1517,5 +1529,78 @@ export class DatasetsService implements OnModuleInit {
       return true;
     }
     return false;
+  }
+
+  // Método para activar/desactivar una fuente
+  toggleHuggingFaceSource(id: string): { success: boolean; isActive?: boolean; source?: HuggingFaceSource } {
+    const source = this.huggingFaceSources.find(s => s.id === id);
+    if (!source) {
+      return { success: false };
+    }
+    
+    source.isActive = !source.isActive;
+    return { 
+      success: true, 
+      isActive: source.isActive,
+      source
+    };
+  }
+
+  // Método para cargar dataset adicional
+  async loadAdditionalDataset(id: string): Promise<{ success: boolean; message: string; data?: any }> {
+    const source = this.huggingFaceSources.find(s => s.id === id);
+    if (!source) {
+      return { 
+        success: false, 
+        message: `Source with id '${id}' not found` 
+      };
+    }
+
+    if (!source.isActive) {
+      return { 
+        success: false, 
+        message: `Source '${source.name}' is not active. Please activate it first.` 
+      };
+    }
+
+    try {
+      // Si es el corpus paralelo, lo cargamos y combinamos con el dataset actual
+      if (id === 'wayuu_parallel_corpus') {
+        this.logger.log(`🔄 Loading additional dataset: ${source.name}...`);
+        
+        const url = `https://datasets-server.huggingface.co/rows?dataset=${source.dataset}&config=${source.config}&split=${source.split}&offset=0&length=100`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        this.logger.log(`📊 Preview loaded: ${data.rows.length} entries from ${source.name}`);
+        
+        return {
+          success: true,
+          message: `Successfully loaded preview of ${source.name} (${data.rows.length} entries shown, ${data.num_rows_total} total available)`,
+          data: {
+            source,
+            preview: data.rows.slice(0, 10), // Solo mostramos 10 para preview
+            totalEntries: data.num_rows_total,
+            loadedEntries: data.rows.length
+          }
+        };
+      }
+
+      return { 
+        success: false, 
+        message: `Loading method not implemented for source type: ${source.type}` 
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ Error loading additional dataset ${source.name}:`, error);
+      return { 
+        success: false, 
+        message: `Failed to load ${source.name}: ${error.message}` 
+      };
+    }
   }
 }

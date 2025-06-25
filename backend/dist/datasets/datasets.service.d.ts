@@ -134,4 +134,14 @@ export declare class DatasetsService implements OnModuleInit {
     addHuggingFaceSource(source: Omit<HuggingFaceSource, 'priority'>): void;
     updateHuggingFaceSource(id: string, updates: Partial<HuggingFaceSource>): boolean;
     removeHuggingFaceSource(id: string): boolean;
+    toggleHuggingFaceSource(id: string): {
+        success: boolean;
+        isActive?: boolean;
+        source?: HuggingFaceSource;
+    };
+    loadAdditionalDataset(id: string): Promise<{
+        success: boolean;
+        message: string;
+        data?: any;
+    }>;
 }

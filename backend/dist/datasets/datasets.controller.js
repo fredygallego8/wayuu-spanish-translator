@@ -195,6 +195,46 @@ let DatasetsController = class DatasetsController {
             message: 'Active Hugging Face sources retrieved successfully'
         };
     }
+    async toggleHuggingFaceSource(id) {
+        try {
+            const result = this.datasetsService.toggleHuggingFaceSource(id);
+            if (result.success) {
+                return {
+                    success: true,
+                    data: result,
+                    message: `Source ${id} ${result.isActive ? 'activated' : 'deactivated'} successfully`
+                };
+            }
+            else {
+                return {
+                    success: false,
+                    message: `Source ${id} not found`
+                };
+            }
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: `Error toggling source: ${error.message}`
+            };
+        }
+    }
+    async loadAdditionalDataset(id) {
+        try {
+            const result = await this.datasetsService.loadAdditionalDataset(id);
+            return {
+                success: result.success,
+                data: result,
+                message: result.message
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: `Error loading additional dataset: ${error.message}`
+            };
+        }
+    }
 };
 exports.DatasetsController = DatasetsController;
 __decorate([
@@ -397,6 +437,30 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DatasetsController.prototype, "getActiveHuggingFaceSources", null);
+__decorate([
+    (0, common_1.Post)('sources/:id/toggle'),
+    (0, swagger_1.ApiOperation)({ summary: 'Toggle Hugging Face source active status' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Source status toggled successfully',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DatasetsController.prototype, "toggleHuggingFaceSource", null);
+__decorate([
+    (0, common_1.Post)('sources/:id/load'),
+    (0, swagger_1.ApiOperation)({ summary: 'Load additional dataset from Hugging Face source' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Additional dataset loaded successfully',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DatasetsController.prototype, "loadAdditionalDataset", null);
 exports.DatasetsController = DatasetsController = __decorate([
     (0, swagger_1.ApiTags)('Datasets'),
     (0, common_1.Controller)('datasets'),

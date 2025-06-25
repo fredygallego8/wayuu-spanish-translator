@@ -237,8 +237,12 @@ class WayuuTranslator {
         this.showLoadingProgress(true);
         
         try {
-            // Step 1: Load main stats (25%)
-            this.updateProgress(25, 'Cargando estadísticas principales...');
+            // Step 0: Load sources (10%)
+            this.updateProgress(10, 'Cargando fuentes de datos...');
+            await this.loadSources();
+            
+            // Step 1: Load main stats (30%)
+            this.updateProgress(30, 'Cargando estadísticas principales...');
             const statsResponse = await fetch(`${this.apiUrl}/datasets/stats`);
             
             if (statsResponse.ok) {
@@ -274,8 +278,8 @@ class WayuuTranslator {
                 }
             }
             
-            // Step 2: Load audio stats (50%)
-            this.updateProgress(50, 'Cargando estadísticas de audio...');
+            // Step 2: Load audio stats (55%)
+            this.updateProgress(55, 'Cargando estadísticas de audio...');
             const audioStatsResponse = await fetch(`${this.apiUrl}/datasets/audio/stats`);
             
             if (audioStatsResponse.ok) {
@@ -306,8 +310,8 @@ class WayuuTranslator {
                 }
             }
             
-            // Step 3: Load cache info (75%)
-            this.updateProgress(75, 'Cargando información de cache...');
+            // Step 3: Load cache info (80%)
+            this.updateProgress(80, 'Cargando información de cache...');
             const cacheResponse = await fetch(`${this.apiUrl}/datasets/cache`);
             
             if (cacheResponse.ok) {
@@ -406,9 +410,245 @@ class WayuuTranslator {
         document.getElementById('audio-dataset-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
         document.getElementById('cache-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
     }
+
+    async loadSources() {
+        try {
+            const response = await fetch(`${this.apiUrl}/datasets/sources`);
+            if (!response.ok) throw new Error('Failed to load sources');
+            
+            const result = await response.json();
+            const sources = result.data.sources;
+            
+            this.renderSources(sources);
+            
+        } catch (error) {
+            console.error('Error loading sources:', error);
+            this.showSourcesError();
+        }
+    }
+
+    renderSources(sources) {
+        const container = document.getElementById('sources-container');
+        
+        if (!sources || sources.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-database text-4xl mb-2"></i>
+                    <div>No hay fuentes disponibles</div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = sources.map(source => `
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-2">
+                            <div class="text-lg font-semibold text-gray-800 mr-3">
+                                ${this.getSourceIcon(source.type)} ${source.name}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${this.getStatusBadge(source.isActive)}
+                                <div class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                    Prioridad: ${source.priority}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-2">${source.description}</div>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-link mr-1"></i>
+                            <a href="${source.url}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                ${source.dataset}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 ml-4">
+                        <button 
+                            onclick="translator.toggleSource('${source.id}')"
+                            class="px-3 py-1 text-sm font-medium rounded transition-colors ${source.isActive 
+                                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                                : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                        >
+                            ${source.isActive ? 'Desactivar' : 'Activar'}
+                        </button>
+                        ${source.isActive && source.type === 'dictionary' ? `
+                            <button 
+                                onclick="translator.loadSourcePreview('${source.id}')"
+                                class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition-colors"
+                            >
+                                Vista previa
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getSourceIcon(type) {
+        switch (type) {
+            case 'dictionary': return '<i class="fas fa-book text-blue-500"></i>';
+            case 'audio': return '<i class="fas fa-volume-up text-purple-500"></i>';
+            case 'mixed': return '<i class="fas fa-layer-group text-orange-500"></i>';
+            default: return '<i class="fas fa-database text-gray-500"></i>';
+        }
+    }
+
+    getStatusBadge(isActive) {
+        return isActive 
+            ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"><i class="fas fa-check-circle mr-1"></i>Activo</span>'
+            : '<span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full"><i class="fas fa-pause-circle mr-1"></i>Inactivo</span>';
+    }
+
+    async toggleSource(sourceId) {
+        try {
+            const response = await fetch(`${this.apiUrl}/datasets/sources/${sourceId}/toggle`, {
+                method: 'POST'
+            });
+            
+            if (!response.ok) throw new Error('Failed to toggle source');
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Reload sources to update UI
+                await this.loadSources();
+                
+                // Show notification
+                this.showNotification(result.message, 'success');
+            } else {
+                this.showNotification(result.message || 'Error al cambiar el estado de la fuente', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Error toggling source:', error);
+            this.showNotification('Error de conexión al cambiar el estado de la fuente', 'error');
+        }
+    }
+
+    async loadSourcePreview(sourceId) {
+        try {
+            this.showNotification('Cargando vista previa...', 'info');
+            
+            const response = await fetch(`${this.apiUrl}/datasets/sources/${sourceId}/load`, {
+                method: 'POST'
+            });
+            
+            if (!response.ok) throw new Error('Failed to load source preview');
+            
+            const result = await response.json();
+            
+            if (result.success && result.data.data) {
+                this.showSourcePreview(result.data.data);
+                this.showNotification(result.data.message, 'success');
+            } else {
+                this.showNotification(result.message || 'Error al cargar la vista previa', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Error loading source preview:', error);
+            this.showNotification('Error de conexión al cargar la vista previa', 'error');
+        }
+    }
+
+    showSourcePreview(data) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-800">
+                            <i class="fas fa-eye text-blue-500 mr-2"></i>
+                            Vista Previa: ${data.source.name}
+                        </h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-2">
+                        Total de entradas: ${data.totalEntries.toLocaleString('es-ES')} 
+                        (mostrando ${data.loadedEntries})
+                    </div>
+                </div>
+                <div class="p-6 overflow-y-auto max-h-96">
+                    <div class="space-y-4">
+                        ${data.preview.map((entry, index) => `
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-600 mb-1">Wayuu (guc):</div>
+                                        <div class="text-gray-800">${entry.row.guc}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-600 mb-1">Español (es):</div>
+                                        <div class="text-gray-800">${entry.row.es}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200 bg-gray-50">
+                    <div class="flex justify-end">
+                        <button onclick="this.closest('.fixed').remove()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
+    showSourcesError() {
+        const container = document.getElementById('sources-container');
+        container.innerHTML = `
+            <div class="text-center py-8 text-red-500">
+                <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                <div>Error al cargar las fuentes</div>
+                <button onclick="translator.loadSources()" class="mt-2 text-sm text-blue-600 hover:text-blue-800">
+                    Reintentar
+                </button>
+            </div>
+        `;
+    }
+
+    showNotification(message, type = 'info') {
+        const colors = {
+            success: 'bg-green-100 text-green-800 border-green-200',
+            error: 'bg-red-100 text-red-800 border-red-200',
+            info: 'bg-blue-100 text-blue-800 border-blue-200'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg border shadow-lg z-50 ${colors[type]} max-w-sm`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                <span class="text-sm">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-current opacity-70 hover:opacity-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
 }
 
 // Initialize the translator when the page loads
+let translator;
 document.addEventListener('DOMContentLoaded', () => {
-    new WayuuTranslator();
+    translator = new WayuuTranslator();
 });

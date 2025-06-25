@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Wayuu-Spanish Translator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4f46e5;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4f46e5;
+            background: #f8fafc;
+        }
+        .section h2 {
+            color: #1e293b;
+            margin-top: 0;
+        }
+        .api-demo {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .button {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #3730a3;
+        }
+        .result {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Wayuu-Spanish Translator Demo</h1>
+        
+        <div class="section">
+            <h2>📊 Estadísticas del Sistema</h2>
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="dict-entries">...</div>
+                    <div class="stat-label">Entradas Diccionario</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="audio-entries">...</div>
+                    <div class="stat-label">Grabaciones Audio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="parallel-entries">...</div>
+                    <div class="stat-label">Corpus Paralelo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-sources">...</div>
+                    <div class="stat-label">Fuentes Activas</div>
+                </div>
+            </div>
+            <button class="button" onclick="loadStats()">🔄 Actualizar Estadísticas</button>
+        </div>
+
+        <div class="section">
+            <h2>🤗 Gestión de Fuentes Hugging Face</h2>
+            <p>Fuentes de datos disponibles:</p>
+            <div id="sources-list">Cargando fuentes...</div>
+            <button class="button" onclick="loadSources()">📋 Listar Fuentes</button>
+            <button class="button" onclick="toggleSource('wayuu_parallel_corpus')">🔄 Toggle Corpus Paralelo</button>
+            <button class="button" onclick="loadPreview('wayuu_parallel_corpus')">👀 Vista Previa Corpus</button>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Prueba de Traducción</h2>
+            <div>
+                <input type="text" id="translate-input" placeholder="Escribe en Wayuu o Español..." style="width: 70%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <button class="button" onclick="testTranslation()">🔄 Traducir</button>
+            </div>
+            <div id="translation-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎵 Dataset de Audio</h2>
+            <button class="button" onclick="loadAudioInfo()">📊 Info Audio</button>
+            <button class="button" onclick="searchAudio()">🔍 Buscar Audio</button>
+            <div id="audio-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 APIs Disponibles</h2>
+            <div class="api-demo">
+GET /api/datasets/sources        - Listar fuentes
+POST /api/datasets/sources/:id/toggle - Activar/desactivar fuente  
+POST /api/datasets/sources/:id/load   - Cargar vista previa
+GET /api/datasets/stats         - Estadísticas generales
+GET /api/datasets/audio/stats   - Estadísticas de audio
+GET /api/translation/translate  - Traducir texto
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3002/api';
+
+        async function loadStats() {
+            try {
+                // Cargar estadísticas principales
+                const statsRes = await fetch(`${API_URL}/datasets/stats`);
+                const stats = await statsRes.json();
+                document.getElementById('dict-entries').textContent = stats.data.totalEntries || 0;
+
+                // Cargar estadísticas de audio
+                const audioRes = await fetch(`${API_URL}/datasets/audio/stats`);
+                const audio = await audioRes.json();
+                document.getElementById('audio-entries').textContent = audio.data.totalAudioEntries || 0;
+
+                // Cargar fuentes para contar el corpus paralelo
+                const sourcesRes = await fetch(`${API_URL}/datasets/sources`);
+                const sources = await sourcesRes.json();
+                const parallelSource = sources.data.sources.find(s => s.id === 'wayuu_parallel_corpus');
+                document.getElementById('parallel-entries').textContent = parallelSource ? '42,687' : '0';
+                document.getElementById('total-sources').textContent = sources.data.activeSources || 0;
+
+                showResult('stats-result', '✅ Estadísticas actualizadas correctamente');
+            } catch (error) {
+                showResult('stats-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function loadSources() {
+            try {
+                const response = await fetch(`${API_URL}/datasets/sources`);
+                const result = await response.json();
+                
+                const sourcesList = document.getElementById('sources-list');
+                sourcesList.innerHTML = result.data.sources.map(source => `
+                    <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 5px; border-left: 4px solid ${source.isActive ? '#10b981' : '#6b7280'};">
+                        <strong>${source.name}</strong> 
+                        <span style="color: ${source.isActive ? '#10b981' : '#6b7280'};">
+                            ${source.isActive ? '✅ Activo' : '⏸️ Inactivo'}
+                        </span>
+                        <br>
+                        <small style="color: #64748b;">${source.description}</small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('sources-list').innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function toggleSource(sourceId) {
+            try {
+                const response = await fetch(`${API_URL}/datasets/sources/${sourceId}/toggle`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('sources-result', `✅ ${result.message}`);
+                    loadSources(); // Actualizar la lista
+                } else {
+                    showResult('sources-result', `❌ ${result.message}`);
+                }
+            } catch (error) {
+                showResult('sources-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function loadPreview(sourceId) {
+            try {
+                const response = await fetch(`${API_URL}/datasets/sources/${sourceId}/load`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data.data) {
+                    const preview = result.data.data.preview.slice(0, 3);
+                    const previewText = preview.map((entry, i) => 
+                        `${i+1}. Wayuu: ${entry.row.guc.substring(0, 100)}...
+                           Español: ${entry.row.es.substring(0, 100)}...`
+                    ).join('\n\n');
+                    
+                    showResult('sources-result', `✅ Vista previa cargada (${result.data.data.totalEntries:,} entradas totales):\n\n${previewText}`);
+                } else {
+                    showResult('sources-result', `❌ ${result.message}`);
+                }
+            } catch (error) {
+                showResult('sources-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testTranslation() {
+            const text = document.getElementById('translate-input').value;
+            if (!text) return;
+
+            try {
+                const response = await fetch(`${API_URL}/translation/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        direction: 'auto'
+                    })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const translation = result.data;
+                    showResult('translation-result', 
+                        `✅ Traducción exitosa:\n` +
+                        `Texto original: ${text}\n` +
+                        `Traducción: ${translation.translatedText}\n` +
+                        `Confianza: ${(translation.confidence * 100).toFixed(1)}%\n` +
+                        `Fuente: ${translation.sourceDataset}`
+                    );
+                } else {
+                    showResult('translation-result', `❌ ${result.message}`);
+                }
+            } catch (error) {
+                showResult('translation-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function loadAudioInfo() {
+            try {
+                const response = await fetch(`${API_URL}/datasets/audio/stats`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const stats = result.data;
+                    showResult('audio-result', 
+                        `📊 Estadísticas de Audio:\n` +
+                        `Total grabaciones: ${stats.totalAudioEntries}\n` +
+                        `Palabras únicas: ${stats.uniqueWayuuWords}\n` +
+                        `Duración promedio: ${stats.averageDurationSeconds}s\n` +
+                        `Longitud promedio transcripción: ${stats.averageTranscriptionLength} caracteres`
+                    );
+                } else {
+                    showResult('audio-result', `❌ ${result.message}`);
+                }
+            } catch (error) {
+                showResult('audio-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function searchAudio() {
+            try {
+                const response = await fetch(`${API_URL}/datasets/audio/search?query=wayuu&limit=3`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const entries = result.data.entries;
+                    const searchText = entries.map((entry, i) => 
+                        `${i+1}. ID: ${entry.id}\n   Transcripción: ${entry.transcription.substring(0, 100)}...`
+                    ).join('\n\n');
+                    
+                    showResult('audio-result', `🔍 Resultados de búsqueda (${entries.length} encontrados):\n\n${searchText}`);
+                } else {
+                    showResult('audio-result', `❌ ${result.message}`);
+                }
+            } catch (error) {
+                showResult('audio-result', `❌ Error: ${error.message}`);
+            }
+        }
+
+        function showResult(elementId, text) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = text;
+                element.style.display = 'block';
+            } else {
+                // Crear elemento temporal si no existe
+                const temp = document.createElement('div');
+                temp.className = 'result';
+                temp.textContent = text;
+                document.body.appendChild(temp);
+                setTimeout(() => temp.remove(), 5000);
+            }
+        }
+
+        // Cargar datos iniciales
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadSources();
+        });
+    </script>
+</body>
+</html> 
