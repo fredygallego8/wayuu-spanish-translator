@@ -92,6 +92,18 @@ export class DatasetsService implements OnModuleInit {
       priority: 1
     },
     {
+      id: 'wayuu_spa_large',
+      name: 'Wayuu-Spanish Large Dataset',
+      dataset: 'Gaxys/wayuu_spa',
+      config: 'default',
+      split: 'train',
+      type: 'dictionary',
+      description: 'Large Wayuu-Spanish dataset with 46,827 translation pairs from biblical and cultural texts',
+      url: 'https://huggingface.co/datasets/Gaxys/wayuu_spa',
+      isActive: false, // Inicialmente inactivo para testing
+      priority: 2
+    },
+    {
       id: 'wayuu_parallel_corpus',
       name: 'Wayuu-Spanish Parallel Corpus',
       dataset: 'weezygeezer/Wayuu-Spanish_Parallel-Corpus',
@@ -100,8 +112,8 @@ export class DatasetsService implements OnModuleInit {
       type: 'dictionary',
       description: 'Large parallel corpus with 42,687 Wayuu-Spanish sentence pairs for enhanced translation',
       url: 'https://huggingface.co/datasets/weezygeezer/Wayuu-Spanish_Parallel-Corpus',
-      isActive: false, // Inicialmente inactivo para testing
-      priority: 2
+      isActive: true, // Activado
+      priority: 3
     },
     {
       id: 'wayuu_audio',
@@ -113,7 +125,7 @@ export class DatasetsService implements OnModuleInit {
       description: 'Wayuu audio recordings with transcriptions (810 entries)',
       url: 'https://huggingface.co/datasets/orkidea/wayuu_CO_test',
       isActive: true,
-      priority: 3
+      priority: 4
     }
   ];
   
@@ -1564,8 +1576,8 @@ export class DatasetsService implements OnModuleInit {
     }
 
     try {
-      // Si es el corpus paralelo, lo cargamos y combinamos con el dataset actual
-      if (id === 'wayuu_parallel_corpus') {
+      // Si es el corpus paralelo o el dataset grande, lo cargamos
+      if (id === 'wayuu_parallel_corpus' || id === 'wayuu_spa_large') {
         this.logger.log(`🔄 Loading additional dataset: ${source.name}...`);
         
         const url = `https://datasets-server.huggingface.co/rows?dataset=${source.dataset}&config=${source.config}&split=${source.split}&offset=0&length=100`;
@@ -1578,14 +1590,31 @@ export class DatasetsService implements OnModuleInit {
         const data = await response.json();
         this.logger.log(`📊 Preview loaded: ${data.rows.length} entries from ${source.name}`);
         
+        // Procesar datos según el formato del dataset
+        let processedPreview;
+        if (id === 'wayuu_spa_large') {
+          // Formato: { translation: { guc: "...", spa: "..." }, id: number }
+          processedPreview = data.rows.slice(0, 10).map(row => ({
+            row_idx: row.row_idx,
+            row: {
+              guc: row.row.translation.guc,
+              es: row.row.translation.spa
+            }
+          }));
+        } else {
+          // Formato estándar: { guc: "...", es: "..." }
+          processedPreview = data.rows.slice(0, 10);
+        }
+        
         return {
           success: true,
           message: `Successfully loaded preview of ${source.name} (${data.rows.length} entries shown, ${data.num_rows_total} total available)`,
           data: {
             source,
-            preview: data.rows.slice(0, 10), // Solo mostramos 10 para preview
+            preview: processedPreview,
             totalEntries: data.num_rows_total,
-            loadedEntries: data.rows.length
+            loadedEntries: data.rows.length,
+            originalFormat: id === 'wayuu_spa_large' ? 'nested_translation' : 'standard'
           }
         };
       }
