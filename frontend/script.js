@@ -274,8 +274,40 @@ class WayuuTranslator {
                 }
             }
             
-            // Step 2: Load cache info (50%)
-            this.updateProgress(50, 'Cargando información de cache...');
+            // Step 2: Load audio stats (50%)
+            this.updateProgress(50, 'Cargando estadísticas de audio...');
+            const audioStatsResponse = await fetch(`${this.apiUrl}/datasets/audio/stats`);
+            
+            if (audioStatsResponse.ok) {
+                const audioStatsResult = await audioStatsResponse.json();
+                const audioStats = audioStatsResult.data;
+                
+                // Update audio stats
+                this.animateNumber('total-audio-entries', audioStats.totalAudioEntries || 0);
+                this.animateNumber('audio-transcription-words', audioStats.uniqueWayuuWords || 0);
+                
+                // Format duration
+                const totalMinutes = audioStats.totalDurationMinutes || 0;
+                const avgSeconds = audioStats.averageDurationSeconds || 0;
+                
+                document.getElementById('total-audio-duration').textContent = `${totalMinutes.toFixed(1)} min`;
+                document.getElementById('avg-audio-duration').textContent = `${avgSeconds.toFixed(1)}s`;
+                
+                // Update audio dataset info
+                const avgTranscriptionLength = audioStats.averageTranscriptionLength || 0;
+                document.getElementById('avg-transcription-length').textContent = `${avgTranscriptionLength.toFixed(0)} caracteres`;
+                
+                // Update audio status
+                const audioStatusElement = document.getElementById('audio-dataset-status');
+                if (audioStats.totalAudioEntries > 0) {
+                    audioStatusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
+                } else {
+                    audioStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Cargando</span>';
+                }
+            }
+            
+            // Step 3: Load cache info (75%)
+            this.updateProgress(75, 'Cargando información de cache...');
             const cacheResponse = await fetch(`${this.apiUrl}/datasets/cache`);
             
             if (cacheResponse.ok) {
@@ -295,7 +327,7 @@ class WayuuTranslator {
                 }
             }
             
-            // Step 3: Complete (100%)
+            // Step 4: Complete (100%)
             this.updateProgress(100, 'Estadísticas cargadas completamente');
             
             // Hide progress after a short delay
@@ -357,14 +389,21 @@ class WayuuTranslator {
     }
 
     showStatsError() {
-        // Show error state in stats
+        // Show error state in dictionary stats
         document.getElementById('total-entries').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         document.getElementById('wayuu-words').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         document.getElementById('spanish-words').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         document.getElementById('avg-words').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         
+        // Show error state in audio stats
+        document.getElementById('total-audio-entries').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+        document.getElementById('total-audio-duration').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+        document.getElementById('audio-transcription-words').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+        document.getElementById('avg-audio-duration').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+        
         // Update status
         document.getElementById('dataset-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
+        document.getElementById('audio-dataset-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
         document.getElementById('cache-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
     }
 }
