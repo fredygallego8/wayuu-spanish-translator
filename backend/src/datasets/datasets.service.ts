@@ -135,6 +135,7 @@ export class DatasetsService implements OnModuleInit {
   private readonly metadataFile = path.join(this.cacheDir, 'cache-metadata.json');
   private readonly audioCacheFile = path.join(this.cacheDir, 'wayuu-audio-cache.json');
   private readonly audioMetadataFile = path.join(this.cacheDir, 'audio-cache-metadata.json');
+  private readonly audioDurationCacheFile = path.join(this.cacheDir, 'audio-duration-cache.json');
   private readonly cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   constructor(private readonly configService: ConfigService) {}
@@ -253,6 +254,9 @@ export class DatasetsService implements OnModuleInit {
         this.isAudioLoaded = true;
         this.logger.log(`🎯 Loaded ${cacheResult.data.length} audio entries from local cache (${cacheResult.source})`);
         
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
+        
         // Verificar actualizaciones en segundo plano si el cache no es muy reciente
         if (cacheResult.shouldUpdate) {
           this.logger.log('📡 Checking for audio dataset updates in background...');
@@ -270,6 +274,9 @@ export class DatasetsService implements OnModuleInit {
         this.totalAudioEntries = entries.length;
         this.isAudioLoaded = true;
         
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
+        
         // Guardar en cache
         await this.saveAudioToCache(entries, dataset);
         this.logger.log(`✅ Successfully loaded ${entries.length} audio entries and saved to cache`);
@@ -284,12 +291,18 @@ export class DatasetsService implements OnModuleInit {
         this.totalAudioEntries = expiredCache.data.length;
         this.isAudioLoaded = true;
         this.logger.log(`⚠️  Loaded ${expiredCache.data.length} audio entries from expired cache`);
+        
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
         return;
       }
 
       // Paso 4: Último recurso - datos de muestra de audio
       this.logger.warn('📝 All audio methods failed, using sample audio data');
       await this.loadSampleAudioData();
+      
+      // Apply audio durations from duration cache (if any)
+      await this.loadAndApplyAudioDurations();
       
     } catch (error) {
       this.logger.error(`❌ Failed to load audio dataset: ${error.message}`);
@@ -301,8 +314,14 @@ export class DatasetsService implements OnModuleInit {
         this.totalAudioEntries = emergencyCache.data.length;
         this.isAudioLoaded = true;
         this.logger.log(`🆘 Emergency fallback: loaded ${emergencyCache.data.length} audio entries from cache`);
+        
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
       } else {
         await this.loadSampleAudioData();
+        
+        // Apply audio durations from duration cache (if any)
+        await this.loadAndApplyAudioDurations();
       }
     }
   }
@@ -726,6 +745,75 @@ export class DatasetsService implements OnModuleInit {
   private generateAudioChecksum(data: AudioEntry[]): string {
     const content = data.map(entry => `${entry.id}:${entry.transcription}:${entry.audioDuration}`).join('|');
     return Buffer.from(content).toString('base64').substring(0, 16);
+  }
+
+  /**
+   * Load audio durations from cache and apply them to the dataset entries
+   */
+  private async loadAndApplyAudioDurations(): Promise<void> {
+    try {
+      const durationCacheExists = await this.fileExists(this.audioDurationCacheFile);
+      if (!durationCacheExists) {
+        this.logger.log('📊 No audio duration cache found, durations will remain 0');
+        return;
+      }
+
+      const durationCacheContent = await fs.readFile(this.audioDurationCacheFile, 'utf-8');
+      const durationCache = JSON.parse(durationCacheContent);
+
+      if (!durationCache || typeof durationCache !== 'object' || !durationCache.durations) {
+        this.logger.warn('⚠️ Invalid audio duration cache format');
+        return;
+      }
+
+      let appliedCount = 0;
+      let totalDuration = 0;
+
+      // Apply durations to the audio dataset entries
+      this.wayuuAudioDataset.forEach(entry => {
+        const durationData = durationCache.durations[entry.id];
+        if (durationData && typeof durationData.duration === 'number') {
+          entry.audioDuration = durationData.duration;
+          totalDuration += durationData.duration;
+          appliedCount++;
+        }
+      });
+
+      this.logger.log(`🎵 Applied audio durations: ${appliedCount}/${this.wayuuAudioDataset.length} entries, total: ${(totalDuration / 60).toFixed(1)} minutes`);
+
+      // Update the cache metadata with the correct totals
+      if (appliedCount > 0) {
+        await this.updateAudioCacheMetadata(totalDuration);
+      }
+
+    } catch (error) {
+      this.logger.error(`❌ Failed to load audio durations from cache: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update audio cache metadata with correct duration totals
+   */
+  private async updateAudioCacheMetadata(totalDurationSeconds: number): Promise<void> {
+    try {
+      const averageDuration = this.wayuuAudioDataset.length > 0 ? totalDurationSeconds / this.wayuuAudioDataset.length : 0;
+
+      const metadata: AudioCacheMetadata = {
+        lastUpdated: new Date().toISOString(),
+        totalAudioEntries: this.wayuuAudioDataset.length,
+        totalDurationSeconds: totalDurationSeconds,
+        averageDurationSeconds: averageDuration,
+        datasetVersion: '1.0',
+        source: 'orkidea/wayuu_CO_test',
+        checksum: this.generateAudioChecksum(this.wayuuAudioDataset)
+      };
+
+      await fs.writeFile(this.audioMetadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
+      this.logger.log(`📊 Updated audio cache metadata: ${totalDurationSeconds.toFixed(1)}s total, ${averageDuration.toFixed(2)}s average`);
+
+    } catch (error) {
+      this.logger.error(`❌ Failed to update audio cache metadata: ${error.message}`);
+    }
   }
 
   // ==================== HELPER METHODS ====================
