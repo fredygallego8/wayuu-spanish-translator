@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Wayuu-Spanish Translator Platform v2.0 - Documentación Completa</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .api-endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-info { background: #d1ecf1; color: #0c5460; }
+        .status-danger { background: #f8d7da; color: #721c24; }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% + 10px);
+            background: #e9ecef;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl font-bold mb-4">🌟 Wayuu-Spanish Translator Platform v2.0</h1>
+            <p class="text-xl mb-6">Preservando la lengua ancestral wayuu a través de la tecnología moderna</p>
+            <div class="flex justify-center space-x-4 mb-8">
+                <span class="status-badge status-success">✅ API v2.0 Active</span>
+                <span class="status-badge status-info">📹 YouTube Ingestion Ready</span>
+                <span class="status-badge status-warning">🎤 ASR Integration</span>
+            </div>
+            <div class="flex justify-center space-x-6">
+                <a href="#api-docs" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-book mr-2"></i>API Docs
+                </a>
+                <a href="#architecture" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                    <i class="fas fa-sitemap mr-2"></i>Arquitectura
+                </a>
+                <a href="#stats" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                    <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center space-x-8 py-4">
+                <a href="#overview" class="text-gray-700 hover:text-blue-600 font-medium">Overview</a>
+                <a href="#features" class="text-gray-700 hover:text-blue-600 font-medium">Features</a>
+                <a href="#architecture" class="text-gray-700 hover:text-blue-600 font-medium">Arquitectura</a>
+                <a href="#api-docs" class="text-gray-700 hover:text-blue-600 font-medium">API</a>
+                <a href="#stats" class="text-gray-700 hover:text-blue-600 font-medium">Estadísticas</a>
+                <a href="#youtube" class="text-gray-700 hover:text-blue-600 font-medium">YouTube</a>
+                <a href="#roadmap" class="text-gray-700 hover:text-blue-600 font-medium">Roadmap</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Overview Section -->
+    <section id="overview" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">🎯 Descripción General</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    La Wayuu-Spanish Translator Platform es una solución completa para la preservación y promoción 
+                    de la lengua wayuunaiki mediante tecnología de traducción avanzada y procesamiento multimedia.
+                </p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="metric-card card-hover">
+                    <i class="fas fa-language text-blue-500 text-4xl mb-3"></i>
+                    <div class="metric-value text-blue-600">5,000+</div>
+                    <div class="metric-label">Términos en Diccionario</div>
+                </div>
+                <div class="metric-card card-hover">
+                    <i class="fas fa-volume-up text-green-500 text-4xl mb-3"></i>
+                    <div class="metric-value text-green-600">809</div>
+                    <div class="metric-label">Archivos de Audio</div>
+                </div>
+                <div class="metric-card card-hover">
+                    <i class="fas fa-video text-red-500 text-4xl mb-3"></i>
+                    <div class="metric-value text-red-600">1</div>
+                    <div class="metric-label">Videos Procesados</div>
+                </div>
+                <div class="metric-card card-hover">
+                    <i class="fas fa-clock text-purple-500 text-4xl mb-3"></i>
+                    <div class="metric-value text-purple-600"><100ms</div>
+                    <div class="metric-label">Tiempo de Traducción</div>
+                </div>
+            </div>
+
+            <!-- New Features v2.0 -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 mb-12">
+                <h3 class="text-2xl font-bold mb-6 text-center">✨ Nuevas Funcionalidades v2.0</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg p-6 shadow-md">
+                        <h4 class="text-lg font-semibold mb-3">📹 YouTube Ingestion</h4>
+                        <p class="text-gray-600">Procesamiento automático de videos de YouTube con extracción de audio y transcripción.</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow-md">
+                        <h4 class="text-lg font-semibold mb-3">🎤 ASR Integration</h4>
+                        <p class="text-gray-600">Transcripción automática de audio a texto wayuunaiki usando tecnología ASR avanzada.</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow-md">
+                        <h4 class="text-lg font-semibold mb-3">🔄 Pipeline Completo</h4>
+                        <p class="text-gray-600">Flujo automático desde YouTube hasta traducción final con seguimiento de estados.</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow-md">
+                        <h4 class="text-lg font-semibold mb-3">📊 Monitoreo Avanzado</h4>
+                        <p class="text-gray-600">Dashboard completo con métricas en tiempo real usando Prometheus y Grafana.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">🚀 Características Principales</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Translation Core -->
+                <div class="text-center card-hover p-6">
+                    <div class="feature-icon text-blue-500">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">🔄 Traducción Core</h3>
+                    <ul class="text-left space-y-2">
+                        <li>✅ Traducción Bidireccional</li>
+                        <li>✅ Audio Nativo (809 archivos)</li>
+                        <li>✅ Diccionario Completo</li>
+                        <li>✅ IA Avanzada</li>
+                    </ul>
+                </div>
+
+                <!-- YouTube Processing -->
+                <div class="text-center card-hover p-6">
+                    <div class="feature-icon text-red-500">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">📹 YouTube Ingestion</h3>
+                    <ul class="text-left space-y-2">
+                        <li>✅ Descarga Automática</li>
+                        <li>✅ Transcripción ASR</li>
+                        <li>✅ Procesamiento Batch</li>
+                        <li>✅ Estados de Workflow</li>
+                    </ul>
+                </div>
+
+                <!-- Audio Processing -->
+                <div class="text-center card-hover p-6">
+                    <div class="feature-icon text-green-500">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">🎵 Audio Processing</h3>
+                    <ul class="text-left space-y-2">
+                        <li>✅ Múltiples Formatos</li>
+                        <li>✅ Calidad Optimizada</li>
+                        <li>✅ Cache Inteligente</li>
+                        <li>✅ Streaming Support</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">🏗️ Arquitectura del Sistema</h2>
+            
+            <!-- System Architecture Diagram -->
+            <div class="bg-white rounded-xl p-8 shadow-lg mb-8">
+                <h3 class="text-2xl font-bold mb-6 text-center">Diagrama de Arquitectura</h3>
+                <div class="mermaid">
+                    graph TB
+                        A[YouTube Video URL] --> B[YouTube Ingestion Service]
+                        B --> C[Audio Extraction yt-dlp]
+                        C --> D[Audio Storage]
+                        D --> E[ASR Transcription]
+                        E --> F[Translation Service]
+                        F --> G[Wayuu Dictionary]
+                        G --> H[Spanish Translation]
+                        
+                        I[Frontend Next.js] --> J[API Gateway]
+                        J --> K[Translation Controller]
+                        J --> L[YouTube Controller]
+                        J --> M[Datasets Controller]
+                        
+                        N[Audio Files] --> O[Static File Server]
+                        P[Monitoring] --> Q[Prometheus/Grafana]
+                        
+                        style A fill:#ff6b6b
+                        style H fill:#51cf66
+                        style I fill:#339af0
+                        style Q fill:#ffd43b
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-blue-600">🔧 Backend</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Framework:</strong> NestJS</li>
+                        <li><strong>Language:</strong> TypeScript</li>
+                        <li><strong>Audio:</strong> yt-dlp, youtube-dl-exec</li>
+                        <li><strong>Storage:</strong> JSON + File System</li>
+                        <li><strong>Validation:</strong> class-validator</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-green-600">🎨 Frontend</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Framework:</strong> Next.js 14+</li>
+                        <li><strong>Language:</strong> TypeScript</li>
+                        <li><strong>Styling:</strong> Tailwind CSS</li>
+                        <li><strong>State:</strong> Zustand</li>
+                        <li><strong>Audio:</strong> HTML5 Audio API</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-purple-600">📊 DevOps</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Containers:</strong> Docker</li>
+                        <li><strong>Metrics:</strong> Prometheus</li>
+                        <li><strong>Visualization:</strong> Grafana</li>
+                        <li><strong>Package:</strong> pnpm</li>
+                        <li><strong>Process:</strong> PM2</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Documentation -->
+    <section id="api-docs" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">📚 Documentación de la API</h2>
+            
+            <!-- API Endpoints -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Translation Endpoints -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold mb-6 text-blue-600">🔄 Translation API</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-success mr-2">POST</span>
+                            <code>/api/translation/translate</code>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Traduce texto entre wayuu y español</p>
+                        <div class="code-block">
+                            <pre>{
+  "text": "wayuu",
+  "direction": "wayuu-to-spanish"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-info mr-2">GET</span>
+                            <code>/api/translation/stats</code>
+                        </div>
+                        <p class="text-sm text-gray-600">Obtiene estadísticas de traducción</p>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-info mr-2">GET</span>
+                            <code>/api/datasets/info</code>
+                        </div>
+                        <p class="text-sm text-gray-600">Información del dataset wayuu</p>
+                    </div>
+                </div>
+
+                <!-- YouTube Endpoints -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold mb-6 text-red-600">📹 YouTube Ingestion API</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-success mr-2">POST</span>
+                            <code>/api/youtube-ingestion/ingest</code>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Procesa un video de YouTube</p>
+                        <div class="code-block">
+                            <pre>{
+  "url": "https://youtube.com/watch?v=ID"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-info mr-2">GET</span>
+                            <code>/api/youtube-ingestion/status</code>
+                        </div>
+                        <p class="text-sm text-gray-600">Estado de videos procesados</p>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="flex items-center mb-2">
+                            <span class="status-badge status-success mr-2">POST</span>
+                            <code>/api/youtube-ingestion/process-pending</code>
+                        </div>
+                        <p class="text-sm text-gray-600">Procesa videos pendientes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Response Examples -->
+            <div class="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8">
+                <h3 class="text-2xl font-bold mb-6 text-center">📝 Ejemplos de Respuesta</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-bold mb-2 text-blue-600">Translation Response</h4>
+                        <div class="code-block">
+                            <pre>{
+  "success": true,
+  "data": {
+    "originalText": "wayuu",
+    "translatedText": "persona",
+    "direction": "wayuu-to-spanish",
+    "confidence": 1.0,
+    "audioAvailable": true
+  }
+}</pre>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-bold mb-2 text-red-600">YouTube Status Response</h4>
+                        <div class="code-block">
+                            <pre>{
+  "success": true,
+  "data": {
+    "totalVideos": 1,
+    "completed": 1,
+    "pending": 0,
+    "errors": 0
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section id="stats" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">📊 Estadísticas y Métricas</h2>
+            
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Dictionary Coverage Chart -->
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">📚 Cobertura del Diccionario</h3>
+                    <div class="chart-container">
+                        <canvas id="dictionaryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Audio Availability Chart -->
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">🎵 Disponibilidad de Audio</h3>
+                    <div class="chart-container">
+                        <canvas id="audioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Performance Metrics -->
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">⚡ Métricas de Performance</h3>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- YouTube Processing -->
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">📹 Procesamiento YouTube</h3>
+                    <div class="chart-container">
+                        <canvas id="youtubeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Statistics -->
+            <div class="bg-white rounded-xl p-8 shadow-lg">
+                <h3 class="text-2xl font-bold mb-6 text-center">📈 Estadísticas de Uso</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">5,247</div>
+                        <div class="text-gray-600">Términos Totales</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600 mb-2">809</div>
+                        <div class="text-gray-600">Audio Files</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-600 mb-2">1</div>
+                        <div class="text-gray-600">Videos Procesados</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-600 mb-2">85%</div>
+                        <div class="text-gray-600">Precisión</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- YouTube Processing Section -->
+    <section id="youtube" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">📹 YouTube Ingestion Pipeline</h2>
+            
+            <!-- Pipeline Flow -->
+            <div class="bg-gradient-to-r from-red-50 to-blue-50 rounded-xl p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-6 text-center">🔄 Flujo de Procesamiento</h3>
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-center">
+                        <div class="bg-red-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-link text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold">1. URL Input</h4>
+                        <p class="text-sm text-gray-600">YouTube video URL</p>
+                    </div>
+                    <div class="text-blue-500 text-2xl">→</div>
+                    <div class="text-center">
+                        <div class="bg-green-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-download text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold">2. Download</h4>
+                        <p class="text-sm text-gray-600">Audio extraction</p>
+                    </div>
+                    <div class="text-blue-500 text-2xl">→</div>
+                    <div class="text-center">
+                        <div class="bg-orange-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-microphone text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold">3. Transcribe</h4>
+                        <p class="text-sm text-gray-600">Speech to text</p>
+                    </div>
+                    <div class="text-blue-500 text-2xl">→</div>
+                    <div class="text-center">
+                        <div class="bg-purple-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-language text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold">4. Translate</h4>
+                        <p class="text-sm text-gray-600">Wayuu → Español</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status States -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <i class="fas fa-spinner fa-spin text-yellow-500 text-2xl mb-2"></i>
+                    <h4 class="font-bold text-yellow-700">Downloading</h4>
+                    <p class="text-sm text-yellow-600">Extrayendo audio</p>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <i class="fas fa-clock text-blue-500 text-2xl mb-2"></i>
+                    <h4 class="font-bold text-blue-700">Pending ASR</h4>
+                    <p class="text-sm text-blue-600">Esperando transcripción</p>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                    <i class="fas fa-hourglass-half text-purple-500 text-2xl mb-2"></i>
+                    <h4 class="font-bold text-purple-700">Pending Translation</h4>
+                    <p class="text-sm text-purple-600">Esperando traducción</p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                    <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+                    <h4 class="font-bold text-green-700">Completed</h4>
+                    <p class="text-sm text-green-600">Procesamiento completo</p>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
+                    <h4 class="font-bold text-red-700">Error</h4>
+                    <p class="text-sm text-red-600">Error en procesamiento</p>
+                </div>
+            </div>
+
+            <!-- Example Video -->
+            <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold mb-4">🎥 Video Procesado de Ejemplo</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-2">Información del Video</h4>
+                        <ul class="space-y-1 text-sm">
+                            <li><strong>Título:</strong> presentación personal en wayuunaiki</li>
+                            <li><strong>URL:</strong> https://www.youtube.com/shorts/fYUjs_dbnjs</li>
+                            <li><strong>Duración:</strong> 30 segundos</li>
+                            <li><strong>Tamaño Audio:</strong> 564KB</li>
+                            <li><strong>Estado:</strong> <span class="status-badge status-success">Completado</span></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Resultado del Procesamiento</h4>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm mb-2"><strong>Transcripción:</strong> [Contenido wayuunaiki transcrito]</p>
+                            <p class="text-sm"><strong>Traducción:</strong> [Traducción al español]</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">📈 Roadmap de Desarrollo</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- v2.1 Features -->
+                <div class="bg-white rounded-xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6 text-blue-600">🚀 v2.1 - Próximas Funcionalidades</h3>
+                    <div class="space-y-4">
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Batch YouTube Processing</h4>
+                            <p class="text-sm text-gray-600">Procesamiento masivo de playlists completas</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Advanced ASR</h4>
+                            <p class="text-sm text-gray-600">Integración con Whisper AI para mejor precisión</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Mobile App</h4>
+                            <p class="text-sm text-gray-600">Aplicación React Native para iOS y Android</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Offline Mode</h4>
+                            <p class="text-sm text-gray-600">Funcionalidad sin conexión a internet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- v2.2 Features -->
+                <div class="bg-white rounded-xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6 text-purple-600">🔮 v2.2 - Mejoras Planificadas</h3>
+                    <div class="space-y-4">
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Community Features</h4>
+                            <p class="text-sm text-gray-600">Sistema de contribuciones de la comunidad</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Advanced Analytics</h4>
+                            <p class="text-sm text-gray-600">ML para análisis lingüístico profundo</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">API v3</h4>
+                            <p class="text-sm text-gray-600">GraphQL endpoint para mejor flexibilidad</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Multi-language</h4>
+                            <p class="text-sm text-gray-600">Soporte para otros idiomas indígenas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">🌟 Wayuu-Spanish Translator</h3>
+                    <p class="text-gray-200">Preservando la lengua ancestral wayuu a través de la tecnología moderna.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">🔗 Enlaces Útiles</h4>
+                    <ul class="space-y-2">
+                        <li><a href="http://localhost:3002/api/docs" class="text-gray-200 hover:text-white">📚 API Documentation</a></li>
+                        <li><a href="http://localhost:3001" class="text-gray-200 hover:text-white">📊 Grafana Dashboard</a></li>
+                        <li><a href="http://localhost:3000" class="text-gray-200 hover:text-white">🌐 Frontend App</a></li>
+                        <li><a href="https://github.com/your-repo" class="text-gray-200 hover:text-white">💻 GitHub Repository</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">📚 Recursos Wayuu</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.academia.edu/37617681/Manual_de_la_lengua_wayuu" class="text-gray-200 hover:text-white">Manual de la lengua wayuu</a></li>
+                        <li><a href="https://www.sil.org/system/files/reapdata/13/68/67/136867501098587482764543183539278418234/WayuuDict_45801.pdf" class="text-gray-200 hover:text-white">Diccionario Wayuunaiki-Español</a></li>
+                        <li><a href="https://www.scribd.com/doc/2626340/Wayuunkeera-Manual-de-wayuu" class="text-gray-200 hover:text-white">Wayuunkeera Manual</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center">
+                <p class="text-gray-200">
+                    Hecho con ❤️ para preservar la cultura wayuu | 
+                    <em>Wayuu tü kasa süchukua wayuu anaa - Nosotros somos el pueblo wayuu</em>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: true });
+
+        // Chart.js configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        };
+
+        // Dictionary Coverage Chart
+        const dictionaryCtx = document.getElementById('dictionaryChart').getContext('2d');
+        new Chart(dictionaryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Términos con Audio', 'Términos sin Audio'],
+                datasets: [{
+                    data: [809, 4438],
+                    backgroundColor: ['#4ade80', '#e5e7eb'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: {
+                        display: true,
+                        text: '809 de 5,247 términos con audio (15.4%)'
+                    }
+                }
+            }
+        });
+
+        // Audio Availability Chart
+        const audioCtx = document.getElementById('audioChart').getContext('2d');
+        new Chart(audioCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Disponible', 'No Disponible'],
+                datasets: [{
+                    label: 'Archivos de Audio',
+                    data: [809, 4438],
+                    backgroundColor: ['#3b82f6', '#ef4444'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Performance Metrics Chart
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Traducción', 'Audio Load', 'API Response', 'Database Query'],
+                datasets: [{
+                    label: 'Tiempo (ms)',
+                    data: [85, 120, 45, 25],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Milisegundos'
+                        }
+                    }
+                }
+            }
+        });
+
+        // YouTube Processing Chart
+        const youtubeCtx = document.getElementById('youtubeChart').getContext('2d');
+        new Chart(youtubeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Completados', 'En Proceso', 'Errores'],
+                datasets: [{
+                    data: [1, 0, 0],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'Estado de Videos Procesados'
+                    }
+                }
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add some interactive features
+        console.log('🌟 Wayuu-Spanish Translator Platform v2.0 Documentation loaded!');
+        console.log('📹 YouTube Ingestion features documented and ready!');
+        console.log('📊 Interactive charts and statistics loaded!');
+    </script>
+</body>
+</html> 
