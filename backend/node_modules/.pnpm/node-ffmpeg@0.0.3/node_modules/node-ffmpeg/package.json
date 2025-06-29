@@ -1,0 +1,33 @@
+{
+  "devDependencies": {
+    "@types/node": "^16.6.1",
+    "ts-node": "10.2.x",
+    "typescript": "4.3.x"
+  },
+  "dependencies": {
+    "cmake-js": "6.2.x",
+    "nan": "2.15.x",
+    "tslib": "2.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VictorQueiroz/node-ffmpeg"
+  },
+  "author": {
+    "name": "Victor Queiroz",
+    "email": "victorcqueirozg@gmail.com",
+    "url": "https://victorqueiroz.dev"
+  },
+  "name": "node-ffmpeg",
+  "version": "0.0.3",
+  "main": "./native/index.js",
+  "typings": "./native/index.d.ts",
+  "files": [
+    "CMakeLists.txt",
+    "src/**/*.{cpp,h}",
+    "native/**/*.{js,d.ts}"
+  ],
+  "scripts": {
+    "postinstall": "npx cmake-js compile -C --out=build/Release"
+  }
+}

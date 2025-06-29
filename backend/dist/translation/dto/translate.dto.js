@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TranslationResponseDto = exports.TranslateDto = exports.TranslationDirection = void 0;
+exports.LearningExerciseDto = exports.PhoneticAnalysisDto = exports.TranslationResponseDto = exports.TranslateDto = exports.TranslationDirection = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 var TranslationDirection;
@@ -23,7 +23,7 @@ exports.TranslateDto = TranslateDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Text to translate',
-        example: 'Tü süchukua wayuu',
+        example: 'wayuu',
     }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
@@ -40,28 +40,38 @@ __decorate([
 ], TranslateDto.prototype, "direction", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Source dataset to prioritize for translation',
-        example: 'orkidea/wayuu_CO_test',
+        description: 'Preferred dataset to use for translation',
         required: false,
+        example: 'main',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], TranslateDto.prototype, "preferredDataset", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], TranslateDto.prototype, "includePhoneticAnalysis", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], TranslateDto.prototype, "includeLearningHints", void 0);
 class TranslationResponseDto {
 }
 exports.TranslationResponseDto = TranslationResponseDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Original text',
-        example: 'Tü süchukua wayuu',
+        description: 'Original text provided for translation',
+        example: 'wayuu',
     }),
     __metadata("design:type", String)
 ], TranslationResponseDto.prototype, "originalText", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Translated text',
-        example: 'Tú eres una persona wayuu',
+        example: 'persona',
     }),
     __metadata("design:type", String)
 ], TranslationResponseDto.prototype, "translatedText", void 0);
@@ -75,20 +85,20 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Confidence score of the translation (0-1)',
-        example: 0.85,
+        example: 0.95,
     }),
     __metadata("design:type", Number)
 ], TranslationResponseDto.prototype, "confidence", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Dataset used for translation',
-        example: 'orkidea/wayuu_CO_test',
+        description: 'Source dataset used for translation',
+        example: 'main',
     }),
     __metadata("design:type", String)
 ], TranslationResponseDto.prototype, "sourceDataset", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Alternative translations if available',
+        description: 'Alternative translations',
         type: [String],
         required: false,
     }),
@@ -96,9 +106,69 @@ __decorate([
 ], TranslationResponseDto.prototype, "alternatives", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Cultural or linguistic context information',
+        description: 'Additional context information',
         required: false,
     }),
     __metadata("design:type", String)
 ], TranslationResponseDto.prototype, "contextInfo", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Phonetic analysis of the translation',
+        required: false,
+    }),
+    __metadata("design:type", Object)
+], TranslationResponseDto.prototype, "phoneticAnalysis", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Learning hints for the translation',
+        type: [String],
+        required: false,
+    }),
+    __metadata("design:type", Array)
+], TranslationResponseDto.prototype, "learningHints", void 0);
+class PhoneticAnalysisDto {
+}
+exports.PhoneticAnalysisDto = PhoneticAnalysisDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PhoneticAnalysisDto.prototype, "text", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], PhoneticAnalysisDto.prototype, "includeStressPatterns", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], PhoneticAnalysisDto.prototype, "includeSyllableBreakdown", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], PhoneticAnalysisDto.prototype, "includePhonemeMapping", void 0);
+class LearningExerciseDto {
+}
+exports.LearningExerciseDto = LearningExerciseDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], LearningExerciseDto.prototype, "exerciseType", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], LearningExerciseDto.prototype, "difficulty", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], LearningExerciseDto.prototype, "count", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], LearningExerciseDto.prototype, "focusWords", void 0);
 //# sourceMappingURL=translate.dto.js.map

@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "description": "A comprehensive Wayuu-Spanish translator application using HuggingFace datasets",
   "main": "index.js",
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "scripts": {
+    "start:dev": "cd backend && pnpm run start:dev",
     "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
     "dev:backend": "cd backend && pnpm run start:dev",
     "dev:frontend": "cd frontend && pnpm run dev",

@@ -1,0 +1,1 @@
+{"version":3,"file":"huggingface.module.js","sourceRoot":"","sources":["../src/huggingface.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,iFAA6E;AAC7E,2EAAuE;AAOhE,IAAM,iBAAiB,GAAvB,MAAM,iBAAiB;CAAG,CAAA;AAApB,8CAAiB;4BAAjB,iBAAiB;IAL7B,IAAA,eAAM,EAAC;QACJ,OAAO,EAAE,EAAE;QACX,WAAW,EAAE,CAAC,8CAAqB,CAAC;QACpC,SAAS,EAAE,CAAC,wCAAkB,CAAC;KAClC,CAAC;GACW,iBAAiB,CAAG"}

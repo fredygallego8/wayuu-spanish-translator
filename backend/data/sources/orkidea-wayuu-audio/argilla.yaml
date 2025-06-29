@@ -1,0 +1,30 @@
+fields:
+  - name: audio
+    required: true
+    settings:
+      type: audio
+    title: Audio File
+    type: audio
+
+  - name: transcription
+    required: true
+    settings:
+      type: text
+      use_markdown: false
+    title: Transcription
+    type: text
+    use_markdown: false
+
+guidelines: Guidelines for annotating the audio and correcting the transcription.
+
+questions:
+  - description: Please listen to the audio and correct the transcription if necessary.
+    labels: null
+    name: transcription_correction
+    required: true
+    settings:
+      type: text
+      use_markdown: false
+    title: Transcription Correction
+    type: text
+    use_markdown: false

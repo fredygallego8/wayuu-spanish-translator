@@ -1,6 +1,8 @@
 import { OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TranslationDirection } from '../translation/dto/translate.dto';
+import { AudioDurationService } from './audio-duration.service';
+import { MetricsService } from '../metrics/metrics.service';
 export interface DictionaryEntry {
     guc: string;
     spa: string;
@@ -56,9 +58,13 @@ export interface HuggingFaceSource {
 }
 export declare class DatasetsService implements OnModuleInit {
     private readonly configService;
+    private readonly audioDurationService;
+    private readonly metricsService;
     private readonly logger;
     private wayuuDictionary;
     private wayuuAudioDataset;
+    private additionalDatasets;
+    private loadedDatasetSources;
     private isLoaded;
     private isAudioLoaded;
     private totalEntries;
@@ -71,8 +77,9 @@ export declare class DatasetsService implements OnModuleInit {
     private readonly metadataFile;
     private readonly audioCacheFile;
     private readonly audioMetadataFile;
+    private readonly audioDownloadDir;
     private readonly cacheMaxAge;
-    constructor(configService: ConfigService);
+    constructor(configService: ConfigService, audioDurationService: AudioDurationService, metricsService: MetricsService);
     onModuleInit(): Promise<void>;
     loadWayuuDictionary(): Promise<void>;
     loadWayuuAudioDataset(): Promise<void>;
@@ -127,7 +134,11 @@ export declare class DatasetsService implements OnModuleInit {
         size?: string;
     }>;
     clearAudioCache(): Promise<void>;
-    getHuggingFaceSources(): HuggingFaceSource[];
+    private calculateTotalExpectedEntries;
+    private getLoadedDatasetInfo;
+    getHuggingFaceSources(): Promise<HuggingFaceSource[]>;
+    private calculateAudioDatasetDuration;
+    private calculateDictionaryEntries;
     getActiveHuggingFaceSources(): HuggingFaceSource[];
     getDictionarySource(): HuggingFaceSource;
     getAudioSource(): HuggingFaceSource;
@@ -139,9 +150,50 @@ export declare class DatasetsService implements OnModuleInit {
         isActive?: boolean;
         source?: HuggingFaceSource;
     };
-    loadAdditionalDataset(id: string): Promise<{
+    loadAdditionalDataset(id: string, loadFull?: boolean): Promise<{
         success: boolean;
         message: string;
         data?: any;
     }>;
+    private refreshAudioUrls;
+    downloadAudioFile(audioId: string, retryWithRefresh?: boolean): Promise<{
+        success: boolean;
+        message: string;
+        localPath?: string;
+    }>;
+    downloadAudioBatch(audioIds: string[], batchSize?: number): Promise<{
+        success: boolean;
+        message: string;
+        results: Array<{
+            id: string;
+            success: boolean;
+            localPath?: string;
+            error?: string;
+        }>;
+    }>;
+    downloadAllAudio(batchSize?: number): Promise<{
+        success: boolean;
+        message: string;
+        stats: any;
+    }>;
+    getAudioDownloadStats(): Promise<{
+        totalFiles: number;
+        downloadedFiles: number;
+        pendingFiles: number;
+        totalSizeDownloaded: number;
+        downloadProgress: number;
+    }>;
+    clearDownloadedAudio(): Promise<{
+        success: boolean;
+        message: string;
+        deletedFiles: number;
+    }>;
+    private ensureAudioDirectory;
+    private estimateAudioDuration;
+    private generateRealisticAudioDurations;
+    updateDatasetMetrics(): Promise<void>;
+    private updateDictionaryMetrics;
+    private updateAudioMetrics;
+    private updateCacheMetrics;
+    private parseCacheSize;
 }

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramientas de Aprendizaje Wayuu - Análisis Fonético e Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .phoneme-card {
+            transition: all 0.3s ease;
+        }
+        .phoneme-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .exercise-card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .progress-ring {
+            transition: stroke-dasharray 0.3s ease;
+        }
+        .syllable-breakdown {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .phonetic-analysis {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .learning-exercises {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .tab-button.active {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .tab-button {
+            background-color: #F3F4F6;
+            color: #6B7280;
+        }
+        .exercise-type-btn.active div {
+            background-color: #3B82F6 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-3xl font-bold text-gray-900">
+                            <i class="fas fa-brain mr-3 text-blue-600"></i>
+                            Herramientas de Aprendizaje Wayuu
+                        </h1>
+                    </div>
+                </div>
+                <nav class="flex space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-home mr-1"></i>Traductor
+                    </a>
+                    <a href="pages-index.html" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-1"></i>Todas las páginas
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Navigation Tabs -->
+        <div class="mb-8">
+            <nav class="flex space-x-8">
+                <button id="tab-phonetic" class="tab-button active px-6 py-3 text-sm font-medium rounded-lg">
+                    <i class="fas fa-wave-square mr-2"></i>Análisis Fonético
+                </button>
+                <button id="tab-exercises" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
+                    <i class="fas fa-gamepad mr-2"></i>Ejercicios Interactivos
+                </button>
+                <button id="tab-patterns" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
+                    <i class="fas fa-chart-line mr-2"></i>Patrones Fonéticos
+                </button>
+                <button id="tab-progress" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
+                    <i class="fas fa-trophy mr-2"></i>Progreso
+                </button>
+            </nav>
+        </div>
+
+        <!-- Phonetic Analysis Section -->
+        <div id="phonetic-section" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-microphone-alt mr-3 text-purple-600"></i>
+                    Análisis Fonético Automatizado
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Input Section -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="phonetic-input" class="block text-sm font-medium text-gray-700 mb-2">
+                                Texto en Wayuu para analizar
+                            </label>
+                            <textarea 
+                                id="phonetic-input" 
+                                rows="4" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Ingresa texto en Wayuunaiki para análisis fonético..."
+                            ></textarea>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="include-syllables" checked class="rounded text-purple-600">
+                                <span class="ml-2 text-sm text-gray-700">Separación silábica</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="include-stress" checked class="rounded text-purple-600">
+                                <span class="ml-2 text-sm text-gray-700">Patrones de acento</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="include-phonemes" checked class="rounded text-purple-600">
+                                <span class="ml-2 text-sm text-gray-700">Mapeo de fonemas</span>
+                            </label>
+                        </div>
+                        
+                        <button 
+                            id="analyze-btn" 
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                        >
+                            <i class="fas fa-search mr-2"></i>Analizar Fonética
+                        </button>
+                    </div>
+
+                    <!-- Quick Examples -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Ejemplos Rápidos</h3>
+                        <div class="space-y-3">
+                            <button class="example-btn w-full text-left p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors" data-text="wayuu">
+                                <span class="font-medium">wayuu</span> - persona
+                            </button>
+                            <button class="example-btn w-full text-left p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors" data-text="Maleiwa">
+                                <span class="font-medium">Maleiwa</span> - Creador
+                            </button>
+                            <button class="example-btn w-full text-left p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors" data-text="müshia">
+                                <span class="font-medium">müshia</span> - nosotros
+                            </button>
+                            <button class="example-btn w-full text-left p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors" data-text="nüchon">
+                                <span class="font-medium">nüchon</span> - palabra
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phonetic Results -->
+            <div id="phonetic-results" class="hidden bg-white rounded-xl shadow-lg p-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Resultados del Análisis Fonético</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Syllable Breakdown -->
+                    <div class="syllable-breakdown text-white rounded-lg p-6">
+                        <h4 class="text-lg font-semibold mb-4">
+                            <i class="fas fa-cut mr-2"></i>Separación Silábica
+                        </h4>
+                        <div id="syllables-display" class="text-2xl font-mono"></div>
+                        <div id="stress-pattern" class="mt-4 text-sm opacity-90"></div>
+                    </div>
+
+                    <!-- Phoneme Analysis -->
+                    <div class="phonetic-analysis text-white rounded-lg p-6">
+                        <h4 class="text-lg font-semibold mb-4">
+                            <i class="fas fa-volume-up mr-2"></i>Análisis de Fonemas
+                        </h4>
+                        <div id="phonemes-display" class="space-y-2"></div>
+                        <div id="difficulty-badge" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <!-- Phoneme Mapping -->
+                <div id="phoneme-mapping" class="mt-8">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Mapeo de Fonemas (IPA)</h4>
+                    <div id="phoneme-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+
+                <!-- Practice Recommendations -->
+                <div id="practice-recommendations" class="mt-8 bg-blue-50 rounded-lg p-6">
+                    <h4 class="text-lg font-semibold text-blue-900 mb-4">
+                        <i class="fas fa-lightbulb mr-2"></i>Recomendaciones de Práctica
+                    </h4>
+                    <div id="recommendations-list" class="space-y-2"></div>
+                </div>
+
+                <!-- Similar Sounds -->
+                <div id="similar-sounds" class="mt-8">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-headphones mr-2"></i>Sonidos Similares para Practicar
+                    </h4>
+                    <div id="similar-sounds-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Exercises Section -->
+        <div id="exercises-section" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-gamepad mr-3 text-green-600"></i>
+                    Ejercicios de Aprendizaje Interactivos
+                </h2>
+
+                <!-- Exercise Type Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <button class="exercise-type-btn active" data-type="pronunciation">
+                        <div class="bg-blue-100 text-blue-600 rounded-lg p-6 text-center hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-microphone text-3xl mb-3"></i>
+                            <h3 class="font-semibold">Pronunciación</h3>
+                            <p class="text-sm mt-2">Practica la pronunciación correcta</p>
+                        </div>
+                    </button>
+                    
+                    <button class="exercise-type-btn" data-type="listening">
+                        <div class="bg-green-100 text-green-600 rounded-lg p-6 text-center hover:bg-green-200 transition-colors">
+                            <i class="fas fa-headphones text-3xl mb-3"></i>
+                            <h3 class="font-semibold">Comprensión</h3>
+                            <p class="text-sm mt-2">Ejercicios de escucha activa</p>
+                        </div>
+                    </button>
+                    
+                    <button class="exercise-type-btn" data-type="vocabulary">
+                        <div class="bg-purple-100 text-purple-600 rounded-lg p-6 text-center hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-book text-3xl mb-3"></i>
+                            <h3 class="font-semibold">Vocabulario</h3>
+                            <p class="text-sm mt-2">Aprende nuevas palabras</p>
+                        </div>
+                    </button>
+                    
+                    <button class="exercise-type-btn" data-type="pattern-recognition">
+                        <div class="bg-yellow-100 text-yellow-600 rounded-lg p-6 text-center hover:bg-yellow-200 transition-colors">
+                            <i class="fas fa-puzzle-piece text-3xl mb-3"></i>
+                            <h3 class="font-semibold">Patrones</h3>
+                            <p class="text-sm mt-2">Reconoce patrones fonéticos</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Exercise Configuration -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dificultad</label>
+                            <select id="difficulty-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="beginner">Principiante</option>
+                                <option value="intermediate">Intermedio</option>
+                                <option value="advanced">Avanzado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad</label>
+                            <select id="count-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="3">3 ejercicios</option>
+                                <option value="5" selected>5 ejercicios</option>
+                                <option value="10">10 ejercicios</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Palabras clave (opcional)</label>
+                            <input type="text" id="focus-words" placeholder="wayuu, maleiwa..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <button id="generate-exercises-btn" class="mt-4 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                        <i class="fas fa-play mr-2"></i>Generar Ejercicios
+                    </button>
+                </div>
+            </div>
+
+            <!-- Exercise Display -->
+            <div id="exercise-display" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 id="exercise-title" class="text-xl font-bold text-gray-900"></h3>
+                        <div class="flex items-center space-x-4">
+                            <span id="exercise-counter" class="text-sm text-gray-600"></span>
+                            <button id="close-exercise-btn" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="exercise-content" class="mb-6"></div>
+                    
+                    <div id="exercise-controls" class="flex items-center justify-between">
+                        <button id="prev-exercise-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors" disabled>
+                            <i class="fas fa-chevron-left mr-2"></i>Anterior
+                        </button>
+                        
+                        <div id="exercise-hints" class="hidden">
+                            <button id="show-hint-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-lightbulb mr-2"></i>Pista
+                            </button>
+                        </div>
+                        
+                        <button id="next-exercise-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            Siguiente<i class="fas fa-chevron-right ml-2"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="hint-display" class="hidden mt-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                        <p id="hint-text" class="text-yellow-800"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phonetic Patterns Section -->
+        <div id="patterns-section" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-chart-line mr-3 text-blue-600"></i>
+                    Patrones Fonéticos del Wayuu
+                </h2>
+                
+                <div id="patterns-content">
+                    <div class="text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Cargando patrones fonéticos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progress-section" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-trophy mr-3 text-yellow-600"></i>
+                    Progreso de Aprendizaje
+                </h2>
+                
+                <div id="progress-content">
+                    <div class="text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Cargando progreso...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script src="learning-tools.js"></script>
+</body>
+</html> 

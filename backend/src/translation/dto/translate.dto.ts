@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsBoolean, IsArray, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum TranslationDirection {
@@ -9,7 +9,7 @@ export enum TranslationDirection {
 export class TranslateDto {
   @ApiProperty({
     description: 'Text to translate',
-    example: 'Tü süchukua wayuu',
+    example: 'wayuu',
   })
   @IsString()
   @IsNotEmpty()
@@ -24,25 +24,33 @@ export class TranslateDto {
   direction: TranslationDirection;
 
   @ApiProperty({
-    description: 'Source dataset to prioritize for translation',
-    example: 'orkidea/wayuu_CO_test',
+    description: 'Preferred dataset to use for translation',
     required: false,
+    example: 'main',
   })
   @IsOptional()
   @IsString()
   preferredDataset?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  includePhoneticAnalysis?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  includeLearningHints?: boolean;
 }
 
 export class TranslationResponseDto {
   @ApiProperty({
-    description: 'Original text',
-    example: 'Tü süchukua wayuu',
+    description: 'Original text provided for translation',
+    example: 'wayuu',
   })
   originalText: string;
 
   @ApiProperty({
     description: 'Translated text',
-    example: 'Tú eres una persona wayuu',
+    example: 'persona',
   })
   translatedText: string;
 
@@ -54,26 +62,101 @@ export class TranslationResponseDto {
 
   @ApiProperty({
     description: 'Confidence score of the translation (0-1)',
-    example: 0.85,
+    example: 0.95,
   })
   confidence: number;
 
   @ApiProperty({
-    description: 'Dataset used for translation',
-    example: 'orkidea/wayuu_CO_test',
+    description: 'Source dataset used for translation',
+    example: 'main',
   })
   sourceDataset: string;
 
   @ApiProperty({
-    description: 'Alternative translations if available',
+    description: 'Alternative translations',
     type: [String],
     required: false,
   })
   alternatives?: string[];
 
   @ApiProperty({
-    description: 'Cultural or linguistic context information',
+    description: 'Additional context information',
     required: false,
   })
   contextInfo?: string;
+
+  @ApiProperty({
+    description: 'Phonetic analysis of the translation',
+    required: false,
+  })
+  phoneticAnalysis?: PhoneticAnalysisResult;
+
+  @ApiProperty({
+    description: 'Learning hints for the translation',
+    type: [String],
+    required: false,
+  })
+  learningHints?: string[];
+}
+
+export class PhoneticAnalysisDto {
+  @IsString()
+  text: string;
+
+  @IsOptional()
+  @IsBoolean()
+  includeStressPatterns?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  includeSyllableBreakdown?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  includePhonemeMapping?: boolean;
+}
+
+export class LearningExerciseDto {
+  @IsString()
+  exerciseType: 'pronunciation' | 'listening' | 'pattern-recognition' | 'vocabulary';
+
+  @IsOptional()
+  @IsString()
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+
+  @IsOptional()
+  @IsNumber()
+  count?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  focusWords?: string[];
+}
+
+export interface PhoneticAnalysisResult {
+  text: string;
+  syllables: string[];
+  stressPattern: number[];
+  phonemes: string[];
+  phonemeMapping: Array<{
+    wayuu: string;
+    ipa: string;
+    description: string;
+  }>;
+  difficulty: 'easy' | 'medium' | 'hard';
+  similarSounds: string[];
+  practiceRecommendations: string[];
+}
+
+export interface LearningExercise {
+  id: string;
+  type: string;
+  difficulty: string;
+  title: string;
+  description: string;
+  content: any;
+  expectedAnswer?: any;
+  hints?: string[];
+  audioId?: string;
 }

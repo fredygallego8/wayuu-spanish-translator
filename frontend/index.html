@@ -8,6 +8,75 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Authentication Panel -->
+    <div id="auth-panel" class="bg-white shadow-md border-b border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Left: App Info -->
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-shield-alt text-blue-600"></i>
+                    <span class="text-sm text-gray-600">Sistema de Autenticación</span>
+                    <div id="auth-status-badge" class="hidden">
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Autenticado
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right: User Info & Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- User Info (when logged in) -->
+                    <div id="user-info" class="hidden flex items-center space-x-3">
+                        <img id="user-avatar" class="w-8 h-8 rounded-full" alt="Avatar">
+                        <div class="text-sm">
+                            <div id="user-name" class="font-medium text-gray-800"></div>
+                            <div id="user-email" class="text-gray-500 text-xs"></div>
+                        </div>
+                        <div id="user-role-badge" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            Usuario
+                        </div>
+                    </div>
+
+                    <!-- Login Button (when not logged in) -->
+                    <button id="login-btn" class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                        <i class="fab fa-google"></i>
+                        <span>Iniciar Sesión con Google</span>
+                    </button>
+
+                    <!-- Logout Button (when logged in) -->
+                    <button id="logout-btn" class="hidden flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+
+                    <!-- System Status -->
+                    <div id="system-status" class="text-sm text-gray-500">
+                        <i class="fas fa-circle text-green-500 mr-1"></i>
+                        <span>Sistema Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Protected Content Warning -->
+    <div id="auth-warning" class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-4 mx-4 mt-4 rounded">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Funcionalidades limitadas:</strong> Algunas características requieren autenticación. 
+                    <button id="auth-warning-login" class="text-blue-600 hover:text-blue-800 underline ml-1">
+                        Inicia sesión aquí
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <header class="text-center mb-8">
@@ -97,6 +166,114 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Audio Player and Search Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    <i class="fas fa-headphones text-purple-600 mr-3"></i>
+                    Reproductor de Audio Wayuu / Wayuu Audio Player
+                </h2>
+
+                <!-- Audio Search -->
+                <div class="mb-6">
+                    <div class="flex gap-4 mb-4">
+                        <div class="flex-1">
+                            <label for="audio-search" class="block text-sm font-medium text-gray-700 mb-2">
+                                Buscar por transcripción / Search by transcription
+                            </label>
+                            <input 
+                                type="text" 
+                                id="audio-search" 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Busca palabras en Wayuu..."
+                            >
+                        </div>
+                        <div class="flex items-end">
+                            <button 
+                                id="search-audio-btn" 
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center"
+                            >
+                                <i class="fas fa-search mr-2"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="audio-search-results" class="hidden">
+                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">
+                                <i class="fas fa-list text-purple-600 mr-2"></i>
+                                Resultados de búsqueda
+                            </h3>
+                            <div id="audio-results-list" class="space-y-3">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Audio Player -->
+                <div id="audio-player-section" class="hidden">
+                    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                        <h3 class="text-lg font-semibold text-purple-800 mb-4">
+                            <i class="fas fa-play-circle text-purple-600 mr-2"></i>
+                            Reproduciendo ahora / Now Playing
+                        </h3>
+                        
+                        <!-- Audio Info -->
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-600">ID: <span id="current-audio-id" class="font-mono">-</span></div>
+                            <div class="text-lg font-medium text-gray-800 mt-1" id="current-transcription">
+                                Selecciona un audio para reproducir
+                            </div>
+                        </div>
+
+                        <!-- Audio Controls -->
+                        <div class="flex items-center gap-4 mb-4">
+                            <audio 
+                                id="audio-player" 
+                                controls 
+                                class="flex-1"
+                                preload="metadata"
+                            >
+                                Tu navegador no soporta el elemento audio.
+                            </audio>
+                        </div>
+
+                        <!-- Audio Metadata -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Duración:</span>
+                                <span id="audio-duration" class="font-medium ml-1">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Tamaño:</span>
+                                <span id="audio-size" class="font-medium ml-1">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Estado:</span>
+                                <span id="audio-status" class="font-medium ml-1">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Confianza:</span>
+                                <span id="audio-confidence" class="font-medium ml-1">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Random Audio Button -->
+                <div class="text-center mt-4">
+                    <button 
+                        id="random-audio-btn" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center mx-auto"
+                    >
+                        <i class="fas fa-random mr-2"></i>
+                        Audio Aleatorio / Random Audio
+                    </button>
                 </div>
             </div>
 

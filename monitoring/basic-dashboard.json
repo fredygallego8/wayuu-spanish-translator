@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "🚀 Wayuu Translator - Test Dashboard",
+    "tags": ["wayuu", "test"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "🔄 Prometheus Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "{{job}}"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "💾 System Memory Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "node_memory_MemAvailable_bytes",
+            "legendFormat": "Available Memory"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+} 

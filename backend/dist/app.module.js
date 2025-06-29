@@ -10,8 +10,14 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
+const core_1 = require("@nestjs/core");
 const translation_module_1 = require("./translation/translation.module");
 const datasets_module_1 = require("./datasets/datasets.module");
+const youtube_ingestion_module_1 = require("./youtube-ingestion/youtube-ingestion.module");
+const huggingface_module_1 = require("./huggingface.module");
+const metrics_module_1 = require("./metrics.module");
+const auth_module_1 = require("./auth/auth.module");
+const metrics_interceptor_1 = require("./common/interceptors/metrics.interceptor");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,8 +32,19 @@ exports.AppModule = AppModule = __decorate([
                     ttl: 60000,
                     limit: 100,
                 }]),
+            auth_module_1.AuthModule,
             translation_module_1.TranslationModule,
             datasets_module_1.DatasetsModule,
+            youtube_ingestion_module_1.YoutubeIngestionModule,
+            huggingface_module_1.HuggingfaceModule,
+            metrics_module_1.MetricsModule,
+        ],
+        controllers: [],
+        providers: [
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: metrics_interceptor_1.MetricsInterceptor,
+            },
         ],
     })
 ], AppModule);

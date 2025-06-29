@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo: Reproductor de Audio Wayuu</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .audio-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .audio-result {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-headphones text-purple-600"></i>
+                Reproductor de Audio Wayuu
+            </h1>
+            <p class="text-gray-600 text-lg">Explora y reproduce las grabaciones de audio en Wayuunaiki</p>
+            <p class="text-sm text-gray-500 mt-2">810 grabaciones disponibles • 120MB de contenido de audio</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-6xl mx-auto">
+            <!-- Audio Search Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    <i class="fas fa-search text-purple-600 mr-3"></i>
+                    Búsqueda de Audio por Transcripción
+                </h2>
+
+                <!-- Search Interface -->
+                <div class="mb-6">
+                    <div class="flex gap-4 mb-4">
+                        <div class="flex-1">
+                            <label for="audio-search" class="block text-sm font-medium text-gray-700 mb-2">
+                                Buscar palabras en Wayuu
+                            </label>
+                            <input 
+                                type="text" 
+                                id="audio-search" 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Ejemplo: wayuu, Maleiwa, müshia..."
+                            >
+                        </div>
+                        <div class="flex items-end">
+                            <button 
+                                id="search-audio-btn" 
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center"
+                            >
+                                <i class="fas fa-search mr-2"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Search Buttons -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="text-sm text-gray-600 mr-2">Búsquedas rápidas:</span>
+                        <button onclick="quickSearch('wayuu')" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors">wayuu</button>
+                        <button onclick="quickSearch('Maleiwa')" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors">Maleiwa</button>
+                        <button onclick="quickSearch('müshia')" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors">müshia</button>
+                        <button onclick="quickSearch('Jesús')" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors">Jesús</button>
+                        <button onclick="quickSearch('nüchon')" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors">nüchon</button>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="audio-search-results" class="hidden">
+                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3" id="results-header">
+                                <i class="fas fa-list text-purple-600 mr-2"></i>
+                                Resultados de búsqueda
+                            </h3>
+                            <div id="audio-results-list" class="space-y-3">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Random Audio Button -->
+                <div class="text-center">
+                    <button 
+                        id="random-audio-btn" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center mx-auto"
+                    >
+                        <i class="fas fa-random mr-2"></i>
+                        Audio Aleatorio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Audio Player Section -->
+            <div id="audio-player-section" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                        <i class="fas fa-play-circle text-purple-600 mr-3"></i>
+                        Reproductor de Audio
+                    </h2>
+                    
+                    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                        <!-- Audio Info -->
+                        <div class="mb-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-sm text-gray-600">ID:</span>
+                                <span id="current-audio-id" class="font-mono bg-gray-100 px-2 py-1 rounded text-sm">-</span>
+                                <span id="download-status" class="text-xs px-2 py-1 rounded-full">-</span>
+                            </div>
+                            <div class="text-lg font-medium text-gray-800 mb-2" id="current-transcription">
+                                Selecciona un audio para reproducir
+                            </div>
+                        </div>
+
+                        <!-- Audio Controls -->
+                        <div class="mb-4">
+                            <audio 
+                                id="audio-player" 
+                                controls 
+                                class="w-full"
+                                preload="metadata"
+                                style="height: 40px;"
+                            >
+                                Tu navegador no soporta el elemento audio.
+                            </audio>
+                        </div>
+
+                        <!-- Audio Metadata -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-white p-4 rounded-lg">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Duración:</span>
+                                <span id="audio-duration" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tamaño:</span>
+                                <span id="audio-size" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Estado:</span>
+                                <span id="audio-status" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Confianza:</span>
+                                <span id="audio-confidence" class="font-medium">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        class AudioPlayer {
+            constructor() {
+                this.apiUrl = 'http://localhost:3002/api';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // Search functionality
+                document.getElementById('search-audio-btn').addEventListener('click', () => {
+                    this.searchAudio();
+                });
+
+                document.getElementById('audio-search').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.searchAudio();
+                    }
+                });
+
+                // Random audio button
+                document.getElementById('random-audio-btn').addEventListener('click', () => {
+                    this.playRandomAudio();
+                });
+            }
+
+            async searchAudio() {
+                const query = document.getElementById('audio-search').value.trim();
+                
+                if (!query) {
+                    this.showNotification('Por favor ingresa una búsqueda', 'error');
+                    return;
+                }
+
+                try {
+                    const searchBtn = document.getElementById('search-audio-btn');
+                    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Buscando...';
+                    searchBtn.disabled = true;
+
+                    const response = await fetch(`${this.apiUrl}/datasets/audio/search?q=${encodeURIComponent(query)}&limit=10`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.results.length > 0) {
+                        this.displaySearchResults(result.data);
+                    } else {
+                        this.showNoResults(query);
+                    }
+
+                } catch (error) {
+                    console.error('Audio search error:', error);
+                    this.showNotification('Error al buscar audio. Intenta de nuevo.', 'error');
+                } finally {
+                    const searchBtn = document.getElementById('search-audio-btn');
+                    searchBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Buscar';
+                    searchBtn.disabled = false;
+                }
+            }
+
+            displaySearchResults(searchData) {
+                const resultsContainer = document.getElementById('audio-search-results');
+                const resultsList = document.getElementById('audio-results-list');
+                
+                resultsList.innerHTML = searchData.results.map((audio, index) => `
+                    <div class="audio-result bg-white p-4 rounded-lg border border-gray-200 cursor-pointer" 
+                         onclick="audioPlayer.playAudio('${audio.id}', ${JSON.stringify(audio).replace(/"/g, '&quot;')})">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-mono">
+                                        ${audio.id}
+                                    </span>
+                                    <span class="text-xs ${audio.matchType === 'exact' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} px-2 py-1 rounded-full">
+                                        ${audio.matchType === 'exact' ? 'Exacto' : 'Similitud'} ${Math.round(audio.confidence * 100)}%
+                                    </span>
+                                    ${audio.isDownloaded ? 
+                                        '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"><i class="fas fa-download mr-1"></i>Local</span>' : 
+                                        '<span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Remoto</span>'
+                                    }
+                                </div>
+                                <div class="text-gray-800 font-medium mb-2">${audio.transcription}</div>
+                                <div class="text-sm text-gray-600">
+                                    Duración: ${audio.audioDuration ? audio.audioDuration.toFixed(1) + 's' : 'N/A'}
+                                    ${audio.fileSize ? ` • Tamaño: ${this.formatFileSize(audio.fileSize)}` : ''}
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-shrink-0">
+                                <button class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-colors">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                resultsContainer.classList.remove('hidden');
+                
+                // Update results header
+                document.getElementById('results-header').innerHTML = `
+                    <i class="fas fa-list text-purple-600 mr-2"></i>
+                    ${searchData.results.length} resultado(s) para "${searchData.query}"
+                `;
+
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showNoResults(query) {
+                const resultsContainer = document.getElementById('audio-search-results');
+                const resultsList = document.getElementById('audio-results-list');
+                
+                resultsList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-2"></i>
+                        <div>No se encontraron audios para "${query}"</div>
+                        <div class="text-sm mt-1">Intenta con otras palabras en Wayuu</div>
+                    </div>
+                `;
+                
+                resultsContainer.classList.remove('hidden');
+            }
+
+            async playAudio(audioId, audioData) {
+                try {
+                    // Show audio player section
+                    const playerSection = document.getElementById('audio-player-section');
+                    playerSection.classList.remove('hidden');
+
+                    // Update audio info
+                    document.getElementById('current-audio-id').textContent = audioId;
+                    document.getElementById('current-transcription').textContent = audioData.transcription;
+                    document.getElementById('audio-duration').textContent = audioData.audioDuration ? `${audioData.audioDuration.toFixed(1)}s` : 'N/A';
+                    document.getElementById('audio-size').textContent = audioData.fileSize ? this.formatFileSize(audioData.fileSize) : 'N/A';
+                    document.getElementById('audio-status').textContent = audioData.isDownloaded ? 'Local' : 'Remoto';
+                    document.getElementById('audio-confidence').textContent = audioData.confidence ? `${Math.round(audioData.confidence * 100)}%` : 'N/A';
+
+                    // Update download status badge
+                    const statusBadge = document.getElementById('download-status');
+                    if (audioData.isDownloaded) {
+                        statusBadge.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full';
+                        statusBadge.innerHTML = '<i class="fas fa-check mr-1"></i>Descargado';
+                    } else {
+                        statusBadge.className = 'text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full';
+                        statusBadge.innerHTML = '<i class="fas fa-cloud mr-1"></i>Remoto';
+                    }
+
+                    // Load audio
+                    const audioPlayer = document.getElementById('audio-player');
+                    
+                    if (audioData.isDownloaded && audioData.localPath) {
+                        // Use local file
+                        const audioUrl = `${this.apiUrl}/audio/files/${audioData.localPath.split('/').pop()}`;
+                        audioPlayer.src = audioUrl;
+                        this.showNotification('Reproduciendo audio local', 'success');
+                    } else if (audioData.audioUrl) {
+                        // Use remote URL (might be expired)
+                        audioPlayer.src = audioData.audioUrl;
+                        this.showNotification('Reproduciendo audio remoto (puede fallar si el enlace expiró)', 'info');
+                    } else {
+                        throw new Error('No hay URL de audio disponible');
+                    }
+
+                    // Scroll to player
+                    playerSection.scrollIntoView({ behavior: 'smooth' });
+
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    this.showNotification('Error al reproducir el audio', 'error');
+                }
+            }
+
+            async playRandomAudio() {
+                try {
+                    const randomBtn = document.getElementById('random-audio-btn');
+                    randomBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Cargando...';
+                    randomBtn.disabled = true;
+
+                    // Get a random page of audio entries
+                    const randomPage = Math.floor(Math.random() * 40) + 1;
+                    const response = await fetch(`${this.apiUrl}/datasets/audio/entries?page=${randomPage}&limit=1`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.entries.length > 0) {
+                        const randomAudio = result.data.entries[0];
+                        await this.playAudio(randomAudio.id, randomAudio);
+                        this.showNotification('¡Audio aleatorio cargado!', 'success');
+                    } else {
+                        this.showNotification('No se pudo cargar audio aleatorio', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('Error loading random audio:', error);
+                    this.showNotification('Error al cargar audio aleatorio', 'error');
+                } finally {
+                    const randomBtn = document.getElementById('random-audio-btn');
+                    randomBtn.innerHTML = '<i class="fas fa-random mr-2"></i>Audio Aleatorio';
+                    randomBtn.disabled = false;
+                }
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+
+            showNotification(message, type = 'info') {
+                const colors = {
+                    success: 'bg-green-100 text-green-800 border-green-200',
+                    error: 'bg-red-100 text-red-800 border-red-200',
+                    info: 'bg-blue-100 text-blue-800 border-blue-200'
+                };
+
+                const icons = {
+                    success: 'fas fa-check-circle',
+                    error: 'fas fa-exclamation-circle',
+                    info: 'fas fa-info-circle'
+                };
+
+                const notification = document.createElement('div');
+                notification.className = `p-4 rounded-lg border shadow-lg ${colors[type]} max-w-sm transform transition-all duration-300 translate-x-full`;
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="${icons[type]} mr-2"></i>
+                        <span class="text-sm">${message}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-current opacity-70 hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                const container = document.getElementById('notification-container');
+                container.appendChild(notification);
+
+                // Animate in
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.classList.add('translate-x-full');
+                        setTimeout(() => notification.remove(), 300);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Quick search function
+        function quickSearch(term) {
+            document.getElementById('audio-search').value = term;
+            audioPlayer.searchAudio();
+        }
+
+        // Initialize the audio player when the page loads
+        let audioPlayer;
+        document.addEventListener('DOMContentLoaded', () => {
+            audioPlayer = new AudioPlayer();
+        });
+    </script>
+</body>
+</html> 

@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Query, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Query, Param, Body, Delete, HttpException, HttpStatus, UseGuards, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
+import { AudioDurationService } from './audio-duration.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../auth/auth.service';
+import { TranslationDirection } from '../translation/dto/translate.dto';
 
-@ApiTags('Datasets')
+@ApiTags('📚 Datasets')
 @Controller('datasets')
 export class DatasetsController {
-  constructor(private readonly datasetsService: DatasetsService) {}
+  private readonly logger = new Logger(DatasetsController.name);
+
+  constructor(
+    private readonly datasetsService: DatasetsService,
+    private readonly audioDurationService: AudioDurationService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get available datasets information' })
@@ -38,45 +50,38 @@ export class DatasetsController {
   }
 
   @Post('reload')
-  @ApiOperation({ summary: 'Reload dataset from Hugging Face' })
-  @ApiQuery({ 
-    name: 'clearCache', 
-    required: false, 
-    type: Boolean, 
-    description: 'Clear cache before reloading' 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '🔄 Recargar dataset completo (Admin)',
+    description: '🔒 Recarga completamente el dataset, limpiando cache - Solo administradores'
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Dataset reloaded successfully',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Failed to reload dataset',
-  })
-  async reloadDataset(@Query('clearCache') clearCache?: boolean) {
-    const result = await this.datasetsService.reloadDataset(clearCache === true);
-    
-    if (result.success) {
-      const stats = await this.datasetsService.getDictionaryStats();
-      
-      return {
-        success: true,
-        data: {
-          message: result.message,
-          timestamp: new Date().toISOString(),
-          totalEntries: result.totalEntries,
-          loadingMethods: stats.loadingMethods,
-          cacheCleared: clearCache === true
-        },
-        message: 'Dataset reloaded successfully'
-      };
-    } else {
-      return {
-        success: false,
-        error: result.message,
-        message: 'Failed to reload dataset'
-      };
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        clearCache: {
+          type: 'boolean',
+          description: 'Si debe limpiar el cache antes de recargar',
+          default: false
+        }
+      }
     }
+  })
+  @ApiResponse({ status: 200, description: 'Dataset recargado exitosamente' })
+  @ApiResponse({ status: 401, description: 'Token de acceso requerido' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado - Requiere rol admin' })
+  async reloadDataset(@Body() body: { clearCache?: boolean }, @CurrentUser() user: User) {
+    this.logger.log(`🔄 Admin ${user.email} solicitó recarga del dataset (clearCache: ${body.clearCache || false})`);
+    
+    const result = await this.datasetsService.reloadDataset(body.clearCache || false);
+    
+    return {
+      ...result,
+      reloadedBy: user.email,
+      timestamp: new Date().toISOString()
+    };
   }
 
   @Get('cache')
@@ -96,30 +101,27 @@ export class DatasetsController {
   }
 
   @Post('cache/clear')
-  @ApiOperation({ summary: 'Clear dataset cache' })
-  @ApiResponse({
-    status: 200,
-    description: 'Cache cleared successfully',
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '🗑️ Limpiar cache de datasets (Admin)',
+    description: '🔒 Limpia completamente el cache de datasets - Solo administradores'
   })
-  async clearCache() {
-    try {
-      await this.datasetsService.clearCache();
-      
-      return {
-        success: true,
-        data: {
-          message: 'Cache cleared successfully',
-          timestamp: new Date().toISOString()
-        },
-        message: 'Cache cleared successfully'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        message: 'Failed to clear cache'
-      };
-    }
+  @ApiResponse({ status: 200, description: 'Cache limpiado exitosamente' })
+  @ApiResponse({ status: 401, description: 'Token de acceso requerido' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado - Requiere rol admin' })
+  async clearCache(@CurrentUser() user: User) {
+    this.logger.log(`🗑️ Admin ${user.email} solicitó limpieza del cache`);
+    
+    await this.datasetsService.clearCache();
+    
+    return {
+      success: true,
+      message: 'Cache limpiado exitosamente',
+      clearedBy: user.email,
+      timestamp: new Date().toISOString()
+    };
   }
 
   // ==================== AUDIO ENDPOINTS ====================
@@ -307,7 +309,7 @@ export class DatasetsController {
     description: 'Hugging Face sources retrieved successfully',
   })
   async getHuggingFaceSources() {
-    const sources = this.datasetsService.getHuggingFaceSources();
+    const sources = await this.datasetsService.getHuggingFaceSources();
     return {
       success: true,
       data: {
@@ -367,14 +369,14 @@ export class DatasetsController {
   }
 
   @Post('sources/:id/load')
-  @ApiOperation({ summary: 'Load additional dataset from Hugging Face source' })
+  @ApiOperation({ summary: 'Load additional dataset from Hugging Face source (preview)' })
   @ApiResponse({
     status: 200,
-    description: 'Additional dataset loaded successfully',
+    description: 'Additional dataset preview loaded successfully',
   })
   async loadAdditionalDataset(@Param('id') id: string) {
     try {
-      const result = await this.datasetsService.loadAdditionalDataset(id);
+      const result = await this.datasetsService.loadAdditionalDataset(id, false);
       return {
         success: result.success,
         data: result,
@@ -386,5 +388,266 @@ export class DatasetsController {
         message: `Error loading additional dataset: ${error.message}`
       };
     }
+  }
+
+  @Post('sources/:id/load-full')
+  @ApiOperation({ summary: 'Load complete additional dataset for statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Complete additional dataset loaded successfully',
+  })
+  async loadFullAdditionalDataset(@Param('id') id: string) {
+    try {
+      const result = await this.datasetsService.loadAdditionalDataset(id, true);
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error loading complete additional dataset: ${error.message}`
+      };
+    }
+  }
+
+  // ==================== AUDIO DOWNLOAD ENDPOINTS ====================
+
+  @Get('audio/download/stats')
+  @ApiOperation({ summary: 'Get audio download statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audio download statistics retrieved successfully',
+  })
+  async getAudioDownloadStats() {
+    try {
+      const stats = await this.datasetsService.getAudioDownloadStats();
+      return {
+        success: true,
+        data: stats,
+        message: 'Audio download statistics retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error getting audio download stats: ${error.message}`
+      };
+    }
+  }
+
+  @Post('audio/download/batch')
+  @ApiOperation({ summary: 'Download multiple audio files in batch' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audio files downloaded successfully',
+  })
+  async downloadAudioBatch(@Body() body: { audioIds: string[]; batchSize?: number }) {
+    try {
+      const { audioIds, batchSize = 5 } = body;
+      const result = await this.datasetsService.downloadAudioBatch(audioIds, batchSize);
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error downloading audio batch: ${error.message}`
+      };
+    }
+  }
+
+  @Post('audio/download/all')
+  @ApiOperation({ summary: 'Download all available audio files' })
+  @ApiResponse({
+    status: 200,
+    description: 'All audio files download initiated',
+  })
+  async downloadAllAudio(@Body() body: { batchSize?: number } = {}) {
+    try {
+      const { batchSize = 5 } = body;
+      const result = await this.datasetsService.downloadAllAudio(batchSize);
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error downloading all audio files: ${error.message}`
+      };
+    }
+  }
+
+  @Post('audio/download/:audioId')
+  @ApiOperation({ summary: 'Download a specific audio file' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audio file downloaded successfully',
+  })
+  async downloadAudioFile(@Param('audioId') audioId: string) {
+    try {
+      const result = await this.datasetsService.downloadAudioFile(audioId);
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error downloading audio file: ${error.message}`
+      };
+    }
+  }
+
+  @Delete('audio/download/clear')
+  @ApiOperation({ summary: 'Clear all downloaded audio files' })
+  @ApiResponse({
+    status: 200,
+    description: 'Downloaded audio files cleared successfully',
+  })
+  async clearDownloadedAudio() {
+    try {
+      const result = await this.datasetsService.clearDownloadedAudio();
+      return {
+        success: result.success,
+        data: result,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error clearing downloaded audio: ${error.message}`
+      };
+    }
+  }
+
+  // ==================== AUDIO DURATION ENDPOINTS ====================
+
+  @Get('audio/duration/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '⏱️ Estadísticas de duración de audio (Admin)',
+    description: '🔒 Obtiene estadísticas detalladas de duración de audios - Solo administradores'
+  })
+  @ApiResponse({ status: 200, description: 'Estadísticas de duración obtenidas exitosamente' })
+  @ApiResponse({ status: 401, description: 'Token de acceso requerido' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado - Requiere rol admin' })
+  async getAudioDurationStats(@CurrentUser() user: User) {
+    this.logger.log(`⏱️ Admin ${user.email} consultó estadísticas de duración`);
+    
+    const durationCache = this.audioDurationService.getDurationCache();
+    return {
+      success: true,
+      cache: durationCache,
+      summary: {
+        totalAudioFiles: durationCache.totalCalculated,
+        totalDurationSeconds: durationCache.totalDurationSeconds,
+        totalDurationMinutes: Math.round((durationCache.totalDurationSeconds / 60) * 100) / 100,
+        averageDurationSeconds: durationCache.averageDurationSeconds,
+        lastUpdated: durationCache.lastUpdated
+      },
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  @Post('audio/duration/recalculate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '🔄 Recalcular duraciones de audio (Admin)',
+    description: '🔒 Fuerza el recálculo de todas las duraciones de audio - Solo administradores'
+  })
+  @ApiResponse({ status: 200, description: 'Recálculo iniciado exitosamente' })
+  @ApiResponse({ status: 401, description: 'Token de acceso requerido' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado - Requiere rol admin' })
+  async recalculateAudioDurations(@CurrentUser() user: User) {
+    this.logger.log(`🔄 Admin ${user.email} solicitó recálculo de duraciones`);
+    
+    const result = await this.audioDurationService.recalculateAllDurations();
+    
+    return {
+      ...result,
+      triggeredBy: user.email,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  @Post('audio/duration/update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '⚡ Actualizar duraciones del dataset actual (Admin)',
+    description: '🔒 Actualiza las duraciones para el dataset actualmente cargado - Solo administradores'
+  })
+  @ApiResponse({ status: 200, description: 'Duraciones actualizadas exitosamente' })
+  @ApiResponse({ status: 401, description: 'Token de acceso requerido' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado - Requiere rol admin' })
+  async updateCurrentDatasetDurations(@CurrentUser() user: User) {
+    this.logger.log(`⚡ Admin ${user.email} solicitó actualización de duraciones del dataset actual`);
+    
+    // Obtener el dataset actual y actualizar duraciones
+    const audioDataset = this.datasetsService['wayuuAudioDataset'] || [];
+    await this.audioDurationService.updateAudioDurationCache(audioDataset);
+    
+    const durationCache = this.audioDurationService.getDurationCache();
+    
+    return {
+      success: true,
+      updated: durationCache.totalCalculated,
+      totalDuration: durationCache.totalDurationSeconds,
+      averageDuration: durationCache.averageDurationSeconds,
+      message: `Audio durations updated for ${durationCache.totalCalculated} entries`,
+      updatedBy: user.email,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  // ✅ Endpoint público - búsqueda con auto-load
+  @Get('dictionary/search')
+  @ApiOperation({ 
+    summary: '🔍 Buscar en diccionario wayuu-español',
+    description: 'Busca términos en el diccionario wayuu-español (auto-carga si es necesario)'
+  })
+  @ApiQuery({ name: 'q', description: 'Término a buscar', example: 'wayuu' })
+  @ApiQuery({ name: 'direction', description: 'Dirección de búsqueda', enum: TranslationDirection, required: false })
+  @ApiResponse({ status: 200, description: 'Búsqueda completada exitosamente' })
+  async searchDictionary(
+    @Query('q') query: string,
+    @Query('direction') direction: TranslationDirection = TranslationDirection.WAYUU_TO_SPANISH
+  ) {
+    if (!query) {
+      throw new HttpException('Query parameter "q" is required', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Intentar búsqueda exacta primero
+    const exactMatch = await this.datasetsService.findExactMatch(query, direction);
+    
+    if (exactMatch) {
+      return {
+        success: true,
+        type: 'exact',
+        result: exactMatch,
+        query: query
+      };
+    }
+    
+    // Si no hay coincidencia exacta, usar búsqueda difusa
+    const fuzzyMatch = await this.datasetsService.findFuzzyMatch(query, direction);
+    
+    return {
+      success: true,
+      type: fuzzyMatch ? 'fuzzy' : 'none',
+      result: fuzzyMatch,
+      query: query
+    };
   }
 }

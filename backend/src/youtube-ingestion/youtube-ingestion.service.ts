@@ -3,7 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AsrStrategy } from './asr-strategies/asr.strategy';
 import { TranslationService } from '../translation/translation.service';
-import youtubedl from 'youtube-dl-exec';
+
+// Use require for youtube-dl-exec to avoid TypeScript issues
+const youtubedl = require('youtube-dl-exec');
 
 interface IngestionRecord {
   videoId: string;
