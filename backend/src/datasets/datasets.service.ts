@@ -1632,4 +1632,137 @@ export class DatasetsService implements OnModuleInit {
       };
     }
   }
+
+  /**
+   * Updates dataset metrics for monitoring systems (like Prometheus)
+   * This method can be called to refresh metrics without returning data
+   */
+  async updateDatasetMetrics(): Promise<void> {
+    try {
+      this.logger.log('🔄 Updating dataset metrics...');
+      
+      // Ensure datasets are loaded
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
+      }
+      if (!this.isAudioLoaded) {
+        await this.loadWayuuAudioDataset();
+      }
+
+      // Log current state for metrics collection
+      this.logger.log(`📊 Current metrics: Dictionary=${this.totalEntries}, Audio=${this.totalAudioEntries}`);
+      
+    } catch (error) {
+      this.logger.error(`❌ Error updating dataset metrics:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get statistics for a specific dataset source
+   * Used by metrics system to calculate growth metrics
+   */
+  async getDatasetStats(sourceName: string): Promise<{
+    total_entries: number;
+    wayuu_words: number;
+    spanish_words: number;
+    audio_minutes: number;
+    phrases: number;
+    transcribed: number;
+    dictionary_entries: number;
+    audio_files: number;
+  }> {
+    try {
+      // Find the source by name
+      const source = this.huggingFaceSources.find(s => s.name === sourceName);
+      if (!source || !source.isActive) {
+        return {
+          total_entries: 0,
+          wayuu_words: 0,
+          spanish_words: 0,
+          audio_minutes: 0,
+          phrases: 0,
+          transcribed: 0,
+          dictionary_entries: 0,
+          audio_files: 0,
+        };
+      }
+
+      // Ensure data is loaded
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
+      }
+      if (!this.isAudioLoaded) {
+        await this.loadWayuuAudioDataset();
+      }
+
+      let stats = {
+        total_entries: 0,
+        wayuu_words: 0,
+        spanish_words: 0,
+        audio_minutes: 0,
+        phrases: 0,
+        transcribed: 0,
+        dictionary_entries: 0,
+        audio_files: 0,
+      };
+
+      if (source.type === 'dictionary' || source.type === 'mixed') {
+        // Calculate dictionary statistics
+        const wayuuWords = new Set<string>();
+        const spanishWords = new Set<string>();
+        
+        this.wayuuDictionary.forEach(entry => {
+          // Split text into words and add to sets
+          const wayuuWordList = entry.guc.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+          const spanishWordList = entry.spa.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+          
+          wayuuWordList.forEach(word => wayuuWords.add(word));
+          spanishWordList.forEach(word => spanishWords.add(word));
+        });
+
+        stats.dictionary_entries = this.totalEntries;
+        stats.phrases += this.totalEntries;
+        stats.wayuu_words = wayuuWords.size;
+        stats.spanish_words = spanishWords.size;
+        stats.total_entries += this.totalEntries;
+      }
+
+      if (source.type === 'audio' || source.type === 'mixed') {
+        // Calculate audio statistics
+        const totalDurationSeconds = this.wayuuAudioDataset.reduce((sum, entry) => sum + (entry.audioDuration || 0), 0);
+        const transcribedCount = this.wayuuAudioDataset.filter(entry => entry.transcription && entry.transcription.trim().length > 0).length;
+        
+        // Count unique words in transcriptions
+        const transcriptionWords = new Set<string>();
+        this.wayuuAudioDataset.forEach(entry => {
+          if (entry.transcription) {
+            const words = entry.transcription.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+            words.forEach(word => transcriptionWords.add(word));
+          }
+        });
+
+        stats.audio_files = this.totalAudioEntries;
+        stats.audio_minutes = totalDurationSeconds / 60;
+        stats.transcribed = transcribedCount;
+        stats.phrases += transcribedCount;
+        stats.wayuu_words += transcriptionWords.size;
+        stats.total_entries += this.totalAudioEntries;
+      }
+
+      return stats;
+    } catch (error) {
+      this.logger.error(`❌ Error getting dataset stats for ${sourceName}:`, error);
+      return {
+        total_entries: 0,
+        wayuu_words: 0,
+        spanish_words: 0,
+        audio_minutes: 0,
+        phrases: 0,
+        transcribed: 0,
+        dictionary_entries: 0,
+        audio_files: 0,
+      };
+    }
+  }
 }
