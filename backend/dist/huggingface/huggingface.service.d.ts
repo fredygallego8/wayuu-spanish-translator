@@ -1,11 +1,13 @@
 import { OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 export declare class HuggingfaceService implements OnModuleInit {
+    private readonly configService;
     private readonly logger;
     private readonly sourcesDir;
     private readonly repoId;
     private readonly token;
     private isConfigured;
-    constructor();
+    constructor(configService: ConfigService);
     onModuleInit(): Promise<void>;
     private ensureDirectoryExists;
     fetchAndCacheSources(): Promise<{

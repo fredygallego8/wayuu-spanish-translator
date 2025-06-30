@@ -237,11 +237,10 @@ let DatasetsController = DatasetsController_1 = class DatasetsController {
     }
     async getAudioDownloadStats() {
         try {
-            const stats = await this.datasetsService.getAudioDownloadStats();
             return {
                 success: true,
-                data: stats,
-                message: 'Audio download statistics retrieved successfully'
+                data: { message: 'Audio download stats not yet implemented' },
+                message: 'Audio download statistics not yet implemented'
             };
         }
         catch (error) {
@@ -254,7 +253,7 @@ let DatasetsController = DatasetsController_1 = class DatasetsController {
     async downloadAudioBatch(body) {
         try {
             const { audioIds, batchSize = 5 } = body;
-            const result = await this.datasetsService.downloadAudioBatch(audioIds, batchSize);
+            const result = { success: false, message: 'Download audio batch not yet implemented' };
             return {
                 success: result.success,
                 data: result,
@@ -271,7 +270,7 @@ let DatasetsController = DatasetsController_1 = class DatasetsController {
     async downloadAllAudio(body = {}) {
         try {
             const { batchSize = 5 } = body;
-            const result = await this.datasetsService.downloadAllAudio(batchSize);
+            const result = { success: false, message: 'Download all audio not yet implemented' };
             return {
                 success: result.success,
                 data: result,
@@ -287,7 +286,7 @@ let DatasetsController = DatasetsController_1 = class DatasetsController {
     }
     async downloadAudioFile(audioId) {
         try {
-            const result = await this.datasetsService.downloadAudioFile(audioId);
+            const result = { success: false, message: 'Download audio file not yet implemented' };
             return {
                 success: result.success,
                 data: result,
@@ -303,7 +302,7 @@ let DatasetsController = DatasetsController_1 = class DatasetsController {
     }
     async clearDownloadedAudio() {
         try {
-            const result = await this.datasetsService.clearDownloadedAudio();
+            const result = { success: false, message: 'Clear downloaded audio not yet implemented' };
             return {
                 success: result.success,
                 data: result,

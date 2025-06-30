@@ -440,6 +440,103 @@
                     </div>
                 </div>
 
+                <!-- YouTube Sources Management -->
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-8">
+                    <h3 class="text-xl font-semibold text-red-800 mb-6">
+                        <i class="fab fa-youtube text-red-600 mr-3"></i>
+                        Fuentes de YouTube / Data Sources
+                    </h3>
+                    
+                    <!-- YouTube Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <!-- Total Videos -->
+                        <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-red-700" id="youtube-total-videos">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-red-600 mt-1">Videos Total</div>
+                                    <div class="text-xs text-red-500">Total Videos</div>
+                                </div>
+                                <div class="text-3xl text-red-300">
+                                    <i class="fab fa-youtube"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Completed Videos -->
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-green-700" id="youtube-completed-videos">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-green-600 mt-1">Completados</div>
+                                    <div class="text-xs text-green-500">Completed</div>
+                                </div>
+                                <div class="text-3xl text-green-300">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ASR Provider -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-lg font-bold text-blue-700" id="youtube-asr-provider">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-blue-600 mt-1">Proveedor ASR</div>
+                                    <div class="text-xs text-blue-500">ASR Provider</div>
+                                </div>
+                                <div class="text-3xl text-blue-300">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Status -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-lg font-bold text-purple-700" id="youtube-status">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-purple-600 mt-1">Estado Sistema</div>
+                                    <div class="text-xs text-purple-500">System Status</div>
+                                </div>
+                                <div class="text-3xl text-purple-300">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- YouTube Videos Table -->
+                    <div id="youtube-videos-container" class="space-y-4">
+                        <div class="flex items-center justify-center py-8">
+                            <i class="fas fa-spinner fa-spin text-gray-400 mr-2"></i>
+                            <span class="text-gray-500">Cargando videos de YouTube...</span>
+                        </div>
+                    </div>
+
+                    <!-- YouTube Tags Section -->
+                    <div class="mt-6">
+                        <h4 class="text-lg font-semibold text-red-700 mb-4">
+                            <i class="fas fa-tags text-red-500 mr-2"></i>
+                            Tags de Videos Procesados
+                        </h4>
+                        <div id="youtube-tags-container" class="flex flex-wrap gap-2">
+                            <div class="flex items-center justify-center py-2">
+                                <i class="fas fa-spinner fa-spin text-gray-400 mr-2"></i>
+                                <span class="text-gray-500 text-sm">Cargando tags...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Additional Info Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <!-- Dataset Source Info -->
@@ -547,6 +644,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20250629-2110"></script>
 </body>
 </html>

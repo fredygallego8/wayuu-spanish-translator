@@ -5,7 +5,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TranslationModule } from './translation/translation.module';
 import { DatasetsModule } from './datasets/datasets.module';
 import { YoutubeIngestionModule } from './youtube-ingestion/youtube-ingestion.module';
+import { HuggingfaceModule } from './huggingface.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { AuthModule } from './auth/auth.module';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 @Module({
   imports: [
@@ -21,7 +24,15 @@ import { MetricsModule } from './metrics/metrics.module';
     TranslationModule,
     DatasetsModule,
     YoutubeIngestionModule,
+    HuggingfaceModule,
     MetricsModule,
+  ],
+  controllers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
+    },
   ],
 })
 export class AppModule {}

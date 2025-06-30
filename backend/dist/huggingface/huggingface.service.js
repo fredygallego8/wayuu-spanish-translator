@@ -45,23 +45,22 @@ var HuggingfaceService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HuggingfaceService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const hub_1 = require("@huggingface/hub");
 const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
-const dotenv = __importStar(require("dotenv"));
-dotenv.config();
 function hfHubUrl(options) {
     return `https://huggingface.co/${options.repoType}s/${options.repo}/resolve/main/${options.path}`;
 }
 let HuggingfaceService = HuggingfaceService_1 = class HuggingfaceService {
-    constructor() {
+    constructor(configService) {
+        this.configService = configService;
         this.logger = new common_1.Logger(HuggingfaceService_1.name);
         this.sourcesDir = path.join(__dirname, '..', '..', 'data', 'sources');
         this.isConfigured = false;
         try {
-            dotenv.config();
-            this.repoId = process.env.HUGGING_FACE_REPO_ID;
-            this.token = process.env.HUGGING_FACE_TOKEN;
+            this.repoId = this.configService.get('HUGGING_FACE_REPO_ID');
+            this.token = this.configService.get('HUGGING_FACE_TOKEN');
             if (!this.repoId || this.repoId === 'dummy-repo') {
                 this.logger.warn('⚠️ Hugging Face Repo ID not configured. Service will run in offline mode.');
                 this.isConfigured = false;
@@ -231,6 +230,6 @@ let HuggingfaceService = HuggingfaceService_1 = class HuggingfaceService {
 exports.HuggingfaceService = HuggingfaceService;
 exports.HuggingfaceService = HuggingfaceService = HuggingfaceService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [config_1.ConfigService])
 ], HuggingfaceService);
 //# sourceMappingURL=huggingface.service.js.map

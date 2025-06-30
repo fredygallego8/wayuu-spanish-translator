@@ -30,6 +30,14 @@ export declare class MetricsService implements OnModuleInit {
     readonly audioFilesDownloadProgress: Gauge<"dataset_name">;
     readonly huggingfaceSourcesTotal: Gauge<"source_type">;
     readonly huggingfaceSourcesActive: Gauge<"source_type">;
+    readonly totalWayuuWords: Gauge<string>;
+    readonly totalSpanishWords: Gauge<string>;
+    readonly totalAudioMinutes: Gauge<string>;
+    readonly totalPhrases: Gauge<string>;
+    readonly totalTranscribed: Gauge<string>;
+    readonly totalDictionaryEntries: Gauge<string>;
+    readonly totalAudioFiles: Gauge<string>;
+    readonly growthLastUpdateTimestamp: Gauge<string>;
     onModuleInit(): void;
     getMetrics(): Promise<string>;
     incrementTranslation(direction: string, sourceLang: string, targetLang: string, status: string): void;
@@ -56,4 +64,13 @@ export declare class MetricsService implements OnModuleInit {
     updateAudioDownloadProgress(datasetName: string, progressPercent: number): void;
     updateHuggingfaceSourcesTotal(sourceType: string, total: number): void;
     updateHuggingfaceSourcesActive(sourceType: string, active: number): void;
+    updateTotalWayuuWords(totalWords: number): void;
+    updateTotalSpanishWords(totalWords: number): void;
+    updateTotalAudioMinutes(totalMinutes: number): void;
+    updateTotalPhrases(totalPhrases: number): void;
+    updateTotalTranscribed(totalTranscribed: number): void;
+    updateTotalDictionaryEntries(totalEntries: number): void;
+    updateTotalAudioFiles(totalFiles: number): void;
+    updateGrowthLastUpdateTimestamp(timestamp: number): void;
+    updateGrowthMetric(metricName: string, value: number): void;
 }

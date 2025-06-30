@@ -77,7 +77,7 @@ export declare class DatasetsService implements OnModuleInit {
     private readonly metadataFile;
     private readonly audioCacheFile;
     private readonly audioMetadataFile;
-    private readonly audioDownloadDir;
+    private readonly audioDurationCacheFile;
     private readonly cacheMaxAge;
     constructor(configService: ConfigService, audioDurationService: AudioDurationService, metricsService: MetricsService);
     onModuleInit(): Promise<void>;
@@ -95,6 +95,8 @@ export declare class DatasetsService implements OnModuleInit {
     private checkForAudioUpdatesInBackground;
     private loadSampleAudioData;
     private generateAudioChecksum;
+    private loadAndApplyAudioDurations;
+    private updateAudioCacheMetadata;
     private fileExists;
     private ensureCacheDirectory;
     private generateChecksum;
@@ -155,45 +157,15 @@ export declare class DatasetsService implements OnModuleInit {
         message: string;
         data?: any;
     }>;
-    private refreshAudioUrls;
-    downloadAudioFile(audioId: string, retryWithRefresh?: boolean): Promise<{
-        success: boolean;
-        message: string;
-        localPath?: string;
-    }>;
-    downloadAudioBatch(audioIds: string[], batchSize?: number): Promise<{
-        success: boolean;
-        message: string;
-        results: Array<{
-            id: string;
-            success: boolean;
-            localPath?: string;
-            error?: string;
-        }>;
-    }>;
-    downloadAllAudio(batchSize?: number): Promise<{
-        success: boolean;
-        message: string;
-        stats: any;
-    }>;
-    getAudioDownloadStats(): Promise<{
-        totalFiles: number;
-        downloadedFiles: number;
-        pendingFiles: number;
-        totalSizeDownloaded: number;
-        downloadProgress: number;
-    }>;
-    clearDownloadedAudio(): Promise<{
-        success: boolean;
-        message: string;
-        deletedFiles: number;
-    }>;
-    private ensureAudioDirectory;
-    private estimateAudioDuration;
-    private generateRealisticAudioDurations;
     updateDatasetMetrics(): Promise<void>;
-    private updateDictionaryMetrics;
-    private updateAudioMetrics;
-    private updateCacheMetrics;
-    private parseCacheSize;
+    getDatasetStats(sourceName: string): Promise<{
+        total_entries: number;
+        wayuu_words: number;
+        spanish_words: number;
+        audio_minutes: number;
+        phrases: number;
+        transcribed: number;
+        dictionary_entries: number;
+        audio_files: number;
+    }>;
 }

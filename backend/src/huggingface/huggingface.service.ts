@@ -1,10 +1,8 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { listFiles } from '@huggingface/hub';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 function hfHubUrl(options: { repo: string; path: string; repoType: 'dataset' | 'model' | 'space' }): string {
     return `https://huggingface.co/${options.repoType}s/${options.repo}/resolve/main/${options.path}`;
@@ -18,11 +16,10 @@ export class HuggingfaceService implements OnModuleInit {
   private readonly token: string;
   private isConfigured: boolean = false;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     try {
-      dotenv.config(); // Asegurarse de que se cargue
-      this.repoId = process.env.HUGGING_FACE_REPO_ID;
-      this.token = process.env.HUGGING_FACE_TOKEN;
+      this.repoId = this.configService.get<string>('HUGGING_FACE_REPO_ID');
+      this.token = this.configService.get<string>('HUGGING_FACE_TOKEN');
       
       if (!this.repoId || this.repoId === 'dummy-repo') {
         this.logger.warn('⚠️ Hugging Face Repo ID not configured. Service will run in offline mode.');

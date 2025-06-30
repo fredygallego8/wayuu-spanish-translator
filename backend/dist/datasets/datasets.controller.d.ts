@@ -160,11 +160,7 @@ export declare class DatasetsController {
     getAudioDownloadStats(): Promise<{
         success: boolean;
         data: {
-            totalFiles: number;
-            downloadedFiles: number;
-            pendingFiles: number;
-            totalSizeDownloaded: number;
-            downloadProgress: number;
+            message: string;
         };
         message: string;
     } | {
@@ -180,12 +176,6 @@ export declare class DatasetsController {
         data: {
             success: boolean;
             message: string;
-            results: Array<{
-                id: string;
-                success: boolean;
-                localPath?: string;
-                error?: string;
-            }>;
         };
         message: string;
     } | {
@@ -200,7 +190,6 @@ export declare class DatasetsController {
         data: {
             success: boolean;
             message: string;
-            stats: any;
         };
         message: string;
     } | {
@@ -213,7 +202,6 @@ export declare class DatasetsController {
         data: {
             success: boolean;
             message: string;
-            localPath?: string;
         };
         message: string;
     } | {
@@ -226,7 +214,6 @@ export declare class DatasetsController {
         data: {
             success: boolean;
             message: string;
-            deletedFiles: number;
         };
         message: string;
     } | {

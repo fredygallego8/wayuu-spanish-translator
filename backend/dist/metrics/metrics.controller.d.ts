@@ -12,4 +12,6 @@ export declare class MetricsController {
         uptime: number;
     };
     updateDatasetMetrics(): Promise<any>;
+    updateGrowthMetrics(): Promise<any>;
+    getGrowthDashboard(): Promise<any>;
 }

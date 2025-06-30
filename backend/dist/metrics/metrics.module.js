@@ -6,21 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TranslationModule = void 0;
+exports.MetricsModule = void 0;
 const common_1 = require("@nestjs/common");
-const translation_controller_1 = require("./translation.controller");
-const translation_service_1 = require("./translation.service");
+const metrics_controller_1 = require("./metrics.controller");
+const metrics_service_1 = require("./metrics.service");
 const datasets_module_1 = require("../datasets/datasets.module");
-const metrics_module_1 = require("../metrics/metrics.module");
-let TranslationModule = class TranslationModule {
+let MetricsModule = class MetricsModule {
 };
-exports.TranslationModule = TranslationModule;
-exports.TranslationModule = TranslationModule = __decorate([
+exports.MetricsModule = MetricsModule;
+exports.MetricsModule = MetricsModule = __decorate([
     (0, common_1.Module)({
-        imports: [datasets_module_1.DatasetsModule, metrics_module_1.MetricsModule],
-        controllers: [translation_controller_1.TranslationController],
-        providers: [translation_service_1.TranslationService],
-        exports: [translation_service_1.TranslationService],
+        imports: [(0, common_1.forwardRef)(() => datasets_module_1.DatasetsModule)],
+        controllers: [metrics_controller_1.MetricsController],
+        providers: [metrics_service_1.MetricsService],
+        exports: [metrics_service_1.MetricsService],
     })
-], TranslationModule);
-//# sourceMappingURL=translation.module.js.map
+], MetricsModule);
+//# sourceMappingURL=metrics.module.js.map

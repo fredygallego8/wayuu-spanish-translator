@@ -1,0 +1,10 @@
+Stack iniciado: Sun Jun 29 20:41:59 -05 2025
+Backend PID: 18485
+URLs:
+- Grafana: http://localhost:3001 (admin/wayuu2024)
+- Prometheus: http://localhost:9090
+- Backend: http://localhost:3002/api/health
+
+Para detener:
+- Backend: kill 18485
+- Monitoring: cd monitoring && docker-compose down

@@ -300,6 +300,7 @@ class WayuuTranslator {
         this.bindEvents();
         this.loadDatasetInfo();
         this.loadCompleteStats();
+        this.loadYouTubeStats();
         this.initAudioPlayer();
     }
 
@@ -1161,6 +1162,269 @@ class WayuuTranslator {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
+
+    // ===== YOUTUBE FUNCTIONS =====
+    async loadYouTubeStats() {
+        try {
+            console.log('🔄 Loading YouTube stats from:', `${this.apiUrl}/youtube-ingestion/status`);
+            
+            const response = await fetch(`${this.apiUrl}/youtube-ingestion/status`);
+            console.log('📡 YouTube API response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to load YouTube stats: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('📊 YouTube API data received:', result);
+            
+            if (result.success && result.data) {
+                console.log('✅ Rendering YouTube stats...');
+                this.renderYouTubeStats(result.data);
+                this.renderYouTubeVideos(result.data.videos);
+                this.renderYouTubeTags(result.data);
+                console.log('✅ YouTube stats rendered successfully');
+            } else {
+                console.warn('⚠️ YouTube API returned unsuccessful result:', result);
+                this.showYouTubeStatsError('No se pudo cargar los datos de YouTube');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading YouTube stats:', error);
+            this.showYouTubeStatsError(`Error de conexión: ${error.message}`);
+        }
+    }
+
+    renderYouTubeStats(data) {
+        // Update stat cards
+        document.getElementById('youtube-total-videos').textContent = data.total || 0;
+        document.getElementById('youtube-completed-videos').textContent = data.byStatus?.completed || 0;
+        
+        // ASR Provider
+        const asrProvider = data.asrConfig?.provider || 'N/A';
+        const providerDisplayName = {
+            'stub': 'Development',
+            'openai': 'OpenAI',
+            'whisper': 'Whisper Local',
+            'openai-api': 'OpenAI API'
+        }[asrProvider] || asrProvider;
+        
+        document.getElementById('youtube-asr-provider').textContent = providerDisplayName;
+        
+        // System Status
+        const isAvailable = data.asrConfig?.status?.available;
+        const statusElement = document.getElementById('youtube-status');
+        
+        if (isAvailable) {
+            statusElement.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i>Operativo';
+        } else {
+            statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>Limitado';
+        }
+    }
+
+    renderYouTubeVideos(videos) {
+        const container = document.getElementById('youtube-videos-container');
+        
+        if (!videos || videos.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fab fa-youtube text-4xl mb-2"></i>
+                    <div>No hay videos de YouTube procesados</div>
+                    <div class="text-sm mt-2">Usa el endpoint /api/youtube-ingestion/ingest para agregar videos</div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = videos.map(video => {
+            const statusColors = {
+                'completed': 'bg-green-100 text-green-800',
+                'pending_translation': 'bg-yellow-100 text-yellow-800',
+                'pending_transcription': 'bg-blue-100 text-blue-800',
+                'downloading': 'bg-purple-100 text-purple-800',
+                'failed': 'bg-red-100 text-red-800'
+            };
+            
+            const statusIcons = {
+                'completed': 'fas fa-check-circle',
+                'pending_translation': 'fas fa-language',
+                'pending_transcription': 'fas fa-microphone',
+                'downloading': 'fas fa-download',
+                'failed': 'fas fa-exclamation-triangle'
+            };
+            
+            const statusColor = statusColors[video.status] || 'bg-gray-100 text-gray-800';
+            const statusIcon = statusIcons[video.status] || 'fas fa-question-circle';
+            
+            return `
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <div class="text-lg font-semibold text-gray-800 mr-3">
+                                    <i class="fab fa-youtube text-red-500 mr-2"></i>
+                                    ${video.title}
+                                </div>
+                                <span class="text-xs ${statusColor} px-2 py-1 rounded-full">
+                                    <i class="${statusIcon} mr-1"></i>
+                                    ${video.status.replace('_', ' ').toUpperCase()}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 mb-1">
+                                <strong>ID:</strong> ${video.videoId}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <strong>Creado:</strong> ${new Date(video.createdAt).toLocaleString('es-ES')} |
+                                <strong>Actualizado:</strong> ${new Date(video.updatedAt).toLocaleString('es-ES')}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4">
+                            <a href="https://youtube.com/watch?v=${video.videoId}" 
+                               target="_blank" 
+                               class="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors">
+                                <i class="fab fa-youtube mr-1"></i>Ver Video
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    renderYouTubeTags(data) {
+        const container = document.getElementById('youtube-tags-container');
+        const tags = this.generateYouTubeTags(data);
+        
+        if (tags.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-gray-500">
+                    <span class="text-sm">No hay tags disponibles</span>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = tags.map(tag => `
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${tag.colorClass}">
+                <i class="${tag.icon} mr-1"></i>
+                ${tag.label}: ${tag.value}
+            </span>
+        `).join('');
+    }
+
+    generateYouTubeTags(data) {
+        const tags = [];
+        
+        // Status tags
+        if (data.byStatus) {
+            Object.entries(data.byStatus).forEach(([status, count]) => {
+                const statusConfig = {
+                    'completed': { 
+                        icon: 'fas fa-check-circle', 
+                        colorClass: 'bg-green-100 text-green-800',
+                        label: 'Completados'
+                    },
+                    'pending_translation': { 
+                        icon: 'fas fa-language', 
+                        colorClass: 'bg-yellow-100 text-yellow-800',
+                        label: 'Pendiente Traducción'
+                    },
+                    'pending_transcription': { 
+                        icon: 'fas fa-microphone', 
+                        colorClass: 'bg-blue-100 text-blue-800',
+                        label: 'Pendiente Transcripción'
+                    },
+                    'downloading': { 
+                        icon: 'fas fa-download', 
+                        colorClass: 'bg-purple-100 text-purple-800',
+                        label: 'Descargando'
+                    },
+                    'failed': { 
+                        icon: 'fas fa-exclamation-triangle', 
+                        colorClass: 'bg-red-100 text-red-800',
+                        label: 'Fallidos'
+                    }
+                };
+                
+                const config = statusConfig[status];
+                if (config) {
+                    tags.push({
+                        ...config,
+                        value: count
+                    });
+                }
+            });
+        }
+        
+        // ASR Provider tag
+        if (data.asrConfig?.provider) {
+            const provider = data.asrConfig.provider;
+            const providerNames = {
+                'stub': 'Desarrollo',
+                'openai': 'OpenAI',
+                'whisper': 'Whisper Local',
+                'openai-api': 'OpenAI API'
+            };
+            
+            tags.push({
+                icon: 'fas fa-microphone',
+                colorClass: 'bg-indigo-100 text-indigo-800',
+                label: 'ASR',
+                value: providerNames[provider] || provider
+            });
+        }
+        
+        // Total videos tag
+        if (data.total) {
+            tags.push({
+                icon: 'fab fa-youtube',
+                colorClass: 'bg-red-100 text-red-800',
+                label: 'Total Videos',
+                value: data.total
+            });
+        }
+        
+        // System status tag
+        if (data.asrConfig?.status) {
+            const isAvailable = data.asrConfig.status.available;
+            tags.push({
+                icon: isAvailable ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle',
+                colorClass: isAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800',
+                label: 'Sistema',
+                value: isAvailable ? 'Operativo' : 'Limitado'
+            });
+        }
+        
+        return tags;
+    }
+
+    showYouTubeStatsError(message = 'Error al cargar estadísticas de YouTube') {
+        // Update stat cards to show error
+        document.getElementById('youtube-total-videos').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i></span>';
+        document.getElementById('youtube-completed-videos').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i></span>';
+        document.getElementById('youtube-asr-provider').innerHTML = '<span class="text-red-600">Error</span>';
+        document.getElementById('youtube-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
+        
+        // Show error in containers
+        document.getElementById('youtube-videos-container').innerHTML = `
+            <div class="text-center py-8 text-red-500">
+                <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                <div class="text-lg font-medium mb-2">Error de Conexión</div>
+                <div class="text-sm">${message}</div>
+                <button onclick="translator.loadYouTubeStats()" 
+                        class="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                    <i class="fas fa-sync-alt mr-1"></i>Reintentar
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('youtube-tags-container').innerHTML = `
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                Error al cargar tags
+            </span>
+        `;
+    }
 }
 
 // Initialize the application when DOM is loaded
@@ -1198,5 +1462,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the main application
     window.wayuuTranslator = new WayuuTranslator();
+    window.translator = window.wayuuTranslator; // Add alias for compatibility
     console.log('✅ Aplicación iniciada con sistema de autenticación');
 });

@@ -515,7 +515,7 @@ export class DatasetsService implements OnModuleInit {
             const audioEntry: AudioEntry = {
               id: `audio_${entries.length.toString().padStart(3, '0')}`,
               transcription: transcription.trim(),
-              audioDuration: this.estimateAudioDuration(transcription.trim()), // Use estimated duration
+              audioDuration: 0, // Will be updated later with actual durations
               audioUrl: audioUrl,
               fileName: `audio_${entries.length.toString().padStart(3, '0')}.wav`,
               source: 'orkidea/wayuu_CO_test',
@@ -560,13 +560,9 @@ export class DatasetsService implements OnModuleInit {
 
     this.logger.log(`🎯 Audio dataset loading completed: ${entries.length} entries loaded from ${totalRows} total`);
     
-    // Aplicar duraciones realistas a todas las entradas
-    const entriesWithDurations = this.generateRealisticAudioDurations(entries);
-    const totalDuration = entriesWithDurations.reduce((sum, entry) => sum + entry.audioDuration, 0);
+    this.logger.log(`🎵 Audio entries loaded: ${entries.length} entries (durations will be calculated later)`);
     
-    this.logger.log(`🎵 Applied realistic durations: ${totalDuration.toFixed(1)}s total (avg: ${(totalDuration / entriesWithDurations.length).toFixed(1)}s per entry)`);
-    
-    return entriesWithDurations;
+    return entries;
   }
 
   // ==================== CACHE METHODS ====================
