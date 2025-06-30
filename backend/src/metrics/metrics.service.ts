@@ -191,6 +191,47 @@ export class MetricsService implements OnModuleInit {
     labelNames: ['source_type'],
   });
 
+  // Métricas de Crecimiento para Dashboard
+  public readonly totalWayuuWords = new Gauge({
+    name: 'wayuu_total_words_wayuu',
+    help: 'Total unique Wayuu words across all active sources',
+  });
+
+  public readonly totalSpanishWords = new Gauge({
+    name: 'wayuu_total_words_spanish',
+    help: 'Total unique Spanish words across all active sources',
+  });
+
+  public readonly totalAudioMinutes = new Gauge({
+    name: 'wayuu_total_audio_minutes',
+    help: 'Total audio duration in minutes across all active sources',
+  });
+
+  public readonly totalPhrases = new Gauge({
+    name: 'wayuu_total_phrases',
+    help: 'Total phrases/sentences across all active sources',
+  });
+
+  public readonly totalTranscribed = new Gauge({
+    name: 'wayuu_total_transcribed',
+    help: 'Total transcribed audio files across all active sources',
+  });
+
+  public readonly totalDictionaryEntries = new Gauge({
+    name: 'wayuu_total_dictionary_entries',
+    help: 'Total dictionary entries across all active sources',
+  });
+
+  public readonly totalAudioFiles = new Gauge({
+    name: 'wayuu_total_audio_files',
+    help: 'Total audio files across all active sources',
+  });
+
+  public readonly growthLastUpdateTimestamp = new Gauge({
+    name: 'wayuu_growth_last_update_timestamp',
+    help: 'Timestamp of last growth metrics update',
+  });
+
   onModuleInit() {
     // Registrar métricas por defecto del sistema (CPU, memoria, etc.)
     collectDefaultMetrics({ register });
@@ -230,6 +271,16 @@ export class MetricsService implements OnModuleInit {
     register.registerMetric(this.audioFilesDownloadProgress);
     register.registerMetric(this.huggingfaceSourcesTotal);
     register.registerMetric(this.huggingfaceSourcesActive);
+
+    // Registrar métricas de crecimiento
+    register.registerMetric(this.totalWayuuWords);
+    register.registerMetric(this.totalSpanishWords);
+    register.registerMetric(this.totalAudioMinutes);
+    register.registerMetric(this.totalPhrases);
+    register.registerMetric(this.totalTranscribed);
+    register.registerMetric(this.totalDictionaryEntries);
+    register.registerMetric(this.totalAudioFiles);
+    register.registerMetric(this.growthLastUpdateTimestamp);
 
     // Volver a registrar métricas por defecto
     collectDefaultMetrics({ register });
@@ -337,5 +388,69 @@ export class MetricsService implements OnModuleInit {
 
   updateHuggingfaceSourcesActive(sourceType: string, active: number) {
     this.huggingfaceSourcesActive.set({ source_type: sourceType }, active);
+  }
+
+  updateTotalWayuuWords(totalWords: number) {
+    this.totalWayuuWords.set(totalWords);
+  }
+
+  updateTotalSpanishWords(totalWords: number) {
+    this.totalSpanishWords.set(totalWords);
+  }
+
+  updateTotalAudioMinutes(totalMinutes: number) {
+    this.totalAudioMinutes.set(totalMinutes);
+  }
+
+  updateTotalPhrases(totalPhrases: number) {
+    this.totalPhrases.set(totalPhrases);
+  }
+
+  updateTotalTranscribed(totalTranscribed: number) {
+    this.totalTranscribed.set(totalTranscribed);
+  }
+
+  updateTotalDictionaryEntries(totalEntries: number) {
+    this.totalDictionaryEntries.set(totalEntries);
+  }
+
+  updateTotalAudioFiles(totalFiles: number) {
+    this.totalAudioFiles.set(totalFiles);
+  }
+
+  updateGrowthLastUpdateTimestamp(timestamp: number) {
+    this.growthLastUpdateTimestamp.set(timestamp);
+  }
+
+  // Método de conveniencia para actualizar métricas de crecimiento
+  updateGrowthMetric(metricName: string, value: number) {
+    switch (metricName) {
+      case 'wayuu_total_words_wayuu':
+        this.updateTotalWayuuWords(value);
+        break;
+      case 'wayuu_total_words_spanish':
+        this.updateTotalSpanishWords(value);
+        break;
+      case 'wayuu_total_audio_minutes':
+        this.updateTotalAudioMinutes(value);
+        break;
+      case 'wayuu_total_phrases':
+        this.updateTotalPhrases(value);
+        break;
+      case 'wayuu_total_transcribed':
+        this.updateTotalTranscribed(value);
+        break;
+      case 'wayuu_total_dictionary_entries':
+        this.updateTotalDictionaryEntries(value);
+        break;
+      case 'wayuu_total_audio_files':
+        this.updateTotalAudioFiles(value);
+        break;
+      case 'wayuu_growth_last_update_timestamp':
+        this.updateGrowthLastUpdateTimestamp(value);
+        break;
+      default:
+        console.warn(`Unknown growth metric: ${metricName}`);
+    }
   }
 }

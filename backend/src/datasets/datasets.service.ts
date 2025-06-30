@@ -155,7 +155,7 @@ export class DatasetsService implements OnModuleInit {
   private readonly metadataFile = path.join(this.cacheDir, 'cache-metadata.json');
   private readonly audioCacheFile = path.join(this.cacheDir, 'wayuu-audio-cache.json');
   private readonly audioMetadataFile = path.join(this.cacheDir, 'audio-cache-metadata.json');
-  private readonly audioDownloadDir = path.join(this.cacheDir, 'audio');
+  private readonly audioDurationCacheFile = path.join(this.cacheDir, 'audio-duration-cache.json');
   private readonly cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   constructor(
@@ -286,11 +286,8 @@ export class DatasetsService implements OnModuleInit {
         this.isAudioLoaded = true;
         this.logger.log(`🎯 Loaded ${cacheResult.data.length} audio entries from local cache (${cacheResult.source})`);
         
-        // Actualizar duraciones de audio con el servicio especializado
-        await this.audioDurationService.updateAudioDurationCache(this.wayuuAudioDataset);
-        
-        // Enriquecer entradas con duraciones calculadas
-        this.wayuuAudioDataset = this.audioDurationService.enrichAudioEntriesWithDurations(this.wayuuAudioDataset);
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
         
         // Verificar actualizaciones en segundo plano si el cache no es muy reciente
         if (cacheResult.shouldUpdate) {
@@ -309,12 +306,11 @@ export class DatasetsService implements OnModuleInit {
         this.totalAudioEntries = entries.length;
         this.isAudioLoaded = true;
         
-        // Actualizar duraciones antes de guardar en cache
-        await this.audioDurationService.updateAudioDurationCache(this.wayuuAudioDataset);
-        this.wayuuAudioDataset = this.audioDurationService.enrichAudioEntriesWithDurations(this.wayuuAudioDataset);
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
         
-        // Guardar en cache con duraciones actualizadas
-        await this.saveAudioToCache(this.wayuuAudioDataset, dataset);
+        // Guardar en cache
+        await this.saveAudioToCache(entries, dataset);
         this.logger.log(`✅ Successfully loaded ${entries.length} audio entries and saved to cache`);
         return;
       }
@@ -332,12 +328,18 @@ export class DatasetsService implements OnModuleInit {
         this.wayuuAudioDataset = this.audioDurationService.enrichAudioEntriesWithDurations(this.wayuuAudioDataset);
         
         this.logger.log(`⚠️  Loaded ${expiredCache.data.length} audio entries from expired cache`);
+        
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
         return;
       }
 
       // Paso 4: Último recurso - datos de muestra de audio
       this.logger.warn('📝 All audio methods failed, using sample audio data');
       await this.loadSampleAudioData();
+      
+      // Apply audio durations from duration cache (if any)
+      await this.loadAndApplyAudioDurations();
       
     } catch (error) {
       this.logger.error(`❌ Failed to load audio dataset: ${error.message}`);
@@ -354,8 +356,14 @@ export class DatasetsService implements OnModuleInit {
         this.wayuuAudioDataset = this.audioDurationService.enrichAudioEntriesWithDurations(this.wayuuAudioDataset);
         
         this.logger.log(`🆘 Emergency fallback: loaded ${emergencyCache.data.length} audio entries from cache`);
+        
+        // Apply audio durations from duration cache
+        await this.loadAndApplyAudioDurations();
       } else {
         await this.loadSampleAudioData();
+        
+        // Apply audio durations from duration cache (if any)
+        await this.loadAndApplyAudioDurations();
       }
     }
 
@@ -811,6 +819,75 @@ export class DatasetsService implements OnModuleInit {
   private generateAudioChecksum(data: AudioEntry[]): string {
     const content = data.map(entry => `${entry.id}:${entry.transcription}:${entry.audioDuration}`).join('|');
     return Buffer.from(content).toString('base64').substring(0, 16);
+  }
+
+  /**
+   * Load audio durations from cache and apply them to the dataset entries
+   */
+  private async loadAndApplyAudioDurations(): Promise<void> {
+    try {
+      const durationCacheExists = await this.fileExists(this.audioDurationCacheFile);
+      if (!durationCacheExists) {
+        this.logger.log('📊 No audio duration cache found, durations will remain 0');
+        return;
+      }
+
+      const durationCacheContent = await fs.readFile(this.audioDurationCacheFile, 'utf-8');
+      const durationCache = JSON.parse(durationCacheContent);
+
+      if (!durationCache || typeof durationCache !== 'object' || !durationCache.durations) {
+        this.logger.warn('⚠️ Invalid audio duration cache format');
+        return;
+      }
+
+      let appliedCount = 0;
+      let totalDuration = 0;
+
+      // Apply durations to the audio dataset entries
+      this.wayuuAudioDataset.forEach(entry => {
+        const durationData = durationCache.durations[entry.id];
+        if (durationData && typeof durationData.duration === 'number') {
+          entry.audioDuration = durationData.duration;
+          totalDuration += durationData.duration;
+          appliedCount++;
+        }
+      });
+
+      this.logger.log(`🎵 Applied audio durations: ${appliedCount}/${this.wayuuAudioDataset.length} entries, total: ${(totalDuration / 60).toFixed(1)} minutes`);
+
+      // Update the cache metadata with the correct totals
+      if (appliedCount > 0) {
+        await this.updateAudioCacheMetadata(totalDuration);
+      }
+
+    } catch (error) {
+      this.logger.error(`❌ Failed to load audio durations from cache: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update audio cache metadata with correct duration totals
+   */
+  private async updateAudioCacheMetadata(totalDurationSeconds: number): Promise<void> {
+    try {
+      const averageDuration = this.wayuuAudioDataset.length > 0 ? totalDurationSeconds / this.wayuuAudioDataset.length : 0;
+
+      const metadata: AudioCacheMetadata = {
+        lastUpdated: new Date().toISOString(),
+        totalAudioEntries: this.wayuuAudioDataset.length,
+        totalDurationSeconds: totalDurationSeconds,
+        averageDurationSeconds: averageDuration,
+        datasetVersion: '1.0',
+        source: 'orkidea/wayuu_CO_test',
+        checksum: this.generateAudioChecksum(this.wayuuAudioDataset)
+      };
+
+      await fs.writeFile(this.audioMetadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
+      this.logger.log(`📊 Updated audio cache metadata: ${totalDurationSeconds.toFixed(1)}s total, ${averageDuration.toFixed(2)}s average`);
+
+    } catch (error) {
+      this.logger.error(`❌ Failed to update audio cache metadata: ${error.message}`);
+    }
   }
 
   // ==================== HELPER METHODS ====================
@@ -2006,444 +2083,136 @@ export class DatasetsService implements OnModuleInit {
     }
   }
 
-  // ==================== AUDIO DOWNLOAD METHODS ====================
-
   /**
-   * Refresca las URLs de audio cuando han expirado
+   * Updates dataset metrics for monitoring systems (like Prometheus)
+   * This method can be called to refresh metrics without returning data
    */
-  private async refreshAudioUrls(): Promise<void> {
+  async updateDatasetMetrics(): Promise<void> {
     try {
-      this.logger.log('🔄 Refreshing audio URLs...');
+      this.logger.log('🔄 Updating dataset metrics...');
       
-      const audioSource = this.getAudioSource();
-      const dataset = audioSource.dataset;
-      const config = audioSource.config;
-      const split = audioSource.split;
-
-      // Cargar datos actualizados desde la API
-      const freshAudioData = await this.loadAudioViaRowsAPI(dataset, config, split);
-      
-      if (freshAudioData.length > 0) {
-        // Actualizar URLs en el dataset existente
-        this.wayuuAudioDataset.forEach(existingEntry => {
-          const freshEntry = freshAudioData.find(fresh => fresh.id === existingEntry.id);
-          if (freshEntry && freshEntry.audioUrl) {
-            existingEntry.audioUrl = freshEntry.audioUrl;
-          }
-        });
-
-        // Guardar cache actualizado
-        await this.saveAudioToCache(this.wayuuAudioDataset, dataset);
-        this.logger.log('✅ Audio URLs refreshed successfully');
+      // Ensure datasets are loaded
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
       }
-    } catch (error) {
-      this.logger.error(`❌ Failed to refresh audio URLs: ${error.message}`);
-    }
-  }
-
-  /**
-   * Descarga un archivo de audio específico
-   */
-  async downloadAudioFile(audioId: string, retryWithRefresh: boolean = true): Promise<{ success: boolean; message: string; localPath?: string }> {
-    try {
-      const audioEntry = this.wayuuAudioDataset.find(entry => entry.id === audioId);
-      if (!audioEntry) {
-        return { success: false, message: `Audio entry with ID '${audioId}' not found` };
-      }
-
-      if (audioEntry.isDownloaded && audioEntry.localPath) {
-        const exists = await this.fileExists(audioEntry.localPath);
-        if (exists) {
-          return { 
-            success: true, 
-            message: `Audio file already downloaded`, 
-            localPath: audioEntry.localPath 
-          };
-        }
-      }
-
-      if (!audioEntry.audioUrl) {
-        return { success: false, message: `No audio URL available for '${audioId}'` };
-      }
-
-      // Asegurar que el directorio existe
-      await this.ensureAudioDirectory();
-
-      // Generar ruta local
-      const localPath = path.join(this.audioDownloadDir, audioEntry.fileName || `${audioId}.wav`);
-
-      this.logger.log(`🎵 Downloading audio file: ${audioId}`);
-
-      try {
-        // Intentar descargar archivo
-        const response = await axios.get(audioEntry.audioUrl, {
-          responseType: 'arraybuffer',
-          timeout: 30000, // 30 segundos timeout
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; WayuuTranslator/1.0)'
-          }
-        });
-
-        // Guardar archivo
-        await fs.writeFile(localPath, response.data);
-
-        // Actualizar entrada en el cache
-        audioEntry.isDownloaded = true;
-        audioEntry.localPath = localPath;
-        audioEntry.fileSize = response.data.length;
-
-        // Guardar cache actualizado
-        await this.saveAudioToCache(this.wayuuAudioDataset, 'orkidea/wayuu_CO_test');
-
-        this.logger.log(`✅ Audio file downloaded: ${audioId} (${(response.data.length / 1024).toFixed(1)} KB)`);
-
-        return { 
-          success: true, 
-          message: `Audio file downloaded successfully`, 
-          localPath 
-        };
-
-      } catch (downloadError) {
-        // Si es error 403 y podemos reintentar, refrescar URLs
-        if (downloadError.response?.status === 403 && retryWithRefresh) {
-          this.logger.log(`🔄 URL expired for ${audioId}, refreshing URLs and retrying...`);
-          await this.refreshAudioUrls();
-          
-          // Reintentar una vez con URLs refrescadas
-          return this.downloadAudioFile(audioId, false);
-        }
-        
-        throw downloadError;
-      }
-
-    } catch (error) {
-      this.logger.error(`❌ Failed to download audio file ${audioId}: ${error.message}`);
-      return { 
-        success: false, 
-        message: `Failed to download audio file: ${error.message}` 
-      };
-    }
-  }
-
-  /**
-   * Descarga múltiples archivos de audio por lotes
-   */
-  async downloadAudioBatch(audioIds: string[], batchSize: number = 5): Promise<{ 
-    success: boolean; 
-    message: string; 
-    results: Array<{ id: string; success: boolean; localPath?: string; error?: string }> 
-  }> {
-    const results: Array<{ id: string; success: boolean; localPath?: string; error?: string }> = [];
-    let successCount = 0;
-
-    this.logger.log(`🎵 Starting batch download of ${audioIds.length} audio files (batch size: ${batchSize})`);
-
-    // Procesar en lotes para no saturar el servidor
-    for (let i = 0; i < audioIds.length; i += batchSize) {
-      const batch = audioIds.slice(i, i + batchSize);
-      const batchPromises = batch.map(async (audioId) => {
-        const result = await this.downloadAudioFile(audioId);
-        return {
-          id: audioId,
-          success: result.success,
-          localPath: result.localPath,
-          error: result.success ? undefined : result.message
-        };
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-      
-      successCount += batchResults.filter(r => r.success).length;
-      
-      this.logger.log(`📦 Batch ${Math.floor(i/batchSize) + 1}: ${batchResults.filter(r => r.success).length}/${batchResults.length} successful`);
-
-      // Pausa entre lotes para no saturar el servidor
-      if (i + batchSize < audioIds.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 segundo de pausa
-      }
-    }
-
-    return {
-      success: successCount > 0,
-      message: `Downloaded ${successCount}/${audioIds.length} audio files successfully`,
-      results
-    };
-  }
-
-  /**
-   * Descarga todos los archivos de audio disponibles
-   */
-  async downloadAllAudio(batchSize: number = 5): Promise<{ success: boolean; message: string; stats: any }> {
-    try {
       if (!this.isAudioLoaded) {
         await this.loadWayuuAudioDataset();
       }
 
-      const audioIds = this.wayuuAudioDataset.map(entry => entry.id);
-      const notDownloaded = this.wayuuAudioDataset.filter(entry => !entry.isDownloaded);
+      // Log current state for metrics collection
+      this.logger.log(`📊 Current metrics: Dictionary=${this.totalEntries}, Audio=${this.totalAudioEntries}`);
+      
+    } catch (error) {
+      this.logger.error(`❌ Error updating dataset metrics:`, error);
+      throw error;
+    }
+  }
 
-      if (notDownloaded.length === 0) {
+  /**
+   * Get statistics for a specific dataset source
+   * Used by metrics system to calculate growth metrics
+   */
+  async getDatasetStats(sourceName: string): Promise<{
+    total_entries: number;
+    wayuu_words: number;
+    spanish_words: number;
+    audio_minutes: number;
+    phrases: number;
+    transcribed: number;
+    dictionary_entries: number;
+    audio_files: number;
+  }> {
+    try {
+      // Find the source by name
+      const source = this.huggingFaceSources.find(s => s.name === sourceName);
+      if (!source || !source.isActive) {
         return {
-          success: true,
-          message: 'All audio files are already downloaded',
-          stats: {
-            total: audioIds.length,
-            downloaded: audioIds.length,
-            skipped: 0,
-            failed: 0
-          }
+          total_entries: 0,
+          wayuu_words: 0,
+          spanish_words: 0,
+          audio_minutes: 0,
+          phrases: 0,
+          transcribed: 0,
+          dictionary_entries: 0,
+          audio_files: 0,
         };
       }
 
-      this.logger.log(`🎵 Starting download of ${notDownloaded.length} audio files...`);
+      // Ensure data is loaded
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
+      }
+      if (!this.isAudioLoaded) {
+        await this.loadWayuuAudioDataset();
+      }
 
-      const result = await this.downloadAudioBatch(
-        notDownloaded.map(entry => entry.id), 
-        batchSize
-      );
-
-      const stats = {
-        total: audioIds.length,
-        downloaded: result.results.filter(r => r.success).length,
-        skipped: audioIds.length - notDownloaded.length,
-        failed: result.results.filter(r => !r.success).length
+      let stats = {
+        total_entries: 0,
+        wayuu_words: 0,
+        spanish_words: 0,
+        audio_minutes: 0,
+        phrases: 0,
+        transcribed: 0,
+        dictionary_entries: 0,
+        audio_files: 0,
       };
 
-      return {
-        success: result.success,
-        message: result.message,
-        stats
-      };
+      if (source.type === 'dictionary' || source.type === 'mixed') {
+        // Calculate dictionary statistics
+        const wayuuWords = new Set<string>();
+        const spanishWords = new Set<string>();
+        
+        this.wayuuDictionary.forEach(entry => {
+          // Split text into words and add to sets
+          const wayuuWordList = entry.guc.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+          const spanishWordList = entry.spa.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+          
+          wayuuWordList.forEach(word => wayuuWords.add(word));
+          spanishWordList.forEach(word => spanishWords.add(word));
+        });
 
+        stats.dictionary_entries = this.totalEntries;
+        stats.phrases += this.totalEntries;
+        stats.wayuu_words = wayuuWords.size;
+        stats.spanish_words = spanishWords.size;
+        stats.total_entries += this.totalEntries;
+      }
+
+      if (source.type === 'audio' || source.type === 'mixed') {
+        // Calculate audio statistics
+        const totalDurationSeconds = this.wayuuAudioDataset.reduce((sum, entry) => sum + (entry.audioDuration || 0), 0);
+        const transcribedCount = this.wayuuAudioDataset.filter(entry => entry.transcription && entry.transcription.trim().length > 0).length;
+        
+        // Count unique words in transcriptions
+        const transcriptionWords = new Set<string>();
+        this.wayuuAudioDataset.forEach(entry => {
+          if (entry.transcription) {
+            const words = entry.transcription.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+            words.forEach(word => transcriptionWords.add(word));
+          }
+        });
+
+        stats.audio_files = this.totalAudioEntries;
+        stats.audio_minutes = totalDurationSeconds / 60;
+        stats.transcribed = transcribedCount;
+        stats.phrases += transcribedCount;
+        stats.wayuu_words += transcriptionWords.size;
+        stats.total_entries += this.totalAudioEntries;
+      }
+
+      return stats;
     } catch (error) {
-      this.logger.error(`❌ Failed to download all audio files: ${error.message}`);
+      this.logger.error(`❌ Error getting dataset stats for ${sourceName}:`, error);
       return {
-        success: false,
-        message: `Failed to download audio files: ${error.message}`,
-        stats: { total: 0, downloaded: 0, skipped: 0, failed: 0 }
+        total_entries: 0,
+        wayuu_words: 0,
+        spanish_words: 0,
+        audio_minutes: 0,
+        phrases: 0,
+        transcribed: 0,
+        dictionary_entries: 0,
+        audio_files: 0,
       };
     }
   }
-
-  /**
-   * Obtiene estadísticas de descarga de audio
-   */
-  async getAudioDownloadStats(): Promise<{
-    totalFiles: number;
-    downloadedFiles: number;
-    pendingFiles: number;
-    totalSizeDownloaded: number; // en bytes
-    downloadProgress: number; // porcentaje
-  }> {
-    if (!this.isAudioLoaded) {
-      await this.loadWayuuAudioDataset();
-    }
-
-    const totalFiles = this.wayuuAudioDataset.length;
-    const downloadedEntries = this.wayuuAudioDataset.filter(entry => entry.isDownloaded);
-    const downloadedFiles = downloadedEntries.length;
-    const pendingFiles = totalFiles - downloadedFiles;
-    const totalSizeDownloaded = downloadedEntries.reduce((sum, entry) => sum + (entry.fileSize || 0), 0);
-    const downloadProgress = totalFiles > 0 ? (downloadedFiles / totalFiles) * 100 : 0;
-
-    return {
-      totalFiles,
-      downloadedFiles,
-      pendingFiles,
-      totalSizeDownloaded,
-      downloadProgress
-    };
-  }
-
-  /**
-   * Limpia archivos de audio descargados
-   */
-  async clearDownloadedAudio(): Promise<{ success: boolean; message: string; deletedFiles: number }> {
-    try {
-      let deletedFiles = 0;
-
-      // Eliminar archivos físicos
-      if (await this.fileExists(this.audioDownloadDir)) {
-        const files = await fs.readdir(this.audioDownloadDir);
-        for (const file of files) {
-          const filePath = path.join(this.audioDownloadDir, file);
-          await fs.unlink(filePath);
-          deletedFiles++;
-        }
-      }
-
-      // Actualizar cache
-      this.wayuuAudioDataset.forEach(entry => {
-        entry.isDownloaded = false;
-        entry.localPath = undefined;
-        entry.fileSize = undefined;
-      });
-
-      await this.saveAudioToCache(this.wayuuAudioDataset, 'orkidea/wayuu_CO_test');
-
-      this.logger.log(`🗑️ Cleared ${deletedFiles} downloaded audio files`);
-
-      return {
-        success: true,
-        message: `Successfully deleted ${deletedFiles} audio files`,
-        deletedFiles
-      };
-
-    } catch (error) {
-      this.logger.error(`❌ Failed to clear downloaded audio: ${error.message}`);
-      return {
-        success: false,
-        message: `Failed to clear audio files: ${error.message}`,
-        deletedFiles: 0
-      };
-    }
-  }
-
-  /**
-   * Asegura que el directorio de audio existe
-   */
-  private async ensureAudioDirectory(): Promise<void> {
-    try {
-      await fs.access(this.audioDownloadDir);
-    } catch {
-      await fs.mkdir(this.audioDownloadDir, { recursive: true });
-      this.logger.log(`📁 Created audio download directory: ${this.audioDownloadDir}`);
-    }
-  }
-
-  // ==================== HELPER METHODS ====================
-
-  private estimateAudioDuration(transcription: string): number {
-    // Basado en las estadísticas del dataset real orkidea/wayuu_CO_test
-    // Promedio: ~2.5 segundos por entrada, correlacionado con longitud de transcripción
-    const baseWordsPerSecond = 2.5; // Wayuu speaking rate
-    const words = transcription.trim().split(/\s+/).length;
-    
-    // Duración base más variación natural
-    const baseDuration = words / baseWordsPerSecond;
-    
-    // Agregar variación natural (±20%)
-    const variation = (Math.random() - 0.5) * 0.4;
-    const finalDuration = baseDuration * (1 + variation);
-    
-    // Límites realistas: mínimo 0.5s, máximo 15s
-    return Math.max(0.5, Math.min(15.0, finalDuration));
-  }
-
-  private generateRealisticAudioDurations(entries: AudioEntry[]): AudioEntry[] {
-    return entries.map(entry => ({
-      ...entry,
-      audioDuration: entry.audioDuration > 0 ? entry.audioDuration : this.estimateAudioDuration(entry.transcription)
-    }));
-  }
-
-  // ==================== METRICS METHODS ====================
-
-  /**
-   * Actualiza todas las métricas de datasets en Prometheus
-   */
-  async updateDatasetMetrics(): Promise<void> {
-    try {
-      // Actualizar métricas de fuentes de Hugging Face
-      const dictionarySources = this.huggingFaceSources.filter(s => s.type === 'dictionary');
-      const audioSources = this.huggingFaceSources.filter(s => s.type === 'audio');
-      
-      this.metricsService.updateHuggingfaceSourcesTotal('dictionary', dictionarySources.length);
-      this.metricsService.updateHuggingfaceSourcesTotal('audio', audioSources.length);
-      this.metricsService.updateHuggingfaceSourcesActive('dictionary', dictionarySources.filter(s => s.isActive).length);
-      this.metricsService.updateHuggingfaceSourcesActive('audio', audioSources.filter(s => s.isActive).length);
-
-      // Actualizar métricas de cada fuente individual
-      for (const source of this.huggingFaceSources) {
-        this.metricsService.updateDatasetLoadStatus(source.dataset, source.type, source.isActive, source.isActive);
-      }
-
-      // Métricas de diccionario si está cargado
-      if (this.isLoaded) {
-        await this.updateDictionaryMetrics();
-      }
-
-      // Métricas de audio si está cargado
-      if (this.isAudioLoaded) {
-        await this.updateAudioMetrics();
-      }
-
-      // Información de cache
-      await this.updateCacheMetrics();
-
-      this.logger.log('📊 Dataset metrics updated successfully');
-    } catch (error) {
-      this.logger.error('❌ Error updating dataset metrics:', error.message);
-    }
-  }
-
-  private async updateDictionaryMetrics(): Promise<void> {
-    const stats = await this.getDictionaryStats();
-    
-    this.metricsService.updateDatasetTotalEntries('main_dictionary', 'dictionary', stats.totalEntries || 0);
-    this.metricsService.updateDatasetUniqueWords('main_dictionary', 'wayuu', 'dictionary', stats.uniqueWayuuWords || 0);
-    this.metricsService.updateDatasetUniqueWords('main_dictionary', 'spanish', 'dictionary', stats.uniqueSpanishWords || 0);
-    this.metricsService.updateDatasetAverageWordsPerEntry('main_dictionary', 'spanish', 'dictionary', stats.averageSpanishWordsPerEntry || 0);
-  }
-
-  private async updateAudioMetrics(): Promise<void> {
-    const stats = await this.getAudioStats();
-    
-    this.metricsService.updateDatasetTotalEntries('audio_dataset', 'audio', stats.totalAudioEntries || 0);
-    this.metricsService.updateAudioDatasetTotalDuration('audio_dataset', stats.totalDurationSeconds || 0);
-    this.metricsService.updateAudioDatasetAverageDuration('audio_dataset', stats.averageDurationSeconds || 0);
-    this.metricsService.updateDatasetUniqueWords('audio_dataset', 'wayuu', 'audio', stats.uniqueWayuuWords || 0);
-
-    // Audio download stats
-    const downloadStats = await this.getAudioDownloadStats();
-    this.metricsService.updateAudioFilesDownloaded('audio_dataset', downloadStats.downloadedFiles || 0);
-    this.metricsService.updateAudioDownloadProgress('audio_dataset', downloadStats.downloadProgress || 0);
-  }
-
-  private async updateCacheMetrics(): Promise<void> {
-    // Dictionary cache info
-    const cacheInfo = await this.getCacheInfo();
-    if (cacheInfo.exists) {
-      this.metricsService.updateDatasetCacheStatus('main_dictionary', 'dictionary', true);
-      this.metricsService.updateDatasetCacheSize('main_dictionary', 'dictionary', this.parseCacheSize(cacheInfo.size || '0'));
-      if (cacheInfo.metadata?.lastUpdated) {
-        this.metricsService.updateDatasetLastUpdateTime('main_dictionary', 'dictionary', new Date(cacheInfo.metadata.lastUpdated).getTime() / 1000);
-      }
-    } else {
-      this.metricsService.updateDatasetCacheStatus('main_dictionary', 'dictionary', false);
-      this.metricsService.updateDatasetCacheSize('main_dictionary', 'dictionary', 0);
-    }
-
-    // Audio cache info
-    const audioCacheInfo = await this.getAudioCacheInfo();
-    if (audioCacheInfo.exists) {
-      this.metricsService.updateDatasetCacheStatus('audio_dataset', 'audio', true);
-      this.metricsService.updateDatasetCacheSize('audio_dataset', 'audio', this.parseCacheSize(audioCacheInfo.size || '0'));
-      if (audioCacheInfo.metadata?.lastUpdated) {
-        this.metricsService.updateDatasetLastUpdateTime('audio_dataset', 'audio', new Date(audioCacheInfo.metadata.lastUpdated).getTime() / 1000);
-      }
-    } else {
-      this.metricsService.updateDatasetCacheStatus('audio_dataset', 'audio', false);
-      this.metricsService.updateDatasetCacheSize('audio_dataset', 'audio', 0);
-    }
-  }
-
-  private parseCacheSize(sizeString: string): number {
-    // Convertir strings como "1.5 MB" a bytes
-    const match = sizeString.match(/(\d+\.?\d*)\s*(KB|MB|GB)/i);
-    if (!match) return 0;
-    
-    const value = parseFloat(match[1]);
-    const unit = match[2].toUpperCase();
-    
-    switch (unit) {
-      case 'KB': return value * 1024;
-      case 'MB': return value * 1024 * 1024;
-      case 'GB': return value * 1024 * 1024 * 1024;
-      default: return value;
-    }
-  }
-
-
 }

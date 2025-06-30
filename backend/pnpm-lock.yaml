@@ -98,9 +98,6 @@ importers:
       youtube-dl-exec:
         specifier: ^3.0.22
         version: 3.0.22
-      ytdl-core:
-        specifier: ^4.11.5
-        version: 4.11.5
     devDependencies:
       '@nestjs/cli':
         specifier: ^10.2.1
@@ -1293,9 +1290,6 @@ packages:
     resolution: {integrity: sha512-Iy//vPc3ANPNlIWd242Npqc8MK0a/i4kVcHDlDA6HNMv5zMxz4ulIFhOSYJVKw/8AbHdHy0CnGYEt1QqSXxPsw==}
     engines: {node: '>=18'}
 
-  binary@0.3.0:
-    resolution: {integrity: sha512-D4H1y5KYwpJgK8wk1Cue5LLPgmwHKYSChkbspQg5JtVuR5ulGckxfR62H3AE9UDkdMC8yyXlqYihuz3Aqg2XZg==}
-
   bintrees@1.0.2:
     resolution: {integrity: sha512-VOMgTMwjAaUG580SXn3LacVgjurrbMme7ZZNYGSSV7mmtY6QQRh0Eg3pwIcntQ77DErK1L0NxkbetjcoXzVwKw==}
 
@@ -2072,10 +2066,6 @@ packages:
     resolution: {integrity: sha512-939eZS4gJ3htTHAldmyyuzlrD58P03fHG49v2JfFXbV6OhvZKRC9j2yAtdHw/zrp2zXHuv05zMIy40F0ge7spA==}
     engines: {node: '>=18'}
 
-  gauge@1.2.7:
-    resolution: {integrity: sha512-fVbU2wRE91yDvKUnrIaQlHKAWKY5e08PmztCrwuH5YVQ+Z/p3d0ny2T48o6uvAAXHIUnfaQdHkmxYbQft1eHVA==}
-    deprecated: This package is no longer supported.
-
   gauge@3.0.2:
     resolution: {integrity: sha512-+5J6MS/5XksCuXq++uFRsnUd7Ovu1XenbeuIuNRJxYWjgQbPuFhT14lAvsWfqfAmnwluf1OwMjz39HjfLPci0Q==}
     engines: {node: '>=10'}
@@ -2312,12 +2302,6 @@ packages:
   is-unix@2.0.10:
     resolution: {integrity: sha512-CcasZSEOQUoE7JHy56se4wyRhdJfjohuMWYmceSTaDY4naKyd1fpLiY8rJsIT6AKfVstQAhHJOfPx7jcUxK61Q==}
     engines: {node: '>= 12'}
-
-  isarray@0.0.1:
-    resolution: {integrity: sha512-D2S+3GLxWH+uhrNEcoh/fnmYeP8E8/zHl644d/jdA0g2uyXvy3sb0qxotE+ne0LtccHknQzWwZEzhak7oJ0COQ==}
-
-  isarray@1.0.0:
-    resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
@@ -2641,10 +2625,6 @@ packages:
   lru-queue@0.1.0:
     resolution: {integrity: sha512-BpdYkt9EvGl8OfWHDQPISVpcl5xZthb+XPsbELj5AQXxIC8IriDZIQYjBJPEm5rS420sjZ0TLEzRcq5KdBhYrQ==}
 
-  m3u8stream@0.8.6:
-    resolution: {integrity: sha512-LZj8kIVf9KCphiHmH7sbFQTVe4tOemb202fWwvJwR9W5ENW/1hxJN6ksAWGhQgSBSa3jyWhnjKU1Fw1GaOdbyA==}
-    engines: {node: '>=12'}
-
   magic-string@0.30.8:
     resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==}
     engines: {node: '>=12'}
@@ -2678,9 +2658,6 @@ packages:
   memoizee@0.4.17:
     resolution: {integrity: sha512-DGqD7Hjpi/1or4F/aYAspXKNm5Yili0QDAFAY4QYvpqpgiY6+1jOfqpmByzjxbWd/T9mChbCArXAbDAsTm5oXA==}
     engines: {node: '>=0.12'}
-
-  memory-stream@0.0.3:
-    resolution: {integrity: sha512-q0D3m846qY6ZkIt+19ZemU5vH56lpOZZwoJc3AICARKh/menBuayQUjAGPrqtHQQMUYERSdOrej92J9kz7LgYA==}
 
   merge-descriptors@1.0.3:
     resolution: {integrity: sha512-gaNvAS7TZ897/rVaZ0nMtAyxNyi/pdbjbAwUpFQpN70GqnVfOiXpeUUMKRBmzXaSQ8DdTX4/0ms62r2K+hE6mQ==}
@@ -2724,10 +2701,6 @@ packages:
 
   mimic-fn@4.0.0:
     resolution: {integrity: sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==}
-    engines: {node: '>=12'}
-
-  miniget@4.2.3:
-    resolution: {integrity: sha512-SjbDPDICJ1zT+ZvQwK0hUcRY4wxlhhNpHL9nJOB2MEAXRGagTljsO8MEDzQMTFf0Q8g4QNi8P9lEm/g7e+qgzA==}
     engines: {node: '>=12'}
 
   minimatch@3.1.2:
@@ -2855,10 +2828,6 @@ packages:
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  npmlog@1.2.1:
-    resolution: {integrity: sha512-1J5KqSRvESP6XbjPaXt2H6qDzgizLTM7x0y1cXIjP2PpvdCqyNC7TO3cPRKsuYlElbi/DwkzRRdG2zpmE0IktQ==}
-    deprecated: This package is no longer supported.
 
   npmlog@5.0.1:
     resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
@@ -3102,12 +3071,6 @@ packages:
     resolution: {integrity: sha512-973driJZvxiGOQ5ONsFhOF/DtzPMOMtgC11kCpUrPGMTgqp2q/1gwzCquocrN33is0VZ5GFHXZYMM9l6h67v2Q==}
     engines: {node: '>=10'}
 
-  process-nextick-args@1.0.7:
-    resolution: {integrity: sha512-yN0WQmuCX63LP/TMvAg31nvT6m4vDqJEiiv2CAZqWOGNWutc9DfDk1NPYYmKUFmaVM2UwDowH4u5AHWYP/jxKw==}
-
-  process-nextick-args@2.0.1:
-    resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
-
   prom-client@15.1.3:
     resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
     engines: {node: ^16 || ^18 || >=20}
@@ -3274,10 +3237,6 @@ packages:
   semver-truncate@3.0.0:
     resolution: {integrity: sha512-LJWA9kSvMolR51oDE6PN3kALBNaUdkxzAGcexw8gjMA8xr5zUqK0JiR3CgARSqanYF3Z1YHvsErb1KDgh+v7Rg==}
     engines: {node: '>=12'}
-
-  semver@5.7.2:
-    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
-    hasBin: true
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -3446,10 +3405,6 @@ packages:
   strip-final-newline@3.0.0:
     resolution: {integrity: sha512-dOESqjYr96iWYylGObzd39EuNTa5VJxyvVAEm5Jnh7KGo75V43Hk1odPQkNDyXNmUR6k+gEiDVXnjB8HJ3crXw==}
     engines: {node: '>=12'}
-
-  strip-json-comments@2.0.1:
-    resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
-    engines: {node: '>=0.10.0'}
 
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
@@ -3938,10 +3893,6 @@ packages:
   youtube-dl-exec@3.0.22:
     resolution: {integrity: sha512-Js2dRkNJnbLL7ptzoWsUEehH7PS0CYL6ArT8MYLv0G/M/6WYxbkgU3lIH/gdp/IKl42QOZZRWhPlJdt6pRghFg==}
     engines: {node: '>= 18'}
-
-  ytdl-core@4.11.5:
-    resolution: {integrity: sha512-27LwsW4n4nyNviRCO1hmr8Wr5J1wLLMawHCQvH8Fk0hiRqrxuIu028WzbJetiYH28K8XDbeinYW4/wcHQD1EXA==}
-    engines: {node: '>=12'}
 
 snapshots:
 
@@ -5306,11 +5257,6 @@ snapshots:
       execa: 8.0.1
       find-versions: 6.0.0
 
-  binary@0.3.0:
-    dependencies:
-      buffers: 0.1.1
-      chainsaw: 0.1.0
-
   bintrees@1.0.2: {}
 
   bl@4.1.0:
@@ -6174,14 +6120,6 @@ snapshots:
 
   function-timeout@1.0.2: {}
 
-  gauge@1.2.7:
-    dependencies:
-      ansi: 0.3.1
-      has-unicode: 2.0.1
-      lodash.pad: 4.5.1
-      lodash.padend: 4.6.1
-      lodash.padstart: 4.6.1
-
   gauge@3.0.2:
     dependencies:
       aproba: 2.0.0
@@ -6427,10 +6365,6 @@ snapshots:
   is-unicode-supported@0.1.0: {}
 
   is-unix@2.0.10: {}
-
-  isarray@0.0.1: {}
-
-  isarray@1.0.0: {}
 
   isexe@2.0.0: {}
 
@@ -6942,11 +6876,6 @@ snapshots:
     dependencies:
       es5-ext: 0.10.64
 
-  m3u8stream@0.8.6:
-    dependencies:
-      miniget: 4.2.3
-      sax: 1.4.1
-
   magic-string@0.30.8:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -6984,10 +6913,6 @@ snapshots:
       next-tick: 1.1.0
       timers-ext: 0.1.8
 
-  memory-stream@0.0.3:
-    dependencies:
-      readable-stream: 1.0.34
-
   merge-descriptors@1.0.3: {}
 
   merge-stream@2.0.0: {}
@@ -7014,8 +6939,6 @@ snapshots:
   mimic-fn@2.1.0: {}
 
   mimic-fn@4.0.0: {}
-
-  miniget@4.2.3: {}
 
   minimatch@3.1.2:
     dependencies:
@@ -7128,12 +7051,6 @@ snapshots:
   npm-run-path@5.3.0:
     dependencies:
       path-key: 4.0.0
-
-  npmlog@1.2.1:
-    dependencies:
-      ansi: 0.3.1
-      are-we-there-yet: 1.0.6
-      gauge: 1.2.7
 
   npmlog@5.0.1:
     dependencies:
@@ -7357,10 +7274,6 @@ snapshots:
     dependencies:
       parse-ms: 2.1.0
 
-  process-nextick-args@1.0.7: {}
-
-  process-nextick-args@2.0.1: {}
-
   prom-client@15.1.3:
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -7532,8 +7445,6 @@ snapshots:
   semver-truncate@3.0.0:
     dependencies:
       semver: 7.7.2
-
-  semver@5.7.2: {}
 
   semver@6.3.1: {}
 
@@ -7714,8 +7625,6 @@ snapshots:
   strip-final-newline@2.0.0: {}
 
   strip-final-newline@3.0.0: {}
-
-  strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
 
@@ -8178,9 +8087,3 @@ snapshots:
       tinyspawn: 1.5.1
     transitivePeerDependencies:
       - supports-color
-
-  ytdl-core@4.11.5:
-    dependencies:
-      m3u8stream: 0.8.6
-      miniget: 4.2.3
-      sax: 1.4.1
