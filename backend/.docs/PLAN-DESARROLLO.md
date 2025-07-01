@@ -1,5 +1,5 @@
 # 📋 Plan de Desarrollo - Wayuu Spanish Translator
-*Actualizado: 30 de Diciembre, 2024*
+*Actualizado: 31 de Diciembre, 2024*
 
 ## 📊 Estado Actual del Sistema
 
@@ -68,6 +68,7 @@
 #### 2.1 Implementar Extracción de PDFs 🆕
 - [ ] **Desarrollar extractor de texto** de PDFs (PyPDF2/pdfplumber)
 - [ ] **Parser de contenido wayuu-español** en documentos académicos
+- [ ] **Procesamiento inteligente de PDFs** de Hugging Face para extraer palabras wayuu con sus traducciones al español
 - [ ] **Integración con pipeline** de datasets existente
 - [ ] **Validación de calidad** de texto extraído de PDFs
 - [ ] **Cargar contenido** de `wayuu_linguistic_sources` (125+ documentos)
@@ -102,6 +103,7 @@
 - [ ] **Leaderboard** de usuarios
 
 #### 3.3 Contenido Educativo
+- [ ] **Definir temas específicos** para contenido educativo basado en guías pedagógicas modernas e información académica en línea
 - [ ] **Lecciones estructuradas** por temas
 - [ ] **Historias interactivas** en wayuunaiki
 - [ ] **Cultura wayuu** integrada
@@ -127,6 +129,7 @@
 - [ ] **Modelo de traducción** wayuu-español mejorado
 - [ ] **Reconocimiento de voz** específico para wayuu
 - [ ] **Generación de texto** automática
+- [ ] **Integración con LLM Gemini** para generar automáticamente nuevas entradas del diccionario wayuu-español
 - [ ] **Clasificación de dialectos** regionales
 
 ---

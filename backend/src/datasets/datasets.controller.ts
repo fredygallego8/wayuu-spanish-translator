@@ -2,6 +2,7 @@ import { Controller, Get, Post, Query, Param, Body, Delete, HttpException, HttpS
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 import { AudioDurationService } from './audio-duration.service';
+import { PdfProcessingService } from '../pdf-processing/pdf-processing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,6 +18,7 @@ export class DatasetsController {
   constructor(
     private readonly datasetsService: DatasetsService,
     private readonly audioDurationService: AudioDurationService,
+    private readonly pdfProcessingService: PdfProcessingService,
   ) {}
 
   @Get()
@@ -412,6 +414,376 @@ export class DatasetsController {
     }
   }
 
+  // ==================== PDF PROCESSING ENDPOINTS ====================
+
+  @Post('pdf/process-all-test')
+  @ApiOperation({ 
+    summary: '📄 Process all PDF documents (TEST)',
+    description: 'TEST endpoint - Processes all PDF files to extract Wayuu linguistic content'
+  })
+  @ApiResponse({ status: 200, description: 'PDFs processed successfully' })
+  async processAllPDFsTest() {
+    try {
+      this.logger.log(`📄 Testing PDF processing`);
+      const results = await this.pdfProcessingService.processAllPDFs();
+      
+      return {
+        success: true,
+        message: `Successfully processed ${results.length} PDF documents`,
+        data: {
+          processedCount: results.length,
+          totalWayuuPhrases: results.reduce((sum, pdf) => sum + pdf.wayuuContent.wayuuPhrases.length, 0),
+          totalPages: results.reduce((sum, pdf) => sum + pdf.pageCount, 0),
+          avgWayuuPercentage: results.length > 0 
+            ? Math.round(results.reduce((sum, pdf) => sum + pdf.wayuuContent.estimatedWayuuPercentage, 0) / results.length)
+            : 0,
+          pdfs: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText
+          }))
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      this.logger.error(`Failed to process PDFs in test`, error.stack);
+      return {
+        success: false,
+        message: 'Failed to process PDF documents',
+        error: error.message
+      };
+    }
+  }
+
+  @Post('pdf/process-all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '📄 Process all PDF documents (Admin)',
+    description: '🔒 Processes all PDF files to extract Wayuu linguistic content - Admin only'
+  })
+  @ApiResponse({ status: 200, description: 'PDFs processed successfully' })
+  @ApiResponse({ status: 401, description: 'Authentication required' })
+  @ApiResponse({ status: 403, description: 'Admin role required' })
+  async processAllPDFs(@CurrentUser() user: User) {
+    try {
+      this.logger.log(`📄 Admin ${user.email} initiated PDF processing`);
+      const results = await this.pdfProcessingService.processAllPDFs();
+      
+      return {
+        success: true,
+        message: `Successfully processed ${results.length} PDF documents`,
+        data: {
+          processedCount: results.length,
+          totalWayuuPhrases: results.reduce((sum, pdf) => sum + pdf.wayuuContent.wayuuPhrases.length, 0),
+          totalPages: results.reduce((sum, pdf) => sum + pdf.pageCount, 0),
+          avgWayuuPercentage: results.length > 0 
+            ? Math.round(results.reduce((sum, pdf) => sum + pdf.wayuuContent.estimatedWayuuPercentage, 0) / results.length)
+            : 0,
+          pdfs: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText
+          }))
+        },
+        processedBy: user.email,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      this.logger.error(`Failed to process PDFs for ${user.email}`, error.stack);
+      return {
+        success: false,
+        message: 'Failed to process PDF documents',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/stats')
+  @ApiOperation({ summary: 'Get PDF processing statistics' })
+  @ApiResponse({ status: 200, description: 'PDF statistics retrieved successfully' })
+  async getPDFStats() {
+    try {
+      const stats = await this.pdfProcessingService.getProcessingStats();
+      return {
+        success: true,
+        data: {
+          totalPDFs: stats.totalPDFs,
+          processedPDFs: stats.processedPDFs,
+          totalPages: stats.totalPages,
+          totalWayuuPhrases: stats.totalWayuuPhrases,
+          avgWayuuPercentage: stats.avgWayuuPercentage,
+          cacheHits: stats.cacheHits,
+          processingTime: stats.processingTime,
+          status: stats.processedPDFs > 0 ? 'active' : 'pending',
+          cacheEfficiency: stats.totalPDFs > 0 ? Math.round((stats.cacheHits / stats.totalPDFs) * 100) : 0
+        },
+        message: 'PDF processing statistics retrieved successfully'
+      };
+    } catch (error) {
+      this.logger.error('Failed to get PDF stats', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve PDF statistics',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/stats-complete')
+  @ApiOperation({ 
+    summary: '📊 Get complete PDF statistics with dictionary extraction',
+    description: 'Comprehensive PDF processing statistics including extracted dictionary entries'
+  })
+  @ApiResponse({ status: 200, description: 'Complete PDF statistics retrieved successfully' })
+  async getCompletePDFStats() {
+    try {
+      const processingStats = await this.pdfProcessingService.getProcessingStats();
+      const extractionStats = this.pdfProcessingService.getDictionaryExtractionStats();
+      const processedPDFs = await this.pdfProcessingService.getAllProcessedPDFs();
+      
+      return {
+        success: true,
+        data: {
+          // Estadísticas básicas de procesamiento
+          processing: {
+            totalPDFs: processingStats.totalPDFs,
+            processedPDFs: processingStats.processedPDFs,
+            totalPages: processingStats.totalPages,
+            totalWayuuPhrases: processingStats.totalWayuuPhrases,
+            avgWayuuPercentage: processingStats.avgWayuuPercentage,
+            processingTime: processingStats.processingTime,
+            status: processingStats.processedPDFs > 0 ? 'processed' : 'pending'
+          },
+          
+          // Estadísticas de extracción de diccionario  
+          extraction: {
+            totalExtractedEntries: extractionStats.totalEntries,
+            highConfidenceEntries: extractionStats.highConfidenceEntries,
+            averageConfidence: Math.round(extractionStats.averageConfidence * 100) / 100,
+            entriesBySource: extractionStats.entriesBySource,
+            extractionEfficiency: processingStats.totalWayuuPhrases > 0 
+              ? Math.round((extractionStats.totalEntries / processingStats.totalWayuuPhrases) * 100) 
+              : 0
+          },
+          
+          // Detalles por documento
+          documents: processedPDFs.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText,
+            fileSize: Math.round(pdf.fileStats.size / 1024 / 1024 * 100) / 100, // MB
+            processedAt: pdf.processedAt,
+            extractedEntries: extractionStats.entriesBySource[pdf.fileName] || 0
+          })),
+          
+          // Resumen general
+          summary: {
+            documentsProcessed: `${processingStats.processedPDFs}/${processingStats.totalPDFs}`,
+            pagesAnalyzed: processingStats.totalPages,
+            contentExtracted: `${extractionStats.totalEntries} entradas de diccionario`,
+            averageQuality: `${processingStats.avgWayuuPercentage}% contenido wayuu`,
+            processingEfficiency: `${Math.round(processingStats.processingTime / 1000)}s procesamiento`
+          }
+        },
+        message: `Complete PDF statistics: ${processingStats.processedPDFs} documents processed, ${extractionStats.totalEntries} dictionary entries extracted`
+      };
+    } catch (error) {
+      this.logger.error('Failed to get complete PDF stats', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve complete PDF statistics',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/documents')
+  @ApiOperation({ summary: 'Get all processed PDF documents' })
+  @ApiResponse({ status: 200, description: 'Processed PDFs retrieved successfully' })
+  async getProcessedPDFs() {
+    try {
+      const pdfs = await this.pdfProcessingService.getAllProcessedPDFs();
+      return {
+        success: true,
+        message: `Retrieved ${pdfs.length} processed PDF documents`,
+        data: {
+          count: pdfs.length,
+          documents: pdfs.map(pdf => ({
+            id: pdf.id,
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText,
+            processedAt: pdf.processedAt
+          }))
+        }
+      };
+    } catch (error) {
+      this.logger.error('Failed to get processed PDFs', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve processed PDFs',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/search')
+  @ApiOperation({ summary: 'Search Wayuu content in PDF documents' })
+  @ApiQuery({ name: 'q', required: true, description: 'Search query' })
+  @ApiResponse({ status: 200, description: 'PDF search completed successfully' })
+  async searchPDFContent(@Query('q') query: string) {
+    try {
+      if (!query || query.trim().length < 2) {
+        return {
+          success: false,
+          message: 'Search query must be at least 2 characters long'
+        };
+      }
+      
+      const results = await this.pdfProcessingService.searchWayuuContent(query.trim());
+      
+      return {
+        success: true,
+        message: `Found ${results.length} PDF documents matching "${query}"`,
+        data: {
+          query: query.trim(),
+          matchCount: results.length,
+          results: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            matchingPhrases: pdf.wayuuContent.wayuuPhrases
+              .filter(phrase => phrase.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 5),
+            matchingTranslations: pdf.wayuuContent.spanishTranslations
+              .filter(translation => translation.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 3)
+          }))
+        }
+      };
+    } catch (error) {
+      this.logger.error(`Failed to search PDF content: ${query}`, error.stack);
+      return {
+        success: false,
+        message: `Failed to search PDF content for "${query}"`,
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/extract-dictionary')
+  @ApiOperation({ 
+    summary: '📚 Extract dictionary entries from PDFs',
+    description: 'Extracts structured Wayuu-Spanish dictionary entries from processed PDF documents'
+  })
+  @ApiResponse({ status: 200, description: 'Dictionary entries extracted successfully' })
+  async extractPDFDictionaryEntries() {
+    try {
+      const entries = this.pdfProcessingService.extractDictionaryEntries();
+      const stats = this.pdfProcessingService.getDictionaryExtractionStats();
+      
+      return {
+        success: true,
+        message: `Extracted ${entries.length} dictionary entries from PDFs`,
+        data: {
+          extractedEntries: entries.length,
+          highConfidenceEntries: stats.highConfidenceEntries,
+          averageConfidence: Math.round(stats.averageConfidence * 100) / 100,
+          entriesBySource: stats.entriesBySource,
+          preview: entries.slice(0, 10), // Mostrar las primeras 10 entradas
+          stats
+        }
+      };
+    } catch (error) {
+      this.logger.error('Failed to extract PDF dictionary entries', error.stack);
+      return {
+        success: false,
+        message: 'Failed to extract dictionary entries from PDFs',
+        error: error.message
+      };
+    }
+  }
+
+  @Post('pdf/integrate')
+  @ApiOperation({ summary: 'Automatically integrate PDF entries to main dictionary' })
+  @ApiBody({
+    description: 'Integration options',
+    schema: {
+      type: 'object',
+      properties: {
+        minConfidence: {
+          type: 'number',
+          description: 'Minimum confidence threshold (0-1)',
+          default: 0.5
+        },
+        maxEntries: {
+          type: 'number', 
+          description: 'Maximum entries to integrate',
+          default: 5000
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview integration without applying changes',
+          default: false
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Integration completed successfully',
+  })
+  async integratePDFToDictionary(@Body() options: {
+    minConfidence?: number;
+    maxEntries?: number; 
+    dryRun?: boolean;
+  } = {}) {
+    try {
+      const result = await this.datasetsService.integrePDFToDictionary(options);
+      
+      return {
+        success: result.success,
+        data: {
+          ...result.data,
+          options: {
+            minConfidence: options.minConfidence || 0.5,
+            maxEntries: options.maxEntries || 5000,
+            dryRun: options.dryRun || false
+          },
+          timestamp: new Date().toISOString()
+        },
+        message: result.message
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        message: `Integration failed: ${error.message}`,
+        data: {
+          entriesAdded: 0,
+          entriesRejected: 0,
+          duplicatesSkipped: 0,
+          finalDatasetSize: 0,
+          integrationReport: []
+        }
+      };
+    }
+  }
+
   // ==================== AUDIO DOWNLOAD ENDPOINTS ====================
 
   @Get('audio/download/stats')
@@ -422,11 +794,11 @@ export class DatasetsController {
   })
   async getAudioDownloadStats() {
     try {
-      // TODO: Implement getAudioDownloadStats method in DatasetsService
+      const result = await this.datasetsService.getAudioDownloadStats();
       return {
-        success: true,
-        data: { message: 'Audio download stats not yet implemented' },
-        message: 'Audio download statistics not yet implemented'
+        success: result.success,
+        data: result.data,
+        message: result.message
       };
     } catch (error) {
       return {
@@ -445,11 +817,10 @@ export class DatasetsController {
   async downloadAudioBatch(@Body() body: { audioIds: string[]; batchSize?: number }) {
     try {
       const { audioIds, batchSize = 5 } = body;
-      // TODO: Implement downloadAudioBatch method in DatasetsService
-      const result = { success: false, message: 'Download audio batch not yet implemented' };
+      const result = await this.datasetsService.downloadAudioBatch(audioIds, batchSize);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -469,11 +840,10 @@ export class DatasetsController {
   async downloadAllAudio(@Body() body: { batchSize?: number } = {}) {
     try {
       const { batchSize = 5 } = body;
-      // TODO: Implement downloadAllAudio method in DatasetsService
-      const result = { success: false, message: 'Download all audio not yet implemented' };
+      const result = await this.datasetsService.downloadAllAudio(batchSize);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -492,11 +862,10 @@ export class DatasetsController {
   })
   async downloadAudioFile(@Param('audioId') audioId: string) {
     try {
-      // TODO: Implement downloadAudioFile method in DatasetsService
-      const result = { success: false, message: 'Download audio file not yet implemented' };
+      const result = await this.datasetsService.downloadAudioFile(audioId);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -515,11 +884,10 @@ export class DatasetsController {
   })
   async clearDownloadedAudio() {
     try {
-      // TODO: Implement clearDownloadedAudio method in DatasetsService
-      const result = { success: false, message: 'Clear downloaded audio not yet implemented' };
+      const result = await this.datasetsService.clearDownloadedAudio();
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {

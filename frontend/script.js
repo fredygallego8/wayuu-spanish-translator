@@ -604,75 +604,104 @@ class WayuuTranslator {
             
             // Step 1: Load main stats (30%)
             this.updateProgress(30, 'Cargando estadísticas principales...');
-            const statsResponse = await fetch(`${this.apiUrl}/datasets/stats`);
+            const statsResponse = await fetch(`${this.apiUrl}/metrics/growth`);
             
             if (statsResponse.ok) {
                 const statsResult = await statsResponse.json();
                 const stats = statsResult.data;
                 
-                // Update main stats
-                this.animateNumber('total-entries', stats.totalEntries || 0);
-                this.animateNumber('wayuu-words', stats.uniqueWayuuWords || 0);
-                this.animateNumber('spanish-words', stats.uniqueSpanishWords || 0);
+                // Update main stats using growth metrics
+                this.animateNumber('total-entries', stats.current_metrics.total_dictionary_entries || 0);
+                this.animateNumber('wayuu-words', stats.current_metrics.total_wayuu_words || 0);
+                this.animateNumber('spanish-words', stats.current_metrics.total_spanish_words || 0);
                 
-                // Format average with 2 decimals
-                const avgWords = stats.averageSpanishWordsPerEntry || 0;
+                // Calculate average from phrases and entries (approximate)
+                const totalPhrases = stats.current_metrics.total_phrases || 0;
+                const totalEntries = stats.current_metrics.total_dictionary_entries || 1;
+                const avgWords = totalEntries > 0 ? (totalPhrases / totalEntries) : 0;
                 document.getElementById('avg-words').textContent = avgWords.toFixed(2);
                 
-                // Update dataset source info
-                if (stats.datasetInfo) {
-                    document.getElementById('dataset-source').textContent = stats.datasetInfo.source || 'Gaxys/wayuu_spa_dict';
-                    
-                    // Format last updated date
-                    if (stats.lastLoaded) {
-                        const date = new Date(stats.lastLoaded);
-                        document.getElementById('last-updated').textContent = date.toLocaleString('es-ES');
-                    }
-                    
-                    // Update status with color
-                    const statusElement = document.getElementById('dataset-status');
-                    if (stats.totalEntries > 0) {
-                        statusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
-                    } else {
-                        statusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Cargando</span>';
-                    }
-                }
-            }
-            
-            // Step 2: Load audio stats (55%)
-            this.updateProgress(55, 'Cargando estadísticas de audio...');
-            const audioStatsResponse = await fetch(`${this.apiUrl}/datasets/audio/stats`);
-            
-            if (audioStatsResponse.ok) {
-                const audioStatsResult = await audioStatsResponse.json();
-                const audioStats = audioStatsResult.data;
+                // Update dataset source info using growth metrics
+                document.getElementById('dataset-source').textContent = `${stats.sources_info.active_sources} fuentes activas (${stats.sources_info.dictionary_sources} diccionario, ${stats.sources_info.audio_sources} audio)`;
                 
-                // Update audio stats
-                this.animateNumber('total-audio-entries', audioStats.totalAudioEntries || 0);
-                this.animateNumber('audio-transcription-words', audioStats.uniqueWayuuWords || 0);
+                // Format last updated date from growth data
+                if (stats.last_updated) {
+                    const date = new Date(stats.last_updated);
+                    document.getElementById('last-updated').textContent = date.toLocaleString('es-ES');
+                }
+                
+                // Update status with color based on active sources
+                const statusElement = document.getElementById('dataset-status');
+                if (stats.sources_info.active_sources > 0) {
+                    statusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
+                } else {
+                    statusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Sin fuentes activas</span>';
+                }
+                
+                // Step 2: Load audio stats from growth metrics (55%) - MOVED INSIDE IF BLOCK
+                this.updateProgress(55, 'Actualizando estadísticas de audio...');
+                
+                // Use audio data from stats variable (now available in this scope)
+                const audioMetrics = stats.current_metrics;
+                
+                // Update audio stats using growth metrics
+                this.animateNumber('total-audio-entries', audioMetrics.total_audio_files || 0);
+                this.animateNumber('audio-transcription-words', audioMetrics.total_transcribed || 0);
                 
                 // Format duration
-                const totalMinutes = audioStats.totalDurationMinutes || 0;
-                const avgSeconds = audioStats.averageDurationSeconds || 0;
+                const totalMinutes = audioMetrics.total_audio_minutes || 0;
+                const avgSeconds = audioMetrics.total_audio_files > 0 ? (totalMinutes * 60) / audioMetrics.total_audio_files : 0;
                 
                 document.getElementById('total-audio-duration').textContent = `${totalMinutes.toFixed(1)} min`;
                 document.getElementById('avg-audio-duration').textContent = `${avgSeconds.toFixed(1)}s`;
                 
-                // Update audio dataset info
-                const avgTranscriptionLength = audioStats.averageTranscriptionLength || 0;
-                document.getElementById('avg-transcription-length').textContent = `${avgTranscriptionLength.toFixed(0)} caracteres`;
+                // Update audio dataset info (placeholder for transcription length)
+                document.getElementById('avg-transcription-length').textContent = 'Consolidado';
                 
                 // Update audio status
                 const audioStatusElement = document.getElementById('audio-dataset-status');
-                if (audioStats.totalAudioEntries > 0) {
+                if (audioMetrics.total_audio_files > 0) {
                     audioStatusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
                 } else {
-                    audioStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Cargando</span>';
+                    audioStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Sin archivos</span>';
                 }
             }
             
-            // Step 3: Load cache info (80%)
-            this.updateProgress(80, 'Cargando información de cache...');
+            // Step 3: Load PDF stats (70%)
+            this.updateProgress(70, 'Cargando estadísticas de PDFs...');
+            const pdfStatsResponse = await fetch(`${this.apiUrl}/datasets/pdf/stats`);
+            
+            if (pdfStatsResponse.ok) {
+                const pdfStatsResult = await pdfStatsResponse.json();
+                const pdfStats = pdfStatsResult.data;
+                
+                // Update PDF stats if elements exist
+                if (document.getElementById('total-pdfs')) {
+                    this.animateNumber('total-pdfs', pdfStats.totalPDFs || 0);
+                    this.animateNumber('processed-pdfs', pdfStats.processedPDFs || 0);
+                    this.animateNumber('total-pages', pdfStats.totalPages || 0);
+                    this.animateNumber('wayuu-phrases', pdfStats.totalWayuuPhrases || 0);
+                    
+                    // Format percentage
+                    const avgWayuuPercentage = pdfStats.avgWayuuPercentage || 0;
+                    document.getElementById('avg-wayuu-percentage').textContent = `${avgWayuuPercentage}%`;
+                    
+                    // Format processing time
+                    const processingTimeSeconds = (pdfStats.processingTime || 0) / 1000;
+                    document.getElementById('processing-time').textContent = `${processingTimeSeconds.toFixed(1)}s`;
+                    
+                    // Update PDF status
+                    const pdfStatusElement = document.getElementById('pdf-status');
+                    if (pdfStats.processedPDFs > 0) {
+                        pdfStatusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Procesados</span>';
+                    } else {
+                        pdfStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-clock mr-1"></i>Pendientes</span>';
+                    }
+                }
+            }
+            
+            // Step 4: Load cache info (85%)
+            this.updateProgress(85, 'Cargando información de cache...');
             const cacheResponse = await fetch(`${this.apiUrl}/datasets/cache`);
             
             if (cacheResponse.ok) {
@@ -692,7 +721,7 @@ class WayuuTranslator {
                 }
             }
             
-            // Step 4: Complete (100%)
+            // Step 5: Complete (100%)
             this.updateProgress(100, 'Estadísticas cargadas completamente');
             
             // Hide progress after a short delay
@@ -766,10 +795,25 @@ class WayuuTranslator {
         document.getElementById('audio-transcription-words').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         document.getElementById('avg-audio-duration').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
         
+        // Show error state in PDF stats (if elements exist)
+        if (document.getElementById('total-pdfs')) {
+            document.getElementById('total-pdfs').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+            document.getElementById('processed-pdfs').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+            document.getElementById('total-pages').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+            document.getElementById('wayuu-phrases').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+            document.getElementById('avg-wayuu-percentage').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+            document.getElementById('processing-time').innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+        }
+        
         // Update status
         document.getElementById('dataset-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
         document.getElementById('audio-dataset-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
         document.getElementById('cache-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
+        
+        // Update PDF status (if element exists)
+        if (document.getElementById('pdf-status')) {
+            document.getElementById('pdf-status').innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error</span>';
+        }
     }
 
     async loadSources() {

@@ -177,4 +177,4 @@ newgrp docker
 - Configurar autenticación robusta
 - Usar HTTPS
 - Configurar respaldos de datos
-- Implementar alta disponibilidad 
+- Implementar alta disponibilidad e

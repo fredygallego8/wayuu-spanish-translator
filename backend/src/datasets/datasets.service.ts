@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as fs from 'fs/promises';
@@ -6,6 +6,7 @@ import * as path from 'path';
 import { TranslationDirection } from '../translation/dto/translate.dto';
 import { AudioDurationService } from './audio-duration.service';
 import { MetricsService } from '../metrics/metrics.service';
+import { PdfProcessingService } from '../pdf-processing/pdf-processing.service';
 import * as crypto from 'crypto';
 
 export interface DictionaryEntry {
@@ -168,12 +169,27 @@ export class DatasetsService implements OnModuleInit {
   private readonly audioCacheFile = path.join(this.cacheDir, 'wayuu-audio-cache.json');
   private readonly audioMetadataFile = path.join(this.cacheDir, 'audio-cache-metadata.json');
   private readonly audioDurationCacheFile = path.join(this.cacheDir, 'audio-duration-cache.json');
+  
+  // 🆕 Cache files para datasets adicionales
+  private readonly additionalCacheFiles = {
+    wayuu_spa_large: path.join(this.cacheDir, 'wayuu-spa-large-cache.json'),
+    wayuu_parallel_corpus: path.join(this.cacheDir, 'wayuu-parallel-corpus-cache.json'),
+    wayuu_linguistic_sources: path.join(this.cacheDir, 'wayuu-linguistic-sources-cache.json'),
+  };
+  private readonly additionalMetadataFiles = {
+    wayuu_spa_large: path.join(this.cacheDir, 'wayuu-spa-large-metadata.json'),
+    wayuu_parallel_corpus: path.join(this.cacheDir, 'wayuu-parallel-corpus-metadata.json'),
+    wayuu_linguistic_sources: path.join(this.cacheDir, 'wayuu-linguistic-sources-metadata.json'),
+  };
+  
   private readonly cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   constructor(
     private readonly configService: ConfigService,
     private readonly audioDurationService: AudioDurationService,
     private readonly metricsService: MetricsService,
+    @Inject(forwardRef(() => PdfProcessingService))
+    private readonly pdfProcessingService: PdfProcessingService,
   ) {}
 
   async onModuleInit() {
@@ -183,6 +199,10 @@ export class DatasetsService implements OnModuleInit {
     // ✅ NO más carga automática - solo preparar el servicio
     this.logger.log('🔧 Datasets service ready for on-demand loading...');
     this.logger.log('📚 Dictionary and audio data will be loaded when requested by authorized users');
+    
+    // 🆕 CARGAR DATASETS ADICIONALES DESDE CACHE
+    await this.loadAdditionalDatasetsFromCache();
+    
     this.logger.log('✨ Service ready - lazy loading enabled');
 
     // Actualizar métricas iniciales
@@ -1894,8 +1914,8 @@ export class DatasetsService implements OnModuleInit {
       if (additionalDataset) {
         entriesCount = additionalDataset.length;
       } else {
-        // Usar valor conocido del dataset
-        entriesCount = 46827; // Valor del dataset Gaxys/wayuu_spa
+        // 🔧 FIX: No usar valores hardcodeados - solo reportar datos reales
+        entriesCount = 0; // Dataset no está cargado en memoria
       }
     } else if (sourceId === 'wayuu_parallel_corpus') {
       // Corpus paralelo
@@ -1903,17 +1923,23 @@ export class DatasetsService implements OnModuleInit {
       if (additionalDataset) {
         entriesCount = additionalDataset.length;
       } else {
-        // Usar valor conocido del dataset
-        entriesCount = 42687; // Valor del dataset weezygeezer/Wayuu-Spanish_Parallel-Corpus
+        // 🔧 FIX: No usar valores hardcodeados - solo reportar datos reales
+        entriesCount = 0; // Dataset no está cargado en memoria
       }
     } else if (sourceId === 'wayuu_linguistic_sources') {
-      // Fuentes lingüísticas wayuu
-      const additionalDataset = this.additionalDatasets.get(sourceId);
-      if (additionalDataset) {
-        entriesCount = additionalDataset.length;
-      } else {
-        // Valor estimado para las fuentes lingüísticas (se actualizará dinámicamente)
-        entriesCount = 0; // Se calculará cuando se cargue el dataset
+      // 🚨 NUEVA LÓGICA: Fuentes lingüísticas wayuu conectadas a PDFs
+      try {
+        // Obtener estadísticas reales de PDFs procesados
+        const processingStats = await this.pdfProcessingService.getProcessingStats();
+        const extractionStats = this.pdfProcessingService.getDictionaryExtractionStats();
+        
+        // Usar el número de entradas extraídas del diccionario como métrica principal
+        entriesCount = extractionStats.totalEntries || 0;
+        
+        this.logger.log(`📚 PDF Linguistic Sources: ${entriesCount} dictionary entries extracted from ${processingStats.processedPDFs} PDFs`);
+      } catch (error) {
+        this.logger.warn(`⚠️ Could not get PDF stats for linguistic sources: ${error.message}`);
+        entriesCount = 0;
       }
     }
 
@@ -2031,6 +2057,10 @@ export class DatasetsService implements OnModuleInit {
             
             this.additionalDatasets.set(id, processedData);
             this.loadedDatasetSources.add(id);
+            
+            // 🆕 GUARDAR EN CACHE PARA PERSISTENCIA
+            await this.saveAdditionalDatasetToCache(id, processedData, source.dataset);
+            
             this.logger.log(`✅ Full dataset loaded: ${source.name} (${processedData.length} entries)`);
             
             return {
@@ -2203,6 +2233,26 @@ export class DatasetsService implements OnModuleInit {
         }
       }
 
+      // Update PDF processing metrics
+      try {
+        const pdfStats = await this.pdfProcessingService.getProcessingStats();
+        this.metricsService.updatePdfProcessingTotalPdfs(pdfStats.totalPDFs);
+        this.metricsService.updatePdfProcessingProcessedPdfs(pdfStats.processedPDFs);
+        this.metricsService.updatePdfProcessingTotalPages(pdfStats.totalPages);
+        this.metricsService.updatePdfProcessingWayuuPhrases(pdfStats.totalWayuuPhrases);
+        this.metricsService.updatePdfProcessingWayuuPercentage(pdfStats.avgWayuuPercentage);
+        this.metricsService.updatePdfProcessingTimeSeconds(pdfStats.processingTime / 1000); // Convert to seconds
+      } catch (pdfError) {
+        this.logger.warn(`⚠️ Could not update PDF metrics: ${pdfError.message}`);
+        // Set default values if PDF service is not available
+        this.metricsService.updatePdfProcessingTotalPdfs(0);
+        this.metricsService.updatePdfProcessingProcessedPdfs(0);
+        this.metricsService.updatePdfProcessingTotalPages(0);
+        this.metricsService.updatePdfProcessingWayuuPhrases(0);
+        this.metricsService.updatePdfProcessingWayuuPercentage(0);
+        this.metricsService.updatePdfProcessingTimeSeconds(0);
+      }
+
       // Log current state for metrics collection
       this.logger.log(`📊 Metrics updated: Dictionary=${this.totalEntries}, Audio=${this.totalAudioEntries}, Sources=${sources.length}, Active=${activeSources.length}`);
       
@@ -2226,97 +2276,815 @@ export class DatasetsService implements OnModuleInit {
     dictionary_entries: number;
     audio_files: number;
   }> {
+    // Implementar estadísticas específicas por fuente
+    const totalEntries = this.wayuuDictionary.length;
+    const wayuuWords = new Set(this.wayuuDictionary.map(entry => entry.guc)).size;
+    const spanishWords = new Set(
+      this.wayuuDictionary.flatMap(entry => entry.spa.toLowerCase().split(' '))
+    ).size;
+    
+    // Para audio
+    const audioMinutes = this.wayuuAudioDataset.reduce((sum, entry) => sum + entry.audioDuration, 0) / 60;
+    const audioFiles = this.wayuuAudioDataset.length;
+    const phrases = this.wayuuAudioDataset.length; // Cada transcripción es una frase
+    const transcribed = this.wayuuAudioDataset.filter(entry => entry.transcription && entry.transcription.length > 0).length;
+    
+    return {
+      total_entries: totalEntries,
+      wayuu_words: wayuuWords,
+      spanish_words: spanishWords,
+      audio_minutes: Math.round(audioMinutes * 100) / 100,
+      phrases: phrases,
+      transcribed: transcribed,
+      dictionary_entries: totalEntries,
+      audio_files: audioFiles,
+    };
+  }
+
+  // ===========================================
+  // 🆕 MÉTODOS DE PERSISTENCIA PARA DATASETS ADICIONALES
+  // ===========================================
+
+  /**
+   * Carga automáticamente datasets adicionales desde cache al inicializar
+   */
+  private async loadAdditionalDatasetsFromCache(): Promise<void> {
+    this.logger.log('🔄 Loading additional datasets from cache...');
+    
+    const additionalDatasetIds = ['wayuu_spa_large', 'wayuu_parallel_corpus', 'wayuu_linguistic_sources'];
+    
+    for (const datasetId of additionalDatasetIds) {
+      try {
+        const cacheResult = await this.loadAdditionalDatasetFromCache(datasetId);
+        if (cacheResult.success) {
+          this.additionalDatasets.set(datasetId, cacheResult.data);
+          this.loadedDatasetSources.add(datasetId);
+          this.logger.log(`✅ Loaded ${cacheResult.data.length} entries for ${datasetId} from cache`);
+        } else {
+          this.logger.warn(`⚠️ No cache found for ${datasetId}: ${cacheResult.message}`);
+        }
+      } catch (error) {
+        this.logger.warn(`❌ Error loading ${datasetId} from cache: ${error.message}`);
+      }
+    }
+
+    const totalLoaded = Array.from(this.additionalDatasets.values()).reduce((sum, dataset) => sum + dataset.length, 0);
+    if (totalLoaded > 0) {
+      this.logger.log(`📚 Restored ${totalLoaded} additional entries from cache across ${this.additionalDatasets.size} datasets`);
+    }
+  }
+
+  /**
+   * Carga un dataset adicional específico desde cache
+   */
+  private async loadAdditionalDatasetFromCache(datasetId: string): Promise<{
+    success: boolean;
+    data: DictionaryEntry[];
+    message: string;
+    shouldUpdate?: boolean;
+  }> {
+    const cacheFile = this.additionalCacheFiles[datasetId];
+    const metadataFile = this.additionalMetadataFiles[datasetId];
+
+    if (!cacheFile || !metadataFile) {
+      return {
+        success: false,
+        data: [],
+        message: `No cache configuration for dataset: ${datasetId}`
+      };
+    }
+
     try {
-      // Find the source by name
-      const source = this.huggingFaceSources.find(s => s.name === sourceName);
-      if (!source || !source.isActive) {
+      // Verificar si los archivos de cache existen
+      const cacheExists = await this.fileExists(cacheFile);
+      const metadataExists = await this.fileExists(metadataFile);
+
+      if (!cacheExists || !metadataExists) {
         return {
-          total_entries: 0,
-          wayuu_words: 0,
-          spanish_words: 0,
-          audio_minutes: 0,
-          phrases: 0,
-          transcribed: 0,
-          dictionary_entries: 0,
-          audio_files: 0,
+          success: false,
+          data: [],
+          message: 'Cache files not found'
         };
       }
 
-      // Ensure data is loaded
-      if (!this.isLoaded) {
-        await this.loadWayuuDictionary();
-      }
-      if (!this.isAudioLoaded) {
-        await this.loadWayuuAudioDataset();
-      }
+      // Leer metadata
+      const metadataContent = await fs.readFile(metadataFile, 'utf-8');
+      const metadata: CacheMetadata = JSON.parse(metadataContent);
 
-      let stats = {
-        total_entries: 0,
-        wayuu_words: 0,
-        spanish_words: 0,
-        audio_minutes: 0,
-        phrases: 0,
-        transcribed: 0,
-        dictionary_entries: 0,
-        audio_files: 0,
+      // Verificar si el cache no ha expirado
+      const now = Date.now();
+      const cacheAge = now - new Date(metadata.lastUpdated).getTime();
+      const shouldUpdate = cacheAge > this.cacheMaxAge;
+
+      // Leer datos del cache
+      const cacheContent = await fs.readFile(cacheFile, 'utf-8');
+      const data: DictionaryEntry[] = JSON.parse(cacheContent);
+
+      this.logger.log(`📦 Cache for ${datasetId}: ${data.length} entries, age: ${Math.round(cacheAge / (1000 * 60 * 60))}h`);
+
+      return {
+        success: true,
+        data,
+        message: `Loaded ${data.length} entries from cache`,
+        shouldUpdate
       };
 
-      if (source.type === 'dictionary' || source.type === 'mixed') {
-        // Calculate dictionary statistics
-        const wayuuWords = new Set<string>();
-        const spanishWords = new Set<string>();
-        
-        this.wayuuDictionary.forEach(entry => {
-          // Split text into words and add to sets
-          const wayuuWordList = entry.guc.toLowerCase().split(/\s+/).filter(word => word.length > 1);
-          const spanishWordList = entry.spa.toLowerCase().split(/\s+/).filter(word => word.length > 1);
-          
-          wayuuWordList.forEach(word => wayuuWords.add(word));
-          spanishWordList.forEach(word => spanishWords.add(word));
-        });
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Cache read error: ${error.message}`
+      };
+    }
+  }
 
-        stats.dictionary_entries = this.totalEntries;
-        stats.phrases += this.totalEntries;
-        stats.wayuu_words = wayuuWords.size;
-        stats.spanish_words = spanishWords.size;
-        stats.total_entries += this.totalEntries;
+  /**
+   * Guarda un dataset adicional en cache
+   */
+  private async saveAdditionalDatasetToCache(datasetId: string, data: DictionaryEntry[], source: string): Promise<void> {
+    const cacheFile = this.additionalCacheFiles[datasetId];
+    const metadataFile = this.additionalMetadataFiles[datasetId];
+
+    if (!cacheFile || !metadataFile) {
+      this.logger.warn(`⚠️ No cache configuration for dataset: ${datasetId}`);
+      return;
+    }
+
+    try {
+      // Preparar metadata
+      const metadata: CacheMetadata = {
+        lastUpdated: new Date().toISOString(),
+        totalEntries: data.length,
+        datasetVersion: '1.0.0',
+        source: source,
+        checksum: this.generateChecksum(data)
+      };
+
+      // Guardar datos y metadata
+      await fs.writeFile(cacheFile, JSON.stringify(data, null, 2), 'utf-8');
+      await fs.writeFile(metadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
+
+      this.logger.log(`💾 Saved ${data.length} entries to cache for ${datasetId}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to save cache for ${datasetId}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Limpia cache de un dataset adicional específico
+   */
+  async clearAdditionalDatasetCache(datasetId: string): Promise<void> {
+    const cacheFile = this.additionalCacheFiles[datasetId];
+    const metadataFile = this.additionalMetadataFiles[datasetId];
+
+    if (!cacheFile || !metadataFile) {
+      return;
+    }
+
+    try {
+      if (await this.fileExists(cacheFile)) {
+        await fs.unlink(cacheFile);
+      }
+      if (await this.fileExists(metadataFile)) {
+        await fs.unlink(metadataFile);
+      }
+      
+      // Remover de memoria
+      this.additionalDatasets.delete(datasetId);
+      this.loadedDatasetSources.delete(datasetId);
+
+      this.logger.log(`🗑️ Cleared cache for ${datasetId}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to clear cache for ${datasetId}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Limpia todos los caches de datasets adicionales
+   */
+  async clearAllAdditionalDatasetCaches(): Promise<void> {
+    const datasetIds = Object.keys(this.additionalCacheFiles);
+    
+    for (const datasetId of datasetIds) {
+      await this.clearAdditionalDatasetCache(datasetId);
+    }
+    
+    this.logger.log('🗑️ Cleared all additional dataset caches');
+  }
+
+  // ===========================================
+  // 🎵 MÉTODOS DE DESCARGA DE AUDIO
+  // ===========================================
+
+  /**
+   * Obtiene estadísticas de descarga de archivos de audio
+   */
+  async getAudioDownloadStats(): Promise<{
+    success: boolean;
+    data: {
+      totalFiles: number;
+      downloadedFiles: number;
+      pendingFiles: number;
+      totalSizeMB: number;
+      downloadedSizeMB: number;
+      downloadProgress: number;
+      lastDownload?: string;
+    };
+    message: string;
+  }> {
+    try {
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      const audioDataset = this.wayuuAudioDataset;
+      
+      let downloadedFiles = 0;
+      let totalSizeMB = 0;
+      let downloadedSizeMB = 0;
+      let lastDownloadTime: Date | null = null;
+
+      // Verificar archivos descargados
+      for (const audioEntry of audioDataset) {
+        const fileName = audioEntry.fileName || `${audioEntry.id}.wav`;
+        const filePath = path.join(audioDir, fileName);
+        
+        // Estimar tamaño basado en duración (aprox 176KB por segundo para WAV)
+        const estimatedSizeBytes = audioEntry.audioDuration * 176 * 1024;
+        totalSizeMB += estimatedSizeBytes / (1024 * 1024);
+        
+        if (await this.fileExists(filePath)) {
+          downloadedFiles++;
+          downloadedSizeMB += estimatedSizeBytes / (1024 * 1024);
+          
+          // Obtener fecha de modificación para último download
+          try {
+            const stats = await fs.stat(filePath);
+            if (!lastDownloadTime || stats.mtime > lastDownloadTime) {
+              lastDownloadTime = stats.mtime;
+            }
+          } catch (error) {
+            // Ignorar errores de stats
+          }
+        }
       }
 
-      if (source.type === 'audio' || source.type === 'mixed') {
-        // Calculate audio statistics
-        const totalDurationSeconds = this.wayuuAudioDataset.reduce((sum, entry) => sum + (entry.audioDuration || 0), 0);
-        const transcribedCount = this.wayuuAudioDataset.filter(entry => entry.transcription && entry.transcription.trim().length > 0).length;
+      const downloadProgress = audioDataset.length > 0 ? (downloadedFiles / audioDataset.length) * 100 : 0;
+
+      return {
+        success: true,
+        data: {
+          totalFiles: audioDataset.length,
+          downloadedFiles,
+          pendingFiles: audioDataset.length - downloadedFiles,
+          totalSizeMB: Math.round(totalSizeMB * 100) / 100,
+          downloadedSizeMB: Math.round(downloadedSizeMB * 100) / 100,
+          downloadProgress: Math.round(downloadProgress * 100) / 100,
+          lastDownload: lastDownloadTime?.toISOString()
+        },
+        message: `Download stats: ${downloadedFiles}/${audioDataset.length} files (${Math.round(downloadProgress)}%)`
+      };
+    } catch (error) {
+      this.logger.error(`Error getting audio download stats: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          totalFiles: 0,
+          downloadedFiles: 0,
+          pendingFiles: 0,
+          totalSizeMB: 0,
+          downloadedSizeMB: 0,
+          downloadProgress: 0
+        },
+        message: `Error getting download stats: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga múltiples archivos de audio en lotes
+   */
+  async downloadAudioBatch(audioIds: string[], batchSize: number = 5): Promise<{
+    success: boolean;
+    data: {
+      requested: number;
+      successful: number;
+      failed: number;
+      skipped: number;
+      results: Array<{
+        audioId: string;
+        status: 'success' | 'failed' | 'skipped';
+        message: string;
+        filePath?: string;
+      }>;
+    };
+    message: string;
+  }> {
+    try {
+      await this.ensureCacheDirectory();
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      await fs.mkdir(audioDir, { recursive: true });
+
+      const results = [];
+      let successful = 0;
+      let failed = 0;
+      let skipped = 0;
+
+      // Procesar en lotes para evitar sobrecargar la red
+      for (let i = 0; i < audioIds.length; i += batchSize) {
+        const batch = audioIds.slice(i, i + batchSize);
         
-        // Count unique words in transcriptions
-        const transcriptionWords = new Set<string>();
-        this.wayuuAudioDataset.forEach(entry => {
-          if (entry.transcription) {
-            const words = entry.transcription.toLowerCase().split(/\s+/).filter(word => word.length > 1);
-            words.forEach(word => transcriptionWords.add(word));
+        const batchPromises = batch.map(async (audioId) => {
+          try {
+            const audioEntry = this.wayuuAudioDataset.find(entry => entry.id === audioId);
+            
+            if (!audioEntry) {
+              return {
+                audioId,
+                status: 'failed' as const,
+                message: 'Audio entry not found'
+              };
+            }
+
+            const fileName = audioEntry.fileName || `${audioId}.wav`;
+            const filePath = path.join(audioDir, fileName);
+
+            // Verificar si ya existe
+            if (await this.fileExists(filePath)) {
+              return {
+                audioId,
+                status: 'skipped' as const,
+                message: 'File already exists',
+                filePath
+              };
+            }
+
+                         // Descargar archivo
+             if (audioEntry.audioUrl) {
+               const response = await axios.get(audioEntry.audioUrl, { 
+                 responseType: 'arraybuffer',
+                 timeout: 30000 
+               });
+
+               const buffer = Buffer.from(response.data);
+               await fs.writeFile(filePath, buffer);
+
+              return {
+                audioId,
+                status: 'success' as const,
+                message: `Downloaded successfully (${Math.round(buffer.length / 1024)}KB)`,
+                filePath
+              };
+            } else {
+              return {
+                audioId,
+                status: 'failed' as const,
+                message: 'No audio URL available'
+              };
+            }
+          } catch (error) {
+            return {
+              audioId,
+              status: 'failed' as const,
+              message: `Download failed: ${error.message}`
+            };
           }
         });
 
-        stats.audio_files = this.totalAudioEntries;
-        stats.audio_minutes = totalDurationSeconds / 60;
-        stats.transcribed = transcribedCount;
-        stats.phrases += transcribedCount;
-        stats.wayuu_words += transcriptionWords.size;
-        stats.total_entries += this.totalAudioEntries;
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+
+        // Contar resultados
+        batchResults.forEach(result => {
+          switch (result.status) {
+            case 'success': successful++; break;
+            case 'failed': failed++; break;
+            case 'skipped': skipped++; break;
+          }
+        });
+
+        // Pequeña pausa entre lotes para evitar rate limiting
+        if (i + batchSize < audioIds.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
 
-      return stats;
-    } catch (error) {
-      this.logger.error(`❌ Error getting dataset stats for ${sourceName}:`, error);
+      this.logger.log(`📥 Batch download completed: ${successful} successful, ${failed} failed, ${skipped} skipped`);
+
       return {
-        total_entries: 0,
-        wayuu_words: 0,
-        spanish_words: 0,
-        audio_minutes: 0,
-        phrases: 0,
-        transcribed: 0,
-        dictionary_entries: 0,
-        audio_files: 0,
+        success: successful > 0,
+        data: {
+          requested: audioIds.length,
+          successful,
+          failed,
+          skipped,
+          results
+        },
+        message: `Batch download: ${successful}/${audioIds.length} successful`
       };
+    } catch (error) {
+      this.logger.error(`Error in batch download: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          requested: audioIds.length,
+          successful: 0,
+          failed: audioIds.length,
+          skipped: 0,
+          results: []
+        },
+        message: `Batch download failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga todos los archivos de audio disponibles
+   */
+  async downloadAllAudio(batchSize: number = 5): Promise<{
+    success: boolean;
+    data: {
+      totalFiles: number;
+      successful: number;
+      failed: number;
+      skipped: number;
+      estimatedTime: string;
+    };
+    message: string;
+  }> {
+    try {
+      const allAudioIds = this.wayuuAudioDataset.map(entry => entry.id);
+      
+      if (allAudioIds.length === 0) {
+        return {
+          success: false,
+          data: {
+            totalFiles: 0,
+            successful: 0,
+            failed: 0,
+            skipped: 0,
+            estimatedTime: '0 minutes'
+          },
+          message: 'No audio files available for download'
+        };
+      }
+
+      this.logger.log(`📥 Starting download of all ${allAudioIds.length} audio files...`);
+      const startTime = Date.now();
+
+      const result = await this.downloadAudioBatch(allAudioIds, batchSize);
+      
+      const endTime = Date.now();
+      const durationSeconds = (endTime - startTime) / 1000;
+      const estimatedTime = durationSeconds > 60 
+        ? `${Math.round(durationSeconds / 60)} minutes`
+        : `${Math.round(durationSeconds)} seconds`;
+
+      return {
+        success: result.success,
+        data: {
+          totalFiles: result.data.requested,
+          successful: result.data.successful,
+          failed: result.data.failed,
+          skipped: result.data.skipped,
+          estimatedTime
+        },
+        message: `Downloaded all audio files in ${estimatedTime}: ${result.data.successful}/${result.data.requested} successful`
+      };
+    } catch (error) {
+      this.logger.error(`Error downloading all audio: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          totalFiles: 0,
+          successful: 0,
+          failed: 0,
+          skipped: 0,
+          estimatedTime: '0 minutes'
+        },
+        message: `Error downloading all audio: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga un archivo de audio específico
+   */
+  async downloadAudioFile(audioId: string): Promise<{
+    success: boolean;
+    data: {
+      audioId: string;
+      fileName?: string;
+      filePath?: string;
+      fileSize?: number;
+      downloadTime?: number;
+    };
+    message: string;
+  }> {
+    try {
+      const audioEntry = this.wayuuAudioDataset.find(entry => entry.id === audioId);
+      
+      if (!audioEntry) {
+        return {
+          success: false,
+          data: { audioId },
+          message: `Audio entry not found: ${audioId}`
+        };
+      }
+
+      if (!audioEntry.audioUrl) {
+        return {
+          success: false,
+          data: { audioId },
+          message: 'No audio URL available for download'
+        };
+      }
+
+      await this.ensureCacheDirectory();
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      await fs.mkdir(audioDir, { recursive: true });
+
+      const fileName = audioEntry.fileName || `${audioId}.wav`;
+      const filePath = path.join(audioDir, fileName);
+
+      // Verificar si ya existe
+      if (await this.fileExists(filePath)) {
+        const stats = await fs.stat(filePath);
+        return {
+          success: true,
+          data: {
+            audioId,
+            fileName,
+            filePath,
+            fileSize: stats.size,
+            downloadTime: 0
+          },
+          message: 'File already exists'
+        };
+      }
+
+      // Descargar archivo
+      const startTime = Date.now();
+      const response = await axios.get(audioEntry.audioUrl, { 
+        responseType: 'arraybuffer',
+        timeout: 30000 
+      });
+      
+      const buffer = Buffer.from(response.data);
+      await fs.writeFile(filePath, buffer);
+      
+      const downloadTime = Date.now() - startTime;
+
+      this.logger.log(`📥 Downloaded ${fileName}: ${Math.round(buffer.length / 1024)}KB in ${downloadTime}ms`);
+
+      return {
+        success: true,
+        data: {
+          audioId,
+          fileName,
+          filePath,
+          fileSize: buffer.length,
+          downloadTime
+        },
+        message: `Successfully downloaded ${fileName} (${Math.round(buffer.length / 1024)}KB)`
+      };
+    } catch (error) {
+      this.logger.error(`Error downloading audio file ${audioId}: ${error.message}`);
+      return {
+        success: false,
+        data: { audioId },
+        message: `Download failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Limpia todos los archivos de audio descargados
+   */
+  async clearDownloadedAudio(): Promise<{
+    success: boolean;
+    data: {
+      filesRemoved: number;
+      spaceClearedMB: number;
+      errors: string[];
+    };
+    message: string;
+  }> {
+    try {
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      let filesRemoved = 0;
+      let spaceClearedBytes = 0;
+      const errors: string[] = [];
+
+      // Verificar si el directorio existe
+      if (await this.fileExists(audioDir)) {
+        const files = await fs.readdir(audioDir);
+        
+        for (const file of files) {
+          try {
+            const filePath = path.join(audioDir, file);
+            const stats = await fs.stat(filePath);
+            
+            // Solo eliminar archivos de audio (wav, mp3, etc.)
+            if (stats.isFile() && /\.(wav|mp3|m4a|aac|ogg)$/i.test(file)) {
+              spaceClearedBytes += stats.size;
+              await fs.unlink(filePath);
+              filesRemoved++;
+            }
+          } catch (error) {
+            errors.push(`Failed to remove ${file}: ${error.message}`);
+          }
+        }
+      }
+
+      const spaceClearedMB = spaceClearedBytes / (1024 * 1024);
+
+      this.logger.log(`🗑️ Cleared ${filesRemoved} audio files (${Math.round(spaceClearedMB * 100) / 100}MB)`);
+
+      return {
+        success: true,
+        data: {
+          filesRemoved,
+          spaceClearedMB: Math.round(spaceClearedMB * 100) / 100,
+          errors
+        },
+        message: `Cleared ${filesRemoved} audio files (${Math.round(spaceClearedMB * 100) / 100}MB freed)`
+      };
+    } catch (error) {
+      this.logger.error(`Error clearing downloaded audio: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          filesRemoved: 0,
+          spaceClearedMB: 0,
+          errors: [error.message]
+        },
+        message: `Error clearing audio files: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Integra automáticamente entradas PDF al dataset principal
+   */
+  async integrePDFToDictionary(options: {
+    minConfidence?: number;
+    maxEntries?: number;
+    dryRun?: boolean;
+  } = {}): Promise<{
+    success: boolean;
+    data: {
+      entriesAdded: number;
+      entriesRejected: number;
+      duplicatesSkipped: number;
+      finalDatasetSize: number;
+      integrationReport: any[];
+    };
+    message: string;
+  }> {
+    try {
+      const { minConfidence = 0.5, maxEntries = 5000, dryRun = false } = options;
+      
+      // 1. Obtener entradas PDF extraídas
+      const pdfEntries = this.pdfProcessingService.extractDictionaryEntries();
+      if (!pdfEntries || pdfEntries.length === 0) {
+        throw new Error('No PDF entries available for integration');
+      }
+
+      // 2. Cargar dataset principal si no está cargado
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
+      }
+
+      // 3. Preparar entradas para integración
+      const candidateEntries = pdfEntries
+        .filter(entry => entry.confidence >= minConfidence)
+        .slice(0, maxEntries);
+
+      // 4. Crear mapa de entradas existentes para evitar duplicados
+      const existingEntries = new Set();
+      this.wayuuDictionary.forEach(entry => {
+        existingEntries.add(`${entry.guc}|${entry.spa}`.toLowerCase());
+      });
+
+      // 5. Procesar entradas candidatas
+      let entriesAdded = 0;
+      let entriesRejected = 0;
+      let duplicatesSkipped = 0;
+      const integrationReport = [];
+
+      const newEntries = [];
+      
+      for (const entry of candidateEntries) {
+        const key = `${entry.guc}|${entry.spa}`.toLowerCase();
+        
+        if (existingEntries.has(key)) {
+          duplicatesSkipped++;
+          continue;
+        }
+
+        if (entry.confidence < minConfidence) {
+          entriesRejected++;
+          integrationReport.push({
+            guc: entry.guc,
+            spa: entry.spa,
+            reason: 'Low confidence',
+            confidence: entry.confidence
+          });
+          continue;
+        }
+
+        // Validar formato de entrada
+        if (!entry.guc || !entry.spa || entry.guc.length < 2 || entry.spa.length < 2) {
+          entriesRejected++;
+          integrationReport.push({
+            guc: entry.guc,
+            spa: entry.spa,
+            reason: 'Invalid format',
+            confidence: entry.confidence
+          });
+          continue;
+        }
+
+        // Entrada válida para integración
+        if (!dryRun) {
+          newEntries.push({
+            guc: entry.guc.trim(),
+            spa: entry.spa.trim(),
+            source: 'PDF_Integration',
+            confidence: entry.confidence,
+            integratedAt: new Date().toISOString()
+          });
+        }
+        
+        entriesAdded++;
+        existingEntries.add(key);
+      }
+
+      // 6. Integrar entradas al dataset principal
+      if (!dryRun && newEntries.length > 0) {
+        this.wayuuDictionary.push(...newEntries);
+        
+        // 7. Actualizar cache
+        await this.updateWayuuDictionaryCache();
+        
+        this.logger.log(`🎉 PDF Integration successful: ${entriesAdded} entries added to dictionary`);
+      }
+
+      const finalDatasetSize = this.wayuuDictionary.length;
+
+      return {
+        success: true,
+        data: {
+          entriesAdded,
+          entriesRejected,
+          duplicatesSkipped,
+          finalDatasetSize,
+          integrationReport: integrationReport.slice(0, 10) // Limitar reporte
+        },
+        message: dryRun 
+          ? `Dry run complete: ${entriesAdded} entries would be added` 
+          : `Integration successful: ${entriesAdded} entries added, final size: ${finalDatasetSize}`
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ PDF Integration failed: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          entriesAdded: 0,
+          entriesRejected: 0,
+          duplicatesSkipped: 0,
+          finalDatasetSize: this.wayuuDictionary?.length || 0,
+          integrationReport: []
+        },
+        message: `Integration failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Actualiza el cache del diccionario wayuu con nuevas entradas
+   */
+  private async updateWayuuDictionaryCache(): Promise<void> {
+    try {
+      const cacheData = {
+        entries: this.wayuuDictionary,
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          totalEntries: this.wayuuDictionary.length,
+          cacheVersion: '1.2',
+          integrationHistory: {
+            lastPDFIntegration: new Date().toISOString()
+          }
+        }
+      };
+
+      await fs.writeFile(
+        this.cacheFile,
+        JSON.stringify(cacheData, null, 2)
+      );
+
+      this.logger.log(`📦 Dictionary cache updated: ${this.wayuuDictionary.length} entries`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to update dictionary cache: ${error.message}`);
     }
   }
 }

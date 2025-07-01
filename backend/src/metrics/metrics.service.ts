@@ -178,6 +178,43 @@ export class MetricsService implements OnModuleInit {
     labelNames: ['dataset_name'],
   });
 
+  // Métricas de Procesamiento de PDFs
+  public readonly pdfProcessingTotalPdfs = new Gauge({
+    name: 'wayuu_pdf_processing_total_pdfs',
+    help: 'Total number of PDF documents available for processing',
+  });
+
+  public readonly pdfProcessingProcessedPdfs = new Gauge({
+    name: 'wayuu_pdf_processing_processed_pdfs',
+    help: 'Number of PDF documents that have been processed',
+  });
+
+  public readonly pdfProcessingTotalPages = new Gauge({
+    name: 'wayuu_pdf_processing_total_pages',
+    help: 'Total number of pages processed across all PDFs',
+  });
+
+  public readonly pdfProcessingWayuuPhrases = new Gauge({
+    name: 'wayuu_pdf_processing_wayuu_phrases',
+    help: 'Total number of Wayuu phrases extracted from PDFs',
+  });
+
+  public readonly pdfProcessingWayuuPercentage = new Gauge({
+    name: 'wayuu_pdf_processing_wayuu_percentage',
+    help: 'Average percentage of Wayuu content across processed PDFs',
+  });
+
+  public readonly pdfProcessingTimeSeconds = new Gauge({
+    name: 'wayuu_pdf_processing_time_seconds',
+    help: 'Total time spent processing PDFs in seconds',
+  });
+
+  public readonly pdfProcessingOperations = new Counter({
+    name: 'wayuu_pdf_processing_operations_total',
+    help: 'Total number of PDF processing operations',
+    labelNames: ['operation', 'status'],
+  });
+
   // Métricas de Fuentes HuggingFace
   public readonly huggingfaceSourcesTotal = new Gauge({
     name: 'wayuu_huggingface_sources_total',
@@ -236,10 +273,7 @@ export class MetricsService implements OnModuleInit {
     // Registrar métricas por defecto del sistema (CPU, memoria, etc.)
     collectDefaultMetrics({ register });
     
-    // Limpiar el registro para evitar duplicados en hot reload
-    register.clear();
-    
-    // Re-registrar nuestras métricas personalizadas
+    // Registrar nuestras métricas personalizadas
     register.registerMetric(this.translationCounter);
     register.registerMetric(this.translationDuration);
     register.registerMetric(this.translationErrors);
@@ -269,6 +303,16 @@ export class MetricsService implements OnModuleInit {
     register.registerMetric(this.audioDatasetAverageDuration);
     register.registerMetric(this.audioFilesDownloaded);
     register.registerMetric(this.audioFilesDownloadProgress);
+    
+    // Registrar métricas de procesamiento de PDFs
+    register.registerMetric(this.pdfProcessingTotalPdfs);
+    register.registerMetric(this.pdfProcessingProcessedPdfs);
+    register.registerMetric(this.pdfProcessingTotalPages);
+    register.registerMetric(this.pdfProcessingWayuuPhrases);
+    register.registerMetric(this.pdfProcessingWayuuPercentage);
+    register.registerMetric(this.pdfProcessingTimeSeconds);
+    register.registerMetric(this.pdfProcessingOperations);
+    
     register.registerMetric(this.huggingfaceSourcesTotal);
     register.registerMetric(this.huggingfaceSourcesActive);
 
@@ -281,9 +325,6 @@ export class MetricsService implements OnModuleInit {
     register.registerMetric(this.totalDictionaryEntries);
     register.registerMetric(this.totalAudioFiles);
     register.registerMetric(this.growthLastUpdateTimestamp);
-
-    // Volver a registrar métricas por defecto
-    collectDefaultMetrics({ register });
   }
 
   // Método para obtener todas las métricas en formato Prometheus
@@ -380,6 +421,35 @@ export class MetricsService implements OnModuleInit {
 
   updateAudioDownloadProgress(datasetName: string, progressPercent: number) {
     this.audioFilesDownloadProgress.set({ dataset_name: datasetName }, progressPercent);
+  }
+
+  // Métodos para actualizar métricas de PDFs
+  updatePdfProcessingTotalPdfs(total: number) {
+    this.pdfProcessingTotalPdfs.set(total);
+  }
+
+  updatePdfProcessingProcessedPdfs(processed: number) {
+    this.pdfProcessingProcessedPdfs.set(processed);
+  }
+
+  updatePdfProcessingTotalPages(pages: number) {
+    this.pdfProcessingTotalPages.set(pages);
+  }
+
+  updatePdfProcessingWayuuPhrases(phrases: number) {
+    this.pdfProcessingWayuuPhrases.set(phrases);
+  }
+
+  updatePdfProcessingWayuuPercentage(percentage: number) {
+    this.pdfProcessingWayuuPercentage.set(percentage);
+  }
+
+  updatePdfProcessingTimeSeconds(timeSeconds: number) {
+    this.pdfProcessingTimeSeconds.set(timeSeconds);
+  }
+
+  incrementPdfProcessingOperation(operation: string, status: string) {
+    this.pdfProcessingOperations.inc({ operation, status });
   }
 
   updateHuggingfaceSourcesTotal(sourceType: string, total: number) {

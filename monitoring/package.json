@@ -1,0 +1,27 @@
+{
+  "name": "wayuu-grafana-connector",
+  "version": "1.0.0",
+  "description": "Script automatizado para conectar con Grafana Dashboard usando Puppeteer",
+  "main": "grafana-dashboard-connector.js",
+  "scripts": {
+    "install-deps": "npm install puppeteer",
+    "dashboard": "node grafana-dashboard-connector.js --basic",
+    "dashboard-visual": "node grafana-dashboard-connector.js --basic --headless=false",
+    "monitor": "node grafana-dashboard-connector.js --monitor",
+    "help": "node grafana-dashboard-connector.js --help",
+    "test-connection": "node -e \"const connector = require('./grafana-dashboard-connector.js'); new connector().init().then(() => console.log('✅ Puppeteer OK')).catch(e => console.error('❌', e.message));\""
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  },
+  "keywords": [
+    "grafana",
+    "puppeteer",
+    "automation",
+    "dashboard",
+    "monitoring",
+    "wayuu"
+  ],
+  "author": "Wayuu Translator Team",
+  "license": "MIT"
+} 

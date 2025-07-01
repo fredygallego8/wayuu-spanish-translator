@@ -55,8 +55,7 @@ services:
     image: prom/node-exporter:v1.6.0
     container_name: wayuu-node-exporter
     restart: unless-stopped
-    ports:
-      - "9100:9100"
+    network_mode: "host"
     command:
       - "--path.procfs=/host/proc"
       - "--path.rootfs=/rootfs"
@@ -66,36 +65,28 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-    networks:
-      - monitoring
 
   # Alertmanager - Gestión de alertas (opcional)
   alertmanager:
     image: prom/alertmanager:v0.25.0
     container_name: wayuu-alertmanager
     restart: unless-stopped
-    ports:
-      - "9093:9093"
+    network_mode: "host"
     volumes:
       - ./alertmanager:/etc/alertmanager
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--storage.path=/alertmanager"
       - "--web.external-url=http://localhost:9093"
-    networks:
-      - monitoring
 
   # Grafana Image Renderer - Para exportar dashboards como imágenes
   renderer:
     image: grafana/grafana-image-renderer:3.7.0
     container_name: wayuu-renderer
     restart: unless-stopped
-    ports:
-      - "8081:8081"
+    network_mode: "host"
     environment:
       ENABLE_METRICS: "true"
       RENDERING_MODE: default
       RENDERING_CLUSTERING_MODE: default
       RENDERING_CLUSTERING_MAX_CONCURRENCY: 5
-    networks:
-      - monitoring

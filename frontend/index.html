@@ -384,7 +384,7 @@
             </div>
 
             <!-- Dataset Information -->
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div id="stats-section" class="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6">
                     <i class="fas fa-chart-bar text-blue-600 mr-3"></i>
                     Estadísticas del Diccionario / Dictionary Statistics
@@ -526,6 +526,102 @@
                                 <div class="text-3xl text-yellow-300">
                                     <i class="fas fa-stopwatch"></i>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Processing Stats Grid -->
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-8">
+                    <h3 class="text-xl font-semibold text-red-800 mb-6">
+                        <i class="fas fa-file-pdf text-red-600 mr-3"></i>
+                        Procesamiento de PDFs / PDF Processing Statistics
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Total PDFs -->
+                        <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-red-700" id="total-pdfs">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-red-600 mt-1">PDFs Totales</div>
+                                    <div class="text-xs text-red-500">Total PDFs</div>
+                                </div>
+                                <div class="text-3xl text-red-300">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processed PDFs -->
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-green-700" id="processed-pdfs">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-green-600 mt-1">PDFs Procesados</div>
+                                    <div class="text-xs text-green-500">Processed PDFs</div>
+                                </div>
+                                <div class="text-3xl text-green-300">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Pages -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-blue-700" id="total-pages">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-blue-600 mt-1">Páginas Analizadas</div>
+                                    <div class="text-xs text-blue-500">Pages Analyzed</div>
+                                </div>
+                                <div class="text-3xl text-blue-300">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wayuu Phrases -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-purple-700" id="wayuu-phrases">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+                                    <div class="text-sm font-medium text-purple-600 mt-1">Frases Wayuu</div>
+                                    <div class="text-xs text-purple-500">Wayuu Phrases</div>
+                                </div>
+                                <div class="text-3xl text-purple-300">
+                                    <i class="fas fa-quote-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF Processing Details -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <div class="text-sm text-gray-600">Contenido Wayuu Promedio</div>
+                            <div class="text-xl font-bold text-orange-600" id="avg-wayuu-percentage">
+                                <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <div class="text-sm text-gray-600">Tiempo de Procesamiento</div>
+                            <div class="text-xl font-bold text-indigo-600" id="processing-time">
+                                <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <div class="text-sm text-gray-600">Estado del Procesamiento</div>
+                            <div class="text-lg font-medium" id="pdf-status">
+                                <i class="fas fa-spinner fa-spin text-gray-400"></i>
                             </div>
                         </div>
                     </div>

@@ -30,7 +30,7 @@ scrape_configs:
   # Métricas del frontend Next.js (si las habilitamos en el futuro)
   - job_name: 'wayuu-translator-frontend'
     static_configs:
-      - targets: ['192.168.1.59:4001']  # IP local del host
+      - targets: ['localhost:4001']  # IP local del host
     metrics_path: '/api/metrics'
     scrape_interval: 30s
     scrape_timeout: 10s
@@ -50,14 +50,14 @@ scrape_configs:
   # Métricas de Grafana
   - job_name: 'grafana'
     static_configs:
-      - targets: ['grafana:3000']
+      - targets: ['localhost:3001']
     scrape_interval: 30s
     metrics_path: '/metrics'
 
   # Métricas del sistema (node_exporter) - opcional
   - job_name: 'node-exporter'
     static_configs:
-      - targets: ['node-exporter:9100']
+      - targets: ['localhost:9100']
     scrape_interval: 30s
     honor_labels: true
 
