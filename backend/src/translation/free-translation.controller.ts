@@ -1,14 +1,25 @@
-import { Controller, Post, Get, Body, Query, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { IsString, IsOptional, IsIn } from 'class-validator';
 import { GoogleTranslateService } from './google-translate.service';
 import { LibreTranslateService } from './libre-translate.service';
-import { NllbTranslationService } from './nllb.service';
 
 export class FreeTranslateDto {
+  @IsString()
   text: string;
+
+  @IsString()
+  @IsIn(['wayuu', 'spanish', 'auto'])
   sourceLang: 'wayuu' | 'spanish' | 'auto';
+
+  @IsString()
+  @IsIn(['wayuu', 'spanish'])
   targetLang: 'wayuu' | 'spanish';
-  service?: 'google' | 'libre' | 'nllb' | 'auto';
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['google', 'libre', 'auto'])
+  service?: 'google' | 'libre' | 'auto';
 }
 
 export class BatchFreeTranslateDto {
@@ -25,8 +36,7 @@ export class FreeTranslationController {
 
   constructor(
     private readonly googleService: GoogleTranslateService,
-    private readonly libreService: LibreTranslateService,
-    private readonly nllbService: NllbTranslationService
+    private readonly libreService: LibreTranslateService
   ) {}
 
   @Get('services')
