@@ -335,4 +335,205 @@ export class PdfProcessingService implements OnModuleInit {
     
     return results;
   }
+
+  // ===========================================
+  // 🔄 INTEGRACIÓN CON DICCIONARIO PRINCIPAL
+  // ===========================================
+
+  /**
+   * Extrae entradas de diccionario estructuradas desde los PDFs procesados
+   */
+  extractDictionaryEntries(): Array<{ guc: string; spa: string; source: string; confidence: number }> {
+    const dictionaryEntries = [];
+    
+    for (const pdfContent of this.pdfCache.values()) {
+      // Estrategia 1: Pares consecutivos wayuu-español
+      for (let i = 0; i < pdfContent.wayuuContent.wayuuPhrases.length; i++) {
+        const wayuuPhrase = pdfContent.wayuuContent.wayuuPhrases[i];
+        const spanishTranslation = pdfContent.wayuuContent.spanishTranslations[i];
+        
+        if (wayuuPhrase && spanishTranslation) {
+          // Limpiar y validar frases
+          const cleanWayuu = this.cleanPhrase(wayuuPhrase);
+          const cleanSpanish = this.cleanPhrase(spanishTranslation);
+          
+          if (this.isValidDictionaryEntry(cleanWayuu, cleanSpanish)) {
+            dictionaryEntries.push({
+              guc: cleanWayuu,
+              spa: cleanSpanish,
+              source: `PDF:${pdfContent.fileName}`,
+              confidence: this.calculateConfidence(cleanWayuu, cleanSpanish, pdfContent)
+            });
+          }
+        }
+      }
+      
+      // Estrategia 2: Buscar patrones específicos de diccionario
+      const dictionaryPatterns = this.extractDictionaryPatterns(pdfContent.text, pdfContent.fileName);
+      dictionaryEntries.push(...dictionaryPatterns);
+    }
+    
+    // Eliminar duplicados y ordenar por confianza
+    const uniqueEntries = this.removeDuplicates(dictionaryEntries);
+    this.logger.log(`📚 Extracted ${uniqueEntries.length} dictionary entries from ${this.pdfCache.size} PDFs`);
+    
+    return uniqueEntries.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  /**
+   * Busca patrones específicos de diccionario en el texto
+   */
+  private extractDictionaryPatterns(text: string, fileName: string): Array<{ guc: string; spa: string; source: string; confidence: number }> {
+    const entries = [];
+    
+    // Patrón 1: "wayuu - español" o "wayuu: español"
+    const pattern1 = /([a-züÜ']+(?:\s+[a-züÜ']+)*)\s*[-:]\s*([a-záéíóúñüÁÉÍÓÚÑÜ]+(?:\s+[a-záéíóúñüÁÉÍÓÚÑÜ\s,]*)*)/gi;
+    let match1;
+    while ((match1 = pattern1.exec(text)) !== null) {
+      const wayuu = this.cleanPhrase(match1[1]);
+      const spanish = this.cleanPhrase(match1[2]);
+      
+      if (this.isValidDictionaryEntry(wayuu, spanish)) {
+        entries.push({
+          guc: wayuu,
+          spa: spanish,
+          source: `PDF:${fileName}:Pattern1`,
+          confidence: 0.8
+        });
+      }
+    }
+    
+    // Patrón 2: Formato de tabla/lista
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length - 1; i++) {
+      const currentLine = lines[i].trim();
+      const nextLine = lines[i + 1].trim();
+      
+      if (this.containsWayuuPatterns(currentLine) && !this.containsWayuuPatterns(nextLine) && nextLine.length > 0) {
+        const wayuu = this.cleanPhrase(currentLine);
+        const spanish = this.cleanPhrase(nextLine);
+        
+        if (this.isValidDictionaryEntry(wayuu, spanish)) {
+          entries.push({
+            guc: wayuu,
+            spa: spanish,
+            source: `PDF:${fileName}:Pattern2`,
+            confidence: 0.6
+          });
+        }
+      }
+    }
+    
+    return entries;
+  }
+
+  /**
+   * Limpia una frase para uso en diccionario
+   */
+  private cleanPhrase(phrase: string): string {
+    return phrase
+      .trim()
+      .replace(/^\d+\.?\s*/, '') // Remover números al inicio
+      .replace(/[""''"]/g, '"') // Normalizar comillas
+      .replace(/\s+/g, ' ') // Múltiples espacios a uno
+      .replace(/^[^\w]+|[^\w]+$/g, '') // Remover caracteres especiales al inicio/final
+      .substring(0, 200); // Limitar longitud
+  }
+
+  /**
+   * Valida si una entrada es válida para el diccionario
+   */
+  private isValidDictionaryEntry(wayuu: string, spanish: string): boolean {
+    // Validaciones básicas
+    if (!wayuu || !spanish) return false;
+    if (wayuu.length < 2 || spanish.length < 2) return false;
+    if (wayuu.length > 200 || spanish.length > 200) return false;
+    
+    // Evitar entradas que son solo números o caracteres especiales
+    if (!/[a-züÜ]/.test(wayuu)) return false;
+    if (!/[a-záéíóúñüÁÉÍÓÚÑÜ]/.test(spanish)) return false;
+    
+    // Evitar entradas muy repetitivas
+    if (wayuu === spanish) return false;
+    
+    // Evitar frases demasiado largas (probablemente son párrafos)
+    if (wayuu.split(' ').length > 10 || spanish.split(' ').length > 15) return false;
+    
+    return true;
+  }
+
+  /**
+   * Calcula la confianza de una entrada de diccionario
+   */
+  private calculateConfidence(wayuu: string, spanish: string, pdfContent: PDFContent): number {
+    let confidence = 0.5; // Confianza base
+    
+    // Aumentar confianza basada en el tipo de documento
+    if (pdfContent.title.toLowerCase().includes('diccionario')) confidence += 0.3;
+    if (pdfContent.title.toLowerCase().includes('manual')) confidence += 0.2;
+    if (pdfContent.title.toLowerCase().includes('gramática')) confidence += 0.15;
+    
+    // Ajustar por longitud (palabras individuales suelen ser más confiables)
+    const wayuuWords = wayuu.split(' ').length;
+    const spanishWords = spanish.split(' ').length;
+    
+    if (wayuuWords === 1 && spanishWords <= 3) confidence += 0.2;
+    if (wayuuWords <= 2 && spanishWords <= 4) confidence += 0.1;
+    
+    // Ajustar por patrones wayuu característicos
+    if (/[üÜ]/.test(wayuu)) confidence += 0.1;
+    if (/'/.test(wayuu)) confidence += 0.1;
+    
+    return Math.min(1.0, confidence);
+  }
+
+  /**
+   * Elimina entradas duplicadas
+   */
+  private removeDuplicates(entries: Array<{ guc: string; spa: string; source: string; confidence: number }>): Array<{ guc: string; spa: string; source: string; confidence: number }> {
+    const seen = new Map<string, typeof entries[0]>();
+    
+    for (const entry of entries) {
+      const key = `${entry.guc.toLowerCase()}|||${entry.spa.toLowerCase()}`;
+      
+      if (!seen.has(key) || seen.get(key)!.confidence < entry.confidence) {
+        seen.set(key, entry);
+      }
+    }
+    
+    return Array.from(seen.values());
+  }
+
+  /**
+   * Obtiene estadísticas de extracción de diccionario
+   */
+  getDictionaryExtractionStats(): {
+    totalEntries: number;
+    entriesBySource: Record<string, number>;
+    averageConfidence: number;
+    highConfidenceEntries: number;
+  } {
+    const entries = this.extractDictionaryEntries();
+    
+    const entriesBySource: Record<string, number> = {};
+    let totalConfidence = 0;
+    let highConfidenceEntries = 0;
+    
+    for (const entry of entries) {
+      const sourceKey = entry.source.split(':')[1] || 'unknown';
+      entriesBySource[sourceKey] = (entriesBySource[sourceKey] || 0) + 1;
+      totalConfidence += entry.confidence;
+      
+      if (entry.confidence >= 0.7) {
+        highConfidenceEntries++;
+      }
+    }
+    
+    return {
+      totalEntries: entries.length,
+      entriesBySource,
+      averageConfidence: entries.length > 0 ? totalConfidence / entries.length : 0,
+      highConfidenceEntries
+    };
+  }
 } 

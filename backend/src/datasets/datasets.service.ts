@@ -1927,13 +1927,19 @@ export class DatasetsService implements OnModuleInit {
         entriesCount = 0; // Dataset no está cargado en memoria
       }
     } else if (sourceId === 'wayuu_linguistic_sources') {
-      // Fuentes lingüísticas wayuu
-      const additionalDataset = this.additionalDatasets.get(sourceId);
-      if (additionalDataset) {
-        entriesCount = additionalDataset.length;
-      } else {
-        // Valor estimado para las fuentes lingüísticas (se actualizará dinámicamente)
-        entriesCount = 0; // Se calculará cuando se cargue el dataset
+      // 🚨 NUEVA LÓGICA: Fuentes lingüísticas wayuu conectadas a PDFs
+      try {
+        // Obtener estadísticas reales de PDFs procesados
+        const processingStats = await this.pdfProcessingService.getProcessingStats();
+        const extractionStats = this.pdfProcessingService.getDictionaryExtractionStats();
+        
+        // Usar el número de entradas extraídas del diccionario como métrica principal
+        entriesCount = extractionStats.totalEntries || 0;
+        
+        this.logger.log(`📚 PDF Linguistic Sources: ${entriesCount} dictionary entries extracted from ${processingStats.processedPDFs} PDFs`);
+      } catch (error) {
+        this.logger.warn(`⚠️ Could not get PDF stats for linguistic sources: ${error.message}`);
+        entriesCount = 0;
       }
     }
 
