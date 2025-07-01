@@ -10,7 +10,14 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:4000', 'http://localhost:4001', 'http://localhost:5173', 'http://localhost:4200'],
+    origin: [
+      'http://localhost:3000', 
+      'http://localhost:4000', 
+      'http://localhost:4001', 
+      'http://localhost:5173', 
+      'http://localhost:4200',
+      null  // Allow file:// protocol for static HTML frontend
+    ],
     credentials: true,
   });
 
