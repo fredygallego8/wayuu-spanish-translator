@@ -637,34 +637,34 @@ class WayuuTranslator {
                 } else {
                     statusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Sin fuentes activas</span>';
                 }
-            }
-            
-            // Step 2: Load audio stats from growth metrics (55%)
-            this.updateProgress(55, 'Actualizando estadísticas de audio...');
-            
-            // Use audio data already loaded from growth metrics
-            const audioMetrics = stats.current_metrics;
-            
-            // Update audio stats using growth metrics
-            this.animateNumber('total-audio-entries', audioMetrics.total_audio_files || 0);
-            this.animateNumber('audio-transcription-words', audioMetrics.total_transcribed || 0);
-            
-            // Format duration
-            const totalMinutes = audioMetrics.total_audio_minutes || 0;
-            const avgSeconds = audioMetrics.total_audio_files > 0 ? (totalMinutes * 60) / audioMetrics.total_audio_files : 0;
-            
-            document.getElementById('total-audio-duration').textContent = `${totalMinutes.toFixed(1)} min`;
-            document.getElementById('avg-audio-duration').textContent = `${avgSeconds.toFixed(1)}s`;
-            
-            // Update audio dataset info (placeholder for transcription length)
-            document.getElementById('avg-transcription-length').textContent = 'Consolidado';
-            
-            // Update audio status
-            const audioStatusElement = document.getElementById('audio-dataset-status');
-            if (audioMetrics.total_audio_files > 0) {
-                audioStatusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
-            } else {
-                audioStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Sin archivos</span>';
+                
+                // Step 2: Load audio stats from growth metrics (55%) - MOVED INSIDE IF BLOCK
+                this.updateProgress(55, 'Actualizando estadísticas de audio...');
+                
+                // Use audio data from stats variable (now available in this scope)
+                const audioMetrics = stats.current_metrics;
+                
+                // Update audio stats using growth metrics
+                this.animateNumber('total-audio-entries', audioMetrics.total_audio_files || 0);
+                this.animateNumber('audio-transcription-words', audioMetrics.total_transcribed || 0);
+                
+                // Format duration
+                const totalMinutes = audioMetrics.total_audio_minutes || 0;
+                const avgSeconds = audioMetrics.total_audio_files > 0 ? (totalMinutes * 60) / audioMetrics.total_audio_files : 0;
+                
+                document.getElementById('total-audio-duration').textContent = `${totalMinutes.toFixed(1)} min`;
+                document.getElementById('avg-audio-duration').textContent = `${avgSeconds.toFixed(1)}s`;
+                
+                // Update audio dataset info (placeholder for transcription length)
+                document.getElementById('avg-transcription-length').textContent = 'Consolidado';
+                
+                // Update audio status
+                const audioStatusElement = document.getElementById('audio-dataset-status');
+                if (audioMetrics.total_audio_files > 0) {
+                    audioStatusElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Activo</span>';
+                } else {
+                    audioStatusElement.innerHTML = '<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Sin archivos</span>';
+                }
             }
             
             // Step 3: Load PDF stats (70%)
