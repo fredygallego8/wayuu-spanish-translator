@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Copy, Volume2, Sparkles, TrendingUp } from "lucide-react";
+import { Copy, Volume2, Sparkles, TrendingUp, VolumeX } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useSound } from "@/hooks/useSound";
 import {
   copyToClipboard,
@@ -17,6 +18,16 @@ interface TranslationResultProps {
 
 export function TranslationResult({ result }: TranslationResultProps) {
   const { playSound } = useSound();
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSynthesis, setSpeechSynthesis] =
+    useState<SpeechSynthesis | null>(null);
+
+  // Inicializar Speech Synthesis API
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, []);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(result.translatedText);
@@ -30,10 +41,65 @@ export function TranslationResult({ result }: TranslationResultProps) {
   };
 
   const handlePlayAudio = () => {
-    playSound("click");
-    // TODO: Integrar con Web Speech API o servicio de TTS
-    toast("Función de audio en desarrollo");
+    if (!speechSynthesis) {
+      playSound("error");
+      toast.error("TTS no disponible en este navegador");
+      return;
+    }
+
+    // Si ya está hablando, detener
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+      playSound("click");
+      toast("Audio detenido");
+      return;
+    }
+
+    // Crear nueva utterance
+    const utterance = new SpeechSynthesisUtterance(result.translatedText);
+
+    // Configurar idioma basado en el contenido
+    // Para Wayuu, usar español como fallback ya que TTS no soporta wayuu directamente
+    const containsSpanishPattern = /[ñáéíóúüÑÁÉÍÓÚÜ]/.test(
+      result.translatedText
+    );
+    utterance.lang = containsSpanishPattern ? "es-ES" : "es-ES"; // Fallback a español
+
+    // Configurar velocidad y tono para mejor comprensión
+    utterance.rate = 0.8; // Más lento para mejor comprensión
+    utterance.pitch = 1.0;
+    utterance.volume = 0.8;
+
+    // Event handlers
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      playSound("click");
+      toast.success("🔊 Reproduciendo audio...");
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = (event) => {
+      setIsSpeaking(false);
+      playSound("error");
+      toast.error(`Error en TTS: ${event.error}`);
+    };
+
+    // Reproducir
+    speechSynthesis.speak(utterance);
   };
+
+  // Cleanup: detener TTS si el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (speechSynthesis && isSpeaking) {
+        speechSynthesis.cancel();
+      }
+    };
+  }, [speechSynthesis, isSpeaking]);
 
   const confidencePercentage = Math.round(result.confidence * 100);
 
@@ -167,12 +233,22 @@ export function TranslationResult({ result }: TranslationResultProps) {
         >
           <motion.button
             onClick={handlePlayAudio}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              isSpeaking
+                ? "text-red-600 bg-red-50 hover:bg-red-100"
+                : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+            }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            title="Escuchar pronunciación"
+            title={
+              isSpeaking ? "Detener pronunciación" : "Escuchar pronunciación"
+            }
           >
-            <Volume2 className="w-4 h-4" />
+            {isSpeaking ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
           </motion.button>
 
           <motion.button

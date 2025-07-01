@@ -2465,4 +2465,453 @@ export class DatasetsService implements OnModuleInit {
     
     this.logger.log('🗑️ Cleared all additional dataset caches');
   }
+
+  // ===========================================
+  // 🎵 MÉTODOS DE DESCARGA DE AUDIO
+  // ===========================================
+
+  /**
+   * Obtiene estadísticas de descarga de archivos de audio
+   */
+  async getAudioDownloadStats(): Promise<{
+    success: boolean;
+    data: {
+      totalFiles: number;
+      downloadedFiles: number;
+      pendingFiles: number;
+      totalSizeMB: number;
+      downloadedSizeMB: number;
+      downloadProgress: number;
+      lastDownload?: string;
+    };
+    message: string;
+  }> {
+    try {
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      const audioDataset = this.wayuuAudioDataset;
+      
+      let downloadedFiles = 0;
+      let totalSizeMB = 0;
+      let downloadedSizeMB = 0;
+      let lastDownloadTime: Date | null = null;
+
+      // Verificar archivos descargados
+      for (const audioEntry of audioDataset) {
+        const fileName = audioEntry.fileName || `${audioEntry.id}.wav`;
+        const filePath = path.join(audioDir, fileName);
+        
+        // Estimar tamaño basado en duración (aprox 176KB por segundo para WAV)
+        const estimatedSizeBytes = audioEntry.audioDuration * 176 * 1024;
+        totalSizeMB += estimatedSizeBytes / (1024 * 1024);
+        
+        if (await this.fileExists(filePath)) {
+          downloadedFiles++;
+          downloadedSizeMB += estimatedSizeBytes / (1024 * 1024);
+          
+          // Obtener fecha de modificación para último download
+          try {
+            const stats = await fs.stat(filePath);
+            if (!lastDownloadTime || stats.mtime > lastDownloadTime) {
+              lastDownloadTime = stats.mtime;
+            }
+          } catch (error) {
+            // Ignorar errores de stats
+          }
+        }
+      }
+
+      const downloadProgress = audioDataset.length > 0 ? (downloadedFiles / audioDataset.length) * 100 : 0;
+
+      return {
+        success: true,
+        data: {
+          totalFiles: audioDataset.length,
+          downloadedFiles,
+          pendingFiles: audioDataset.length - downloadedFiles,
+          totalSizeMB: Math.round(totalSizeMB * 100) / 100,
+          downloadedSizeMB: Math.round(downloadedSizeMB * 100) / 100,
+          downloadProgress: Math.round(downloadProgress * 100) / 100,
+          lastDownload: lastDownloadTime?.toISOString()
+        },
+        message: `Download stats: ${downloadedFiles}/${audioDataset.length} files (${Math.round(downloadProgress)}%)`
+      };
+    } catch (error) {
+      this.logger.error(`Error getting audio download stats: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          totalFiles: 0,
+          downloadedFiles: 0,
+          pendingFiles: 0,
+          totalSizeMB: 0,
+          downloadedSizeMB: 0,
+          downloadProgress: 0
+        },
+        message: `Error getting download stats: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga múltiples archivos de audio en lotes
+   */
+  async downloadAudioBatch(audioIds: string[], batchSize: number = 5): Promise<{
+    success: boolean;
+    data: {
+      requested: number;
+      successful: number;
+      failed: number;
+      skipped: number;
+      results: Array<{
+        audioId: string;
+        status: 'success' | 'failed' | 'skipped';
+        message: string;
+        filePath?: string;
+      }>;
+    };
+    message: string;
+  }> {
+    try {
+      await this.ensureCacheDirectory();
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      await fs.mkdir(audioDir, { recursive: true });
+
+      const results = [];
+      let successful = 0;
+      let failed = 0;
+      let skipped = 0;
+
+      // Procesar en lotes para evitar sobrecargar la red
+      for (let i = 0; i < audioIds.length; i += batchSize) {
+        const batch = audioIds.slice(i, i + batchSize);
+        
+        const batchPromises = batch.map(async (audioId) => {
+          try {
+            const audioEntry = this.wayuuAudioDataset.find(entry => entry.id === audioId);
+            
+            if (!audioEntry) {
+              return {
+                audioId,
+                status: 'failed' as const,
+                message: 'Audio entry not found'
+              };
+            }
+
+            const fileName = audioEntry.fileName || `${audioId}.wav`;
+            const filePath = path.join(audioDir, fileName);
+
+            // Verificar si ya existe
+            if (await this.fileExists(filePath)) {
+              return {
+                audioId,
+                status: 'skipped' as const,
+                message: 'File already exists',
+                filePath
+              };
+            }
+
+                         // Descargar archivo
+             if (audioEntry.audioUrl) {
+               const response = await axios.get(audioEntry.audioUrl, { 
+                 responseType: 'arraybuffer',
+                 timeout: 30000 
+               });
+
+               const buffer = Buffer.from(response.data);
+               await fs.writeFile(filePath, buffer);
+
+              return {
+                audioId,
+                status: 'success' as const,
+                message: `Downloaded successfully (${Math.round(buffer.length / 1024)}KB)`,
+                filePath
+              };
+            } else {
+              return {
+                audioId,
+                status: 'failed' as const,
+                message: 'No audio URL available'
+              };
+            }
+          } catch (error) {
+            return {
+              audioId,
+              status: 'failed' as const,
+              message: `Download failed: ${error.message}`
+            };
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+
+        // Contar resultados
+        batchResults.forEach(result => {
+          switch (result.status) {
+            case 'success': successful++; break;
+            case 'failed': failed++; break;
+            case 'skipped': skipped++; break;
+          }
+        });
+
+        // Pequeña pausa entre lotes para evitar rate limiting
+        if (i + batchSize < audioIds.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      this.logger.log(`📥 Batch download completed: ${successful} successful, ${failed} failed, ${skipped} skipped`);
+
+      return {
+        success: successful > 0,
+        data: {
+          requested: audioIds.length,
+          successful,
+          failed,
+          skipped,
+          results
+        },
+        message: `Batch download: ${successful}/${audioIds.length} successful`
+      };
+    } catch (error) {
+      this.logger.error(`Error in batch download: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          requested: audioIds.length,
+          successful: 0,
+          failed: audioIds.length,
+          skipped: 0,
+          results: []
+        },
+        message: `Batch download failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga todos los archivos de audio disponibles
+   */
+  async downloadAllAudio(batchSize: number = 5): Promise<{
+    success: boolean;
+    data: {
+      totalFiles: number;
+      successful: number;
+      failed: number;
+      skipped: number;
+      estimatedTime: string;
+    };
+    message: string;
+  }> {
+    try {
+      const allAudioIds = this.wayuuAudioDataset.map(entry => entry.id);
+      
+      if (allAudioIds.length === 0) {
+        return {
+          success: false,
+          data: {
+            totalFiles: 0,
+            successful: 0,
+            failed: 0,
+            skipped: 0,
+            estimatedTime: '0 minutes'
+          },
+          message: 'No audio files available for download'
+        };
+      }
+
+      this.logger.log(`📥 Starting download of all ${allAudioIds.length} audio files...`);
+      const startTime = Date.now();
+
+      const result = await this.downloadAudioBatch(allAudioIds, batchSize);
+      
+      const endTime = Date.now();
+      const durationSeconds = (endTime - startTime) / 1000;
+      const estimatedTime = durationSeconds > 60 
+        ? `${Math.round(durationSeconds / 60)} minutes`
+        : `${Math.round(durationSeconds)} seconds`;
+
+      return {
+        success: result.success,
+        data: {
+          totalFiles: result.data.requested,
+          successful: result.data.successful,
+          failed: result.data.failed,
+          skipped: result.data.skipped,
+          estimatedTime
+        },
+        message: `Downloaded all audio files in ${estimatedTime}: ${result.data.successful}/${result.data.requested} successful`
+      };
+    } catch (error) {
+      this.logger.error(`Error downloading all audio: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          totalFiles: 0,
+          successful: 0,
+          failed: 0,
+          skipped: 0,
+          estimatedTime: '0 minutes'
+        },
+        message: `Error downloading all audio: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Descarga un archivo de audio específico
+   */
+  async downloadAudioFile(audioId: string): Promise<{
+    success: boolean;
+    data: {
+      audioId: string;
+      fileName?: string;
+      filePath?: string;
+      fileSize?: number;
+      downloadTime?: number;
+    };
+    message: string;
+  }> {
+    try {
+      const audioEntry = this.wayuuAudioDataset.find(entry => entry.id === audioId);
+      
+      if (!audioEntry) {
+        return {
+          success: false,
+          data: { audioId },
+          message: `Audio entry not found: ${audioId}`
+        };
+      }
+
+      if (!audioEntry.audioUrl) {
+        return {
+          success: false,
+          data: { audioId },
+          message: 'No audio URL available for download'
+        };
+      }
+
+      await this.ensureCacheDirectory();
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      await fs.mkdir(audioDir, { recursive: true });
+
+      const fileName = audioEntry.fileName || `${audioId}.wav`;
+      const filePath = path.join(audioDir, fileName);
+
+      // Verificar si ya existe
+      if (await this.fileExists(filePath)) {
+        const stats = await fs.stat(filePath);
+        return {
+          success: true,
+          data: {
+            audioId,
+            fileName,
+            filePath,
+            fileSize: stats.size,
+            downloadTime: 0
+          },
+          message: 'File already exists'
+        };
+      }
+
+      // Descargar archivo
+      const startTime = Date.now();
+      const response = await axios.get(audioEntry.audioUrl, { 
+        responseType: 'arraybuffer',
+        timeout: 30000 
+      });
+      
+      const buffer = Buffer.from(response.data);
+      await fs.writeFile(filePath, buffer);
+      
+      const downloadTime = Date.now() - startTime;
+
+      this.logger.log(`📥 Downloaded ${fileName}: ${Math.round(buffer.length / 1024)}KB in ${downloadTime}ms`);
+
+      return {
+        success: true,
+        data: {
+          audioId,
+          fileName,
+          filePath,
+          fileSize: buffer.length,
+          downloadTime
+        },
+        message: `Successfully downloaded ${fileName} (${Math.round(buffer.length / 1024)}KB)`
+      };
+    } catch (error) {
+      this.logger.error(`Error downloading audio file ${audioId}: ${error.message}`);
+      return {
+        success: false,
+        data: { audioId },
+        message: `Download failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Limpia todos los archivos de audio descargados
+   */
+  async clearDownloadedAudio(): Promise<{
+    success: boolean;
+    data: {
+      filesRemoved: number;
+      spaceClearedMB: number;
+      errors: string[];
+    };
+    message: string;
+  }> {
+    try {
+      const audioDir = path.join(process.cwd(), 'data', 'audio');
+      let filesRemoved = 0;
+      let spaceClearedBytes = 0;
+      const errors: string[] = [];
+
+      // Verificar si el directorio existe
+      if (await this.fileExists(audioDir)) {
+        const files = await fs.readdir(audioDir);
+        
+        for (const file of files) {
+          try {
+            const filePath = path.join(audioDir, file);
+            const stats = await fs.stat(filePath);
+            
+            // Solo eliminar archivos de audio (wav, mp3, etc.)
+            if (stats.isFile() && /\.(wav|mp3|m4a|aac|ogg)$/i.test(file)) {
+              spaceClearedBytes += stats.size;
+              await fs.unlink(filePath);
+              filesRemoved++;
+            }
+          } catch (error) {
+            errors.push(`Failed to remove ${file}: ${error.message}`);
+          }
+        }
+      }
+
+      const spaceClearedMB = spaceClearedBytes / (1024 * 1024);
+
+      this.logger.log(`🗑️ Cleared ${filesRemoved} audio files (${Math.round(spaceClearedMB * 100) / 100}MB)`);
+
+      return {
+        success: true,
+        data: {
+          filesRemoved,
+          spaceClearedMB: Math.round(spaceClearedMB * 100) / 100,
+          errors
+        },
+        message: `Cleared ${filesRemoved} audio files (${Math.round(spaceClearedMB * 100) / 100}MB freed)`
+      };
+    } catch (error) {
+      this.logger.error(`Error clearing downloaded audio: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          filesRemoved: 0,
+          spaceClearedMB: 0,
+          errors: [error.message]
+        },
+        message: `Error clearing audio files: ${error.message}`
+      };
+    }
+  }
 }

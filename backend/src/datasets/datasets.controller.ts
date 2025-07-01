@@ -620,11 +620,11 @@ export class DatasetsController {
   })
   async getAudioDownloadStats() {
     try {
-      // TODO: Implement getAudioDownloadStats method in DatasetsService
+      const result = await this.datasetsService.getAudioDownloadStats();
       return {
-        success: true,
-        data: { message: 'Audio download stats not yet implemented' },
-        message: 'Audio download statistics not yet implemented'
+        success: result.success,
+        data: result.data,
+        message: result.message
       };
     } catch (error) {
       return {
@@ -643,11 +643,10 @@ export class DatasetsController {
   async downloadAudioBatch(@Body() body: { audioIds: string[]; batchSize?: number }) {
     try {
       const { audioIds, batchSize = 5 } = body;
-      // TODO: Implement downloadAudioBatch method in DatasetsService
-      const result = { success: false, message: 'Download audio batch not yet implemented' };
+      const result = await this.datasetsService.downloadAudioBatch(audioIds, batchSize);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -667,11 +666,10 @@ export class DatasetsController {
   async downloadAllAudio(@Body() body: { batchSize?: number } = {}) {
     try {
       const { batchSize = 5 } = body;
-      // TODO: Implement downloadAllAudio method in DatasetsService
-      const result = { success: false, message: 'Download all audio not yet implemented' };
+      const result = await this.datasetsService.downloadAllAudio(batchSize);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -690,11 +688,10 @@ export class DatasetsController {
   })
   async downloadAudioFile(@Param('audioId') audioId: string) {
     try {
-      // TODO: Implement downloadAudioFile method in DatasetsService
-      const result = { success: false, message: 'Download audio file not yet implemented' };
+      const result = await this.datasetsService.downloadAudioFile(audioId);
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
@@ -713,11 +710,10 @@ export class DatasetsController {
   })
   async clearDownloadedAudio() {
     try {
-      // TODO: Implement clearDownloadedAudio method in DatasetsService
-      const result = { success: false, message: 'Clear downloaded audio not yet implemented' };
+      const result = await this.datasetsService.clearDownloadedAudio();
       return {
         success: result.success,
-        data: result,
+        data: result.data,
         message: result.message
       };
     } catch (error) {
