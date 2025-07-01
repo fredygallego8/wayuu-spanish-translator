@@ -11,6 +11,9 @@ importers:
       '@huggingface/hub':
         specifier: ^2.2.0
         version: 2.2.0
+      '@huggingface/inference':
+        specifier: ^4.2.0
+        version: 4.2.0
       '@nestjs/common':
         specifier: ^10.3.0
         version: 10.4.19(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.1.14)(rxjs@7.8.2)
@@ -446,6 +449,14 @@ packages:
     resolution: {integrity: sha512-G+VS1eMp80KovIHBlsiEigS6I6qmI4j+VQ1UZ8CaXT+pw2A7tj6e/crfxFdKNE2uOK5oQkRFiCBJykMwrWQ8OA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@huggingface/inference@4.2.0':
+    resolution: {integrity: sha512-mmt/wCojZ7OUYFsWAqz+xmJCe4RiU6Vs6q54tPxKl55jquLwBKgwd2LwGa8TxF7KeaGvBN+jk/OOLKwcce0vzg==}
+    engines: {node: '>=18'}
+
+  '@huggingface/jinja@0.5.0':
+    resolution: {integrity: sha512-Ptc03/jGRiYRoi0bUYKZ14MkDslsBRT24oxmsvUlfYrvQMldrxCevhPnT+hfX8awKTT8/f/0ZBBWldoeAcMHdQ==}
+    engines: {node: '>=18'}
 
   '@huggingface/tasks@0.19.19':
     resolution: {integrity: sha512-+hXA5pk8gnaWc0BK/s5e68rwsucjPJjdoSBx9MCkRwVgVS0JwXCF5EbaSBSDt4CUDsq1uj33RbdQt/K9l2mJLg==}
@@ -3965,6 +3976,13 @@ snapshots:
   '@huggingface/hub@2.2.0':
     dependencies:
       '@huggingface/tasks': 0.19.19
+
+  '@huggingface/inference@4.2.0':
+    dependencies:
+      '@huggingface/jinja': 0.5.0
+      '@huggingface/tasks': 0.19.19
+
+  '@huggingface/jinja@0.5.0': {}
 
   '@huggingface/tasks@0.19.19': {}
 

@@ -718,127 +718,69 @@ export class DatasetsController {
     }
   }
 
-  @Post('pdf/integrate-dictionary')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @ApiBearerAuth()
-  @ApiOperation({ 
-    summary: '🔄 Integrate PDF entries into main dictionary (Admin)',
-    description: '🔒 Integrates extracted PDF dictionary entries into the main Wayuu dataset - Admin only'
-  })
-  @ApiQuery({ name: 'minConfidence', required: false, description: 'Minimum confidence threshold (0.0-1.0)', type: 'number' })
-  @ApiResponse({ status: 200, description: 'PDF entries integrated successfully' })
-  @ApiResponse({ status: 401, description: 'Authentication required' })
-  @ApiResponse({ status: 403, description: 'Admin role required' })
-  async integratePDFDictionary(@CurrentUser() user: User, @Query('minConfidence') minConfidence?: number) {
-    try {
-      const threshold = minConfidence ? parseFloat(minConfidence.toString()) : 0.6;
-      
-      this.logger.log(`📚 Admin ${user.email} initiated PDF dictionary integration with confidence >= ${threshold}`);
-      
-      // Extraer entradas de PDFs
-      const pdfEntries = this.pdfProcessingService.extractDictionaryEntries();
-      
-      // Filtrar por confianza
-      const qualifiedEntries = pdfEntries.filter(entry => entry.confidence >= threshold);
-      
-      // Convertir al formato del dataset principal
-      const dictionaryEntries = qualifiedEntries.map(entry => ({
-        guc: entry.guc,
-        spa: entry.spa
-      }));
-      
-      // Integrar al dataset principal (esto requerirá modificar el DatasetsService)
-      const integration = await this.integratePDFEntriesToDataset(dictionaryEntries, user.email);
-      
-      return {
-        success: integration.success,
-        message: `PDF dictionary integration completed: ${integration.addedEntries}/${qualifiedEntries.length} entries added`,
-        data: {
-          totalExtracted: pdfEntries.length,
-          qualifiedEntries: qualifiedEntries.length,
-          addedEntries: integration.addedEntries,
-          skippedEntries: integration.skippedEntries,
-          confidenceThreshold: threshold,
-          preview: qualifiedEntries.slice(0, 5),
-          newTotalEntries: integration.newTotalEntries
+  @Post('pdf/integrate')
+  @ApiOperation({ summary: 'Automatically integrate PDF entries to main dictionary' })
+  @ApiBody({
+    description: 'Integration options',
+    schema: {
+      type: 'object',
+      properties: {
+        minConfidence: {
+          type: 'number',
+          description: 'Minimum confidence threshold (0-1)',
+          default: 0.5
         },
-        integratedBy: user.email,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      this.logger.error(`Failed to integrate PDF dictionary for ${user.email}`, error.stack);
-      return {
-        success: false,
-        message: 'Failed to integrate PDF dictionary entries',
-        error: error.message
-      };
-    }
-  }
-
-  /**
-   * Método auxiliar para integrar entradas PDF al dataset principal
-   */
-  private async integratePDFEntriesToDataset(
-    entries: Array<{ guc: string; spa: string }>, 
-    userEmail: string
-  ): Promise<{
-    success: boolean;
-    addedEntries: number;
-    skippedEntries: number;
-    newTotalEntries: number;
-  }> {
-    try {
-      // Obtener dataset actual
-      const currentStats = await this.datasetsService.getDictionaryStats();
-      let addedEntries = 0;
-      let skippedEntries = 0;
-      
-      // Por ahora, simular la integración 
-      // TODO: Implementar método en DatasetsService para agregar entradas
-      for (const entry of entries) {
-        // Verificar si ya existe (simplificado)
-        // En implementación real, usar método del service
-        const exists = await this.checkIfEntryExists(entry.guc, entry.spa);
-        
-        if (!exists) {
-          addedEntries++;
-          // TODO: Agregar al dataset real
-          this.logger.log(`📝 Added: ${entry.guc} -> ${entry.spa}`);
-        } else {
-          skippedEntries++;
+        maxEntries: {
+          type: 'number', 
+          description: 'Maximum entries to integrate',
+          default: 5000
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview integration without applying changes',
+          default: false
         }
       }
-      
-      this.logger.log(`✅ PDF Integration by ${userEmail}: ${addedEntries} added, ${skippedEntries} skipped`);
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Integration completed successfully',
+  })
+  async integratePDFToDictionary(@Body() options: {
+    minConfidence?: number;
+    maxEntries?: number; 
+    dryRun?: boolean;
+  } = {}) {
+    try {
+      const result = await this.datasetsService.integrePDFToDictionary(options);
       
       return {
-        success: true,
-        addedEntries,
-        skippedEntries,
-        newTotalEntries: currentStats.total_entries + addedEntries
+        success: result.success,
+        data: {
+          ...result.data,
+          options: {
+            minConfidence: options.minConfidence || 0.5,
+            maxEntries: options.maxEntries || 5000,
+            dryRun: options.dryRun || false
+          },
+          timestamp: new Date().toISOString()
+        },
+        message: result.message
       };
+      
     } catch (error) {
-      this.logger.error(`Error in PDF integration: ${error.message}`);
       return {
         success: false,
-        addedEntries: 0,
-        skippedEntries: 0,
-        newTotalEntries: 0
+        message: `Integration failed: ${error.message}`,
+        data: {
+          entriesAdded: 0,
+          entriesRejected: 0,
+          duplicatesSkipped: 0,
+          finalDatasetSize: 0,
+          integrationReport: []
+        }
       };
-    }
-  }
-
-  /**
-   * Verifica si una entrada ya existe en el dataset
-   */
-  private async checkIfEntryExists(guc: string, spa: string): Promise<boolean> {
-    try {
-      // TODO: Implementar verificación real contra el dataset
-      // Por ahora retornar false para permitir todas las entradas en el test
-      return false;
-    } catch (error) {
-      return false;
     }
   }
 

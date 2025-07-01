@@ -2920,4 +2920,171 @@ export class DatasetsService implements OnModuleInit {
       };
     }
   }
+
+  /**
+   * Integra automáticamente entradas PDF al dataset principal
+   */
+  async integrePDFToDictionary(options: {
+    minConfidence?: number;
+    maxEntries?: number;
+    dryRun?: boolean;
+  } = {}): Promise<{
+    success: boolean;
+    data: {
+      entriesAdded: number;
+      entriesRejected: number;
+      duplicatesSkipped: number;
+      finalDatasetSize: number;
+      integrationReport: any[];
+    };
+    message: string;
+  }> {
+    try {
+      const { minConfidence = 0.5, maxEntries = 5000, dryRun = false } = options;
+      
+      // 1. Obtener entradas PDF extraídas
+      const pdfEntries = this.pdfProcessingService.extractDictionaryEntries();
+      if (!pdfEntries || pdfEntries.length === 0) {
+        throw new Error('No PDF entries available for integration');
+      }
+
+      // 2. Cargar dataset principal si no está cargado
+      if (!this.isLoaded) {
+        await this.loadWayuuDictionary();
+      }
+
+      // 3. Preparar entradas para integración
+      const candidateEntries = pdfEntries
+        .filter(entry => entry.confidence >= minConfidence)
+        .slice(0, maxEntries);
+
+      // 4. Crear mapa de entradas existentes para evitar duplicados
+      const existingEntries = new Set();
+      this.wayuuDictionary.forEach(entry => {
+        existingEntries.add(`${entry.guc}|${entry.spa}`.toLowerCase());
+      });
+
+      // 5. Procesar entradas candidatas
+      let entriesAdded = 0;
+      let entriesRejected = 0;
+      let duplicatesSkipped = 0;
+      const integrationReport = [];
+
+      const newEntries = [];
+      
+      for (const entry of candidateEntries) {
+        const key = `${entry.guc}|${entry.spa}`.toLowerCase();
+        
+        if (existingEntries.has(key)) {
+          duplicatesSkipped++;
+          continue;
+        }
+
+        if (entry.confidence < minConfidence) {
+          entriesRejected++;
+          integrationReport.push({
+            guc: entry.guc,
+            spa: entry.spa,
+            reason: 'Low confidence',
+            confidence: entry.confidence
+          });
+          continue;
+        }
+
+        // Validar formato de entrada
+        if (!entry.guc || !entry.spa || entry.guc.length < 2 || entry.spa.length < 2) {
+          entriesRejected++;
+          integrationReport.push({
+            guc: entry.guc,
+            spa: entry.spa,
+            reason: 'Invalid format',
+            confidence: entry.confidence
+          });
+          continue;
+        }
+
+        // Entrada válida para integración
+        if (!dryRun) {
+          newEntries.push({
+            guc: entry.guc.trim(),
+            spa: entry.spa.trim(),
+            source: 'PDF_Integration',
+            confidence: entry.confidence,
+            integratedAt: new Date().toISOString()
+          });
+        }
+        
+        entriesAdded++;
+        existingEntries.add(key);
+      }
+
+      // 6. Integrar entradas al dataset principal
+      if (!dryRun && newEntries.length > 0) {
+        this.wayuuDictionary.push(...newEntries);
+        
+        // 7. Actualizar cache
+        await this.updateWayuuDictionaryCache();
+        
+        this.logger.log(`🎉 PDF Integration successful: ${entriesAdded} entries added to dictionary`);
+      }
+
+      const finalDatasetSize = this.wayuuDictionary.length;
+
+      return {
+        success: true,
+        data: {
+          entriesAdded,
+          entriesRejected,
+          duplicatesSkipped,
+          finalDatasetSize,
+          integrationReport: integrationReport.slice(0, 10) // Limitar reporte
+        },
+        message: dryRun 
+          ? `Dry run complete: ${entriesAdded} entries would be added` 
+          : `Integration successful: ${entriesAdded} entries added, final size: ${finalDatasetSize}`
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ PDF Integration failed: ${error.message}`);
+      return {
+        success: false,
+        data: {
+          entriesAdded: 0,
+          entriesRejected: 0,
+          duplicatesSkipped: 0,
+          finalDatasetSize: this.wayuuDictionary?.length || 0,
+          integrationReport: []
+        },
+        message: `Integration failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Actualiza el cache del diccionario wayuu con nuevas entradas
+   */
+  private async updateWayuuDictionaryCache(): Promise<void> {
+    try {
+      const cacheData = {
+        entries: this.wayuuDictionary,
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          totalEntries: this.wayuuDictionary.length,
+          cacheVersion: '1.2',
+          integrationHistory: {
+            lastPDFIntegration: new Date().toISOString()
+          }
+        }
+      };
+
+      await fs.writeFile(
+        this.cacheFile,
+        JSON.stringify(cacheData, null, 2)
+      );
+
+      this.logger.log(`📦 Dictionary cache updated: ${this.wayuuDictionary.length} entries`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to update dictionary cache: ${error.message}`);
+    }
+  }
 }
