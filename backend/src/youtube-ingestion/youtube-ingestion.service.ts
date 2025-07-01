@@ -114,6 +114,98 @@ export class YoutubeIngestionService {
     }
   }
 
+  async processPendingTranscriptions(): Promise<{
+    message: string;
+    processed: number;
+    successful: number;
+    failed: number;
+    results: Array<{
+      videoId: string;
+      title: string;
+      status: string;
+      transcription?: string;
+      error?: string;
+    }>;
+  }> {
+    this.logger.log('Processing pending transcriptions...');
+    
+    const pendingVideos = Object.values(this.db).filter(record => record.status === 'pending_transcription');
+    
+    if (pendingVideos.length === 0) {
+      return {
+        message: 'No videos pending transcription.',
+        processed: 0,
+        successful: 0,
+        failed: 0,
+        results: [],
+      };
+    }
+
+    this.logger.log(`Found ${pendingVideos.length} videos pending transcription.`);
+    
+    const results = [];
+    let successful = 0;
+    let failed = 0;
+
+    for (const video of pendingVideos) {
+      try {
+        this.logger.log(`Transcribing video: ${video.videoId} - "${video.title}"`);
+        
+        // Check if audio file exists
+        if (!fs.existsSync(video.audioPath)) {
+          throw new Error(`Audio file not found: ${video.audioPath}`);
+        }
+        
+        // Transcribe using ASR strategy
+        const transcription = await this.asrStrategy.transcribe(video.audioPath);
+        this.logger.log(`Transcription for ${video.videoId}: "${transcription.substring(0, 50)}..."`);
+        
+        // Update record with transcription and move to next stage
+        this.createOrUpdateRecord(video.videoId, {
+          transcription,
+          status: 'pending_translation',
+        });
+
+        results.push({
+          videoId: video.videoId,
+          title: video.title,
+          status: 'pending_translation',
+          transcription,
+        });
+
+        successful++;
+        this.logger.log(`Successfully transcribed video ${video.videoId}`);
+
+      } catch (error) {
+        this.logger.error(`Failed to transcribe video ${video.videoId}: ${error.message}`, error.stack);
+        
+        this.createOrUpdateRecord(video.videoId, {
+          status: 'failed',
+        });
+
+        results.push({
+          videoId: video.videoId,
+          title: video.title,
+          status: 'failed',
+          error: error.message,
+        });
+
+        failed++;
+      }
+    }
+
+    const message = `Processed ${pendingVideos.length} videos: ${successful} successful, ${failed} failed.`;
+    this.logger.log(message);
+
+    return {
+      message,
+      processed: pendingVideos.length,
+      successful,
+      failed,
+      results,
+    };
+  }
+
   async processPendingTranslations(): Promise<{
     message: string;
     processed: number;

@@ -118,6 +118,101 @@ export class YoutubeIngestionController {
     }
   }
 
+  @Post('process-pending-transcriptions')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '🎤 Procesar Videos Pendientes de Transcripción',
+    description: `
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+        <h4>⚡ Procesamiento de Transcripciones</h4>
+        <p>Este endpoint procesa todos los videos que están en estado <code>pending_transcription</code>, 
+        aplicando el ASR configurado para generar transcripciones reales.</p>
+      </div>
+      
+      <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0;">
+        <h4>🎯 Casos de Uso</h4>
+        <ul>
+          <li>Videos que fallaron en transcripción automática</li>
+          <li>Reprocessar videos con transcripciones mock/stub</li>
+          <li>Aplicar nuevo ASR después de configuración</li>
+          <li>Recuperación después de errores del sistema</li>
+        </ul>
+      </div>
+      
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0;">
+        <h4>📊 Información de Respuesta</h4>
+        <ul>
+          <li><strong>processed:</strong> Cantidad de videos procesados</li>
+          <li><strong>successful:</strong> Transcripciones exitosas</li>
+          <li><strong>failed:</strong> Errores en transcripción</li>
+          <li><strong>results:</strong> Detalles por video con transcripciones</li>
+        </ul>
+      </div>
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '✅ Procesamiento de transcripciones pendientes completado',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        data: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: 'Processed 2 pending transcriptions' },
+            processed: { type: 'number', example: 2 },
+            successful: { type: 'number', example: 1 },
+            failed: { type: 'number', example: 1 },
+            results: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  videoId: { type: 'string', example: 'dQw4w9WgXcQ' },
+                  title: { type: 'string', example: 'Video Title' },
+                  status: { type: 'string', example: 'pending_translation' },
+                  transcription: { type: 'string', example: 'wayuu transcription text...' },
+                  error: { type: 'string', example: 'Transcription failed: ...' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '📭 No hay videos pendientes de transcripción',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        data: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: 'No pending transcriptions found' },
+            processed: { type: 'number', example: 0 },
+            successful: { type: 'number', example: 0 },
+            failed: { type: 'number', example: 0 },
+            results: { type: 'array', items: {}, example: [] },
+          },
+        },
+      },
+    },
+  })
+  async processPendingTranscriptions() {
+    this.logger.log('Processing pending transcriptions');
+    
+    const result = await this.youtubeIngestionService.processPendingTranscriptions();
+    
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
   @Post('process-pending')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
