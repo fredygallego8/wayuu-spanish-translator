@@ -146,6 +146,18 @@ export class DatasetsService implements OnModuleInit {
       url: 'https://huggingface.co/datasets/orkidea/palabrero-guc-draft',
       isActive: true,
       priority: 5
+    },
+    {
+      id: 'wayuu_linguistic_sources',
+      name: 'Wayuu Linguistic Sources',
+      dataset: 'nater2ed/wayuu_linguistic_sources',
+      config: 'default',
+      split: 'train',
+      type: 'mixed',
+      description: 'Comprehensive collection of Wayuu linguistic resources and documentation',
+      url: 'https://huggingface.co/datasets/nater2ed/wayuu_linguistic_sources',
+      isActive: true,
+      priority: 6
     }
   ];
   
@@ -1452,15 +1464,18 @@ export class DatasetsService implements OnModuleInit {
     }
 
     // 🔄 NUEVA LÓGICA: Calcular estadísticas combinadas de todas las fuentes de audio activas
-    const allSources = await this.getHuggingFaceSources();
-    const activeAudioSources = allSources.filter(source => source.type === 'audio' && source.isActive);
+    const sources = await this.getHuggingFaceSources();
+    const activeSources = sources.filter(s => s.isActive);
+    const dictionarySources = sources.filter(s => s.type === 'dictionary');
+    const audioSources = sources.filter(s => s.type === 'audio');
+    const mixedSources = sources.filter(s => s.type === 'mixed');
     
     let totalCombinedEntries = 0;
     let totalCombinedDurationSeconds = 0;
     let averageCombinedDuration = 0;
     
     // Calcular totales combinados usando propiedades dinámicas
-    for (const source of activeAudioSources) {
+    for (const source of activeSources) {
       if ((source as any).totalEntries) {
         totalCombinedEntries += (source as any).totalEntries;
       }
@@ -1521,7 +1536,7 @@ export class DatasetsService implements OnModuleInit {
       },
       
       // === DETALLES DE FUENTES ACTIVAS ===
-      activeSources: activeAudioSources.map(source => ({
+      activeSources: activeSources.map(source => ({
         id: source.id,
         name: source.name,
         entries: (source as any).totalEntries || 0,
@@ -1544,7 +1559,7 @@ export class DatasetsService implements OnModuleInit {
         localCache: this.isAudioLoaded ? 'Active' : 'Not available',
         streaming: 'Supported',
         durationCalculation: 'AudioDurationService integrated',
-        combinedSources: `${activeAudioSources.length} active audio sources`
+        combinedSources: `${activeSources.length} active audio sources`
       }
     };
   }
@@ -1786,7 +1801,7 @@ export class DatasetsService implements OnModuleInit {
           (source as any).totalDurationFormatted = '0:00';
           (source as any).totalEntries = 0;
         }
-      } else if (source.type === 'dictionary') {
+      } else if (source.type === 'dictionary' || source.type === 'mixed') {
         try {
           const dictionaryInfo = await this.calculateDictionaryEntries(source.id);
           (source as any).totalEntries = dictionaryInfo.entries;
@@ -1801,6 +1816,9 @@ export class DatasetsService implements OnModuleInit {
           ).replace(
             /with \d+,?\d* Wayuu-Spanish sentence pairs/,
             `with ${dictionaryInfo.formatted} Wayuu-Spanish sentence pairs`
+          ).replace(
+            /Comprehensive collection of Wayuu linguistic resources and documentation/,
+            `Comprehensive collection of Wayuu linguistic resources and documentation (${dictionaryInfo.formatted} files)`
           );
         } catch (error) {
           this.logger.warn(`⚠️ Could not calculate entries for ${source.name}: ${error.message}`);
@@ -1888,6 +1906,15 @@ export class DatasetsService implements OnModuleInit {
         // Usar valor conocido del dataset
         entriesCount = 42687; // Valor del dataset weezygeezer/Wayuu-Spanish_Parallel-Corpus
       }
+    } else if (sourceId === 'wayuu_linguistic_sources') {
+      // Fuentes lingüísticas wayuu
+      const additionalDataset = this.additionalDatasets.get(sourceId);
+      if (additionalDataset) {
+        entriesCount = additionalDataset.length;
+      } else {
+        // Valor estimado para las fuentes lingüísticas (se actualizará dinámicamente)
+        entriesCount = 0; // Se calculará cuando se cargue el dataset
+      }
     }
 
     // Formatear número con comas para mejor legibilidad
@@ -1973,8 +2000,8 @@ export class DatasetsService implements OnModuleInit {
     }
 
     try {
-      // Si es el corpus paralelo o el dataset grande, lo cargamos
-      if (id === 'wayuu_parallel_corpus' || id === 'wayuu_spa_large') {
+      // Si es el corpus paralelo, el dataset grande o las fuentes lingüísticas, lo cargamos
+      if (id === 'wayuu_parallel_corpus' || id === 'wayuu_spa_large' || id === 'wayuu_linguistic_sources') {
         this.logger.log(`🔄 Loading additional dataset: ${source.name}...`);
         
         if (loadFull) {
@@ -1990,6 +2017,12 @@ export class DatasetsService implements OnModuleInit {
               processedData = fullData.map(entry => ({
                 guc: (entry as any).translation?.guc || entry.guc,
                 spa: (entry as any).translation?.spa || entry.spa
+              })).filter(entry => entry.guc && entry.spa);
+            } else if (id === 'wayuu_linguistic_sources') {
+              // Formato de fuentes lingüísticas (adaptativo)
+              processedData = fullData.map(entry => ({
+                guc: entry.guc || (entry as any).wayuu || (entry as any).text_wayuu || '',
+                spa: entry.spa || (entry as any).spanish || (entry as any).es || (entry as any).text_spanish || ''
               })).filter(entry => entry.guc && entry.spa);
             } else {
               // Formato estándar
@@ -2046,6 +2079,15 @@ export class DatasetsService implements OnModuleInit {
                 es: row.row.translation.spa
               }
             }));
+          } else if (id === 'wayuu_linguistic_sources') {
+            // Formato de fuentes lingüísticas (adaptativo)
+            processedPreview = data.rows.slice(0, 10).map(row => ({
+              row_idx: row.row_idx,
+              row: {
+                guc: row.row.guc || row.row.wayuu || row.row.text_wayuu || 'N/A',
+                es: row.row.spa || row.row.spanish || row.row.es || row.row.text_spanish || 'N/A'
+              }
+            }));
           } else {
             // Formato estándar: { guc: "...", es: "..." }
             processedPreview = data.rows.slice(0, 10);
@@ -2095,8 +2137,74 @@ export class DatasetsService implements OnModuleInit {
         await this.loadWayuuAudioDataset();
       }
 
+      // Update Hugging Face sources metrics
+      const sources = await this.getHuggingFaceSources();
+      const activeSources = sources.filter(s => s.isActive);
+      const dictionarySources = sources.filter(s => s.type === 'dictionary');
+      const audioSources = sources.filter(s => s.type === 'audio');
+      const mixedSources = sources.filter(s => s.type === 'mixed');
+
+      // Update total sources by type
+      this.metricsService.updateHuggingfaceSourcesTotal('dictionary', dictionarySources.length);
+      this.metricsService.updateHuggingfaceSourcesTotal('audio', audioSources.length);
+      this.metricsService.updateHuggingfaceSourcesTotal('mixed', mixedSources.length);
+      this.metricsService.updateHuggingfaceSourcesTotal('all', sources.length);
+
+      // Update active sources by type
+      const activeDictionarySources = activeSources.filter(s => s.type === 'dictionary');
+      const activeAudioSources = activeSources.filter(s => s.type === 'audio');
+      const activeMixedSources = activeSources.filter(s => s.type === 'mixed');
+      
+      this.metricsService.updateHuggingfaceSourcesActive('dictionary', activeDictionarySources.length);
+      this.metricsService.updateHuggingfaceSourcesActive('audio', activeAudioSources.length);
+      this.metricsService.updateHuggingfaceSourcesActive('mixed', activeMixedSources.length);
+      this.metricsService.updateHuggingfaceSourcesActive('all', activeSources.length);
+
+      // Update dataset load status for each source
+      for (const source of sources) {
+        const isLoaded = source.isActive && (
+          (source.type === 'dictionary' && this.isLoaded) ||
+          (source.type === 'audio' && this.isAudioLoaded) ||
+          (source.type === 'mixed' && this.isLoaded && this.isAudioLoaded)
+        );
+        
+        this.metricsService.updateDatasetLoadStatus(
+          source.name,
+          source.type,
+          source.isActive,
+          isLoaded
+        );
+
+        // Update other dataset metrics
+        if (isLoaded) {
+          if (source.type === 'dictionary' || source.type === 'mixed') {
+            this.metricsService.updateDatasetTotalEntries(source.name, source.type, this.totalEntries);
+            this.metricsService.updateDatasetUniqueWords(source.name, 'wayuu', source.type, this.totalEntries);
+            this.metricsService.updateDatasetUniqueWords(source.name, 'spanish', source.type, this.totalEntries);
+            this.metricsService.updateDatasetLastUpdateTime(source.name, source.type, Date.now());
+          }
+          
+          if (source.type === 'audio' || source.type === 'mixed') {
+            this.metricsService.updateDatasetTotalEntries(source.name, source.type, this.totalAudioEntries);
+            
+            // Calculate total audio duration
+            const totalDurationSeconds = this.wayuuAudioDataset.reduce((sum, entry) => sum + (entry.audioDuration || 0), 0);
+            this.metricsService.updateAudioDatasetTotalDuration(source.name, totalDurationSeconds);
+            
+            const averageDuration = this.totalAudioEntries > 0 ? totalDurationSeconds / this.totalAudioEntries : 0;
+            this.metricsService.updateAudioDatasetAverageDuration(source.name, averageDuration);
+            
+            // Count downloaded audio files (assuming they are all downloaded for now)
+            this.metricsService.updateAudioFilesDownloaded(source.name, this.totalAudioEntries);
+            this.metricsService.updateAudioDownloadProgress(source.name, 100); // 100% progress
+            
+            this.metricsService.updateDatasetLastUpdateTime(source.name, source.type, Date.now());
+          }
+        }
+      }
+
       // Log current state for metrics collection
-      this.logger.log(`📊 Current metrics: Dictionary=${this.totalEntries}, Audio=${this.totalAudioEntries}`);
+      this.logger.log(`📊 Metrics updated: Dictionary=${this.totalEntries}, Audio=${this.totalAudioEntries}, Sources=${sources.length}, Active=${activeSources.length}`);
       
     } catch (error) {
       this.logger.error(`❌ Error updating dataset metrics:`, error);

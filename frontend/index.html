@@ -88,6 +88,112 @@
             <p class="text-sm text-gray-500 mt-2">Basado en el diccionario de Gaxys • Based on Gaxys dictionary</p>
         </header>
 
+        <!-- Navigation Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
+                <i class="fas fa-tools text-indigo-600 mr-2"></i>
+                Herramientas Disponibles / Available Tools
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Translator Tool -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
+                    <div class="text-center">
+                        <div class="text-3xl text-blue-600 mb-2">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 class="font-semibold text-blue-800">Traductor</h3>
+                        <p class="text-sm text-blue-600 mt-1">Herramienta principal de traducción</p>
+                        <button onclick="document.querySelector('#input-text').focus()" class="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors">
+                            Usar ahora
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Direct Upload - NEW! -->
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 hover:shadow-md transition-shadow relative">
+                    <div class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        ¡NUEVO!
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl text-orange-600 mb-2">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3 class="font-semibold text-orange-800">Subida Directa</h3>
+                        <p class="text-sm text-orange-600 mt-1">La forma MÁS FÁCIL - Sin YouTube</p>
+                        <a href="audio-uploader.html" target="_blank" class="inline-block mt-2 text-xs bg-orange-600 text-white px-3 py-1 rounded-full hover:bg-orange-700 transition-colors">
+                            ¡Probar ahora!
+                        </a>
+                    </div>
+                </div>
+
+                <!-- YouTube Uploader -->
+                <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg border border-red-200 hover:shadow-md transition-shadow">
+                    <div class="text-center">
+                        <div class="text-3xl text-red-600 mb-2">
+                            <i class="fab fa-youtube"></i>
+                        </div>
+                        <h3 class="font-semibold text-red-800">YouTube Uploader</h3>
+                        <p class="text-sm text-red-600 mt-1">Sube videos para traducción automática</p>
+                        <a href="youtube-uploader.html" target="_blank" class="inline-block mt-2 text-xs bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 transition-colors">
+                            Abrir herramienta
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Audio Player -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200 hover:shadow-md transition-shadow">
+                    <div class="text-center">
+                        <div class="text-3xl text-purple-600 mb-2">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <h3 class="font-semibold text-purple-800">Audio Wayuu</h3>
+                        <p class="text-sm text-purple-600 mt-1">Reproduce pronunciaciones nativas</p>
+                        <button onclick="document.querySelector('#audio-search').focus()" class="mt-2 text-xs bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition-colors">
+                            Buscar audio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Learning Tools -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200 hover:shadow-md transition-shadow">
+                    <div class="text-center">
+                        <div class="text-3xl text-green-600 mb-2">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="font-semibold text-green-800">Herramientas</h3>
+                        <p class="text-sm text-green-600 mt-1">Aprende wayuunaiki paso a paso</p>
+                        <a href="learning-tools.html" target="_blank" class="inline-block mt-2 text-xs bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition-colors">
+                            Explorar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access Buttons -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600 mb-3">Acceso rápido:</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <a href="audio-uploader.html" target="_blank" class="bg-orange-600 hover:bg-orange-700 text-white text-sm px-4 py-2 rounded-lg transition-colors flex items-center relative">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>
+                        Subida Directa
+                        <span class="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">¡NUEVO!</span>
+                    </a>
+                    <a href="youtube-uploader.html" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fab fa-youtube mr-2"></i>
+                        Subir Video YouTube
+                    </a>
+                    <a href="learning-tools.html" target="_blank" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Herramientas de Aprendizaje
+                    </a>
+                    <button onclick="window.scrollTo({top: document.querySelector('#stats-section').offsetTop, behavior: 'smooth'})" class="bg-gray-600 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        Ver Estadísticas
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Translator Interface -->
         <div class="max-w-4xl mx-auto">
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -443,8 +549,8 @@
                 <!-- YouTube Sources Management -->
                 <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 mb-8">
                     <h3 class="text-xl font-semibold text-red-800 mb-6">
-                        <i class="fab fa-youtube text-red-600 mr-3"></i>
-                        Fuentes de YouTube / Data Sources
+                        <i class="fas fa-video text-red-600 mr-3"></i>
+                        Fuentes de Videos / Data Sources
                     </h3>
                     
                     <!-- YouTube Stats Grid -->
@@ -518,7 +624,7 @@
                     <div id="youtube-videos-container" class="space-y-4">
                         <div class="flex items-center justify-center py-8">
                             <i class="fas fa-spinner fa-spin text-gray-400 mr-2"></i>
-                            <span class="text-gray-500">Cargando videos de YouTube...</span>
+                            <span class="text-gray-500">Cargando videos...</span>
                         </div>
                     </div>
 

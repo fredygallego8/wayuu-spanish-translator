@@ -6,12 +6,20 @@ import { OpenAIWhisperApiStrategy } from './asr-strategies/openai-whisper-api.st
 import { WhisperAsrStrategy } from './asr-strategies/whisper-asr.strategy';
 import { WayuuOptimizedAsrStrategy } from './asr-strategies/wayuu-optimized-asr.strategy';
 import { TranslationModule } from '../translation/translation.module';
+// Pipeline Optimization Services
+import { ProcessingQueueService } from './queue/processing-queue.service';
+import { PipelineHealthService } from './health/pipeline-health.service';
+import { FileValidatorService } from './validation/file-validator.service';
 
 @Module({
   imports: [TranslationModule],
   controllers: [YoutubeIngestionController],
   providers: [
     YoutubeIngestionService,
+    // Pipeline Optimization Services
+    ProcessingQueueService,
+    PipelineHealthService,
+    FileValidatorService,
     {
       provide: 'AsrStrategy',
       useFactory: () => {

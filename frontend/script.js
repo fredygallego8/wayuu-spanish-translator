@@ -300,6 +300,7 @@ class WayuuTranslator {
         this.bindEvents();
         this.loadDatasetInfo();
         this.loadCompleteStats();
+        this.loadSources();
         this.loadYouTubeStats();
         this.initAudioPlayer();
     }
@@ -830,6 +831,18 @@ class WayuuTranslator {
                                     Entradas exactas: ${source.entriesFormatted || source.totalEntries.toLocaleString()}
                                 </div>
                             ` : ''}
+                            ${source.type === 'mixed' && source.totalEntries ? `
+                                <div class="mt-1 text-sm font-medium text-orange-600">
+                                    <i class="fas fa-layer-group mr-1"></i>
+                                    Recursos lingüísticos: ${source.entriesFormatted || source.totalEntries.toLocaleString()} archivos
+                                </div>
+                            ` : ''}
+                            ${source.type === 'mixed' && !source.totalEntries ? `
+                                <div class="mt-1 text-sm font-medium text-gray-500">
+                                    <i class="fas fa-layer-group mr-1"></i>
+                                    Recursos lingüísticos: Pendiente de carga
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="text-xs text-gray-500">
                             <i class="fas fa-link mr-1"></i>
@@ -1228,9 +1241,9 @@ class WayuuTranslator {
         if (!videos || videos.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
-                    <i class="fab fa-youtube text-4xl mb-2"></i>
-                    <div>No hay videos de YouTube procesados</div>
-                    <div class="text-sm mt-2">Usa el endpoint /api/youtube-ingestion/ingest para agregar videos</div>
+                    <i class="fas fa-video text-4xl mb-2"></i>
+                    <div>No hay videos procesados</div>
+                    <div class="text-sm mt-2">Usa el endpoint /api/youtube-ingestion/ingest para agregar videos de YouTube o /api/youtube-ingestion/upload para subir archivos</div>
                 </div>
             `;
             return;
@@ -1256,13 +1269,32 @@ class WayuuTranslator {
             const statusColor = statusColors[video.status] || 'bg-gray-100 text-gray-800';
             const statusIcon = statusIcons[video.status] || 'fas fa-question-circle';
             
+            // Determinar si es de YouTube o archivo subido
+            const isYouTube = !video.videoId.startsWith('upload_');
+            const sourceIcon = isYouTube ? 'fab fa-youtube text-red-500' : 'fas fa-file-video text-blue-500';
+            
+            // Obtener la primera frase del ASR si está completado
+            let firstAsrSentence = '';
+            if (video.status === 'completed' && video.transcription) {
+                // Buscar la primera línea que tenga contenido después de los timestamps
+                const lines = video.transcription.split('\n');
+                for (let line of lines) {
+                    // Remover timestamps como [00:00.000 --> 00:10.240]
+                    const cleanLine = line.replace(/\[\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}\.\d{3}\]/, '').trim();
+                    if (cleanLine && cleanLine.length > 10) {
+                        firstAsrSentence = cleanLine.length > 80 ? cleanLine.substring(0, 80) + '...' : cleanLine;
+                        break;
+                    }
+                }
+            }
+            
             return `
                 <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <div class="flex items-center mb-2">
                                 <div class="text-lg font-semibold text-gray-800 mr-3">
-                                    <i class="fab fa-youtube text-red-500 mr-2"></i>
+                                    <i class="${sourceIcon} mr-2"></i>
                                     ${video.title}
                                 </div>
                                 <span class="text-xs ${statusColor} px-2 py-1 rounded-full">
@@ -1270,8 +1302,26 @@ class WayuuTranslator {
                                     ${video.status.replace('_', ' ').toUpperCase()}
                                 </span>
                             </div>
+                            
+                            ${firstAsrSentence ? `
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+                                    <div class="text-sm text-green-800">
+                                        <i class="fas fa-quote-left mr-1"></i>
+                                        <strong>Primera frase transcrita:</strong>
+                                    </div>
+                                    <div class="text-sm text-green-700 italic mt-1">"${firstAsrSentence}"</div>
+                                </div>
+                            ` : ''}
+                            
                             <div class="text-sm text-gray-600 mb-1">
                                 <strong>ID:</strong> ${video.videoId}
+                                <span class="ml-3">
+                                    <strong>Fuente:</strong> 
+                                    <span class="inline-flex items-center">
+                                        <i class="${sourceIcon} mr-1"></i>
+                                        ${isYouTube ? 'YouTube' : 'Archivo subido'}
+                                    </span>
+                                </span>
                             </div>
                             <div class="text-xs text-gray-500">
                                 <strong>Creado:</strong> ${new Date(video.createdAt).toLocaleString('es-ES')} |
@@ -1279,11 +1329,21 @@ class WayuuTranslator {
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 ml-4">
-                            <a href="https://youtube.com/watch?v=${video.videoId}" 
-                               target="_blank" 
-                               class="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors">
-                                <i class="fab fa-youtube mr-1"></i>Ver Video
-                            </a>
+                            ${isYouTube ? `
+                                <a href="https://youtube.com/watch?v=${video.videoId}" 
+                                   target="_blank" 
+                                   class="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors">
+                                    <i class="fab fa-youtube mr-1"></i>Ver Video
+                                </a>
+                            ` : `
+                                <span class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-700 rounded">
+                                    <i class="fas fa-file-video mr-1"></i>Archivo Local
+                                </span>
+                            `}
+                            <button onclick="translator.deleteVideo('${video.videoId}')" 
+                                    class="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Borrar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1424,6 +1484,81 @@ class WayuuTranslator {
                 Error al cargar tags
             </span>
         `;
+    }
+
+    async deleteVideo(videoId) {
+        if (!confirm('¿Estás seguro de que quieres borrar este video? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            const response = await this.makeAuthenticatedRequest(`${this.apiUrl}/youtube-ingestion/delete/${videoId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response) {
+                this.showNotification('Error de conexión al borrar el video', 'error');
+                return;
+            }
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showNotification(result.message || 'Video borrado exitosamente', 'success');
+                    // Recargar la lista de videos
+                    await this.loadYouTubeStats();
+                } else {
+                    this.showNotification(result.error || 'Error al borrar el video', 'error');
+                }
+            } else {
+                // Si el status no es 2xx, parsear el error
+                try {
+                    const errorData = await response.json();
+                    this.showNotification(errorData.message || 'Error al borrar el video', 'error');
+                } catch {
+                    this.showNotification(`Error del servidor: ${response.status}`, 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error al borrar video:', error);
+            this.showNotification('Error de conexión al borrar el video', 'error');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const colors = {
+            'success': 'bg-green-100 text-green-800 border-green-200',
+            'error': 'bg-red-100 text-red-800 border-red-200',
+            'warning': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            'info': 'bg-blue-100 text-blue-800 border-blue-200'
+        };
+        
+        const icons = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-triangle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+        
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm border ${colors[type] || colors.info}`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="${icons[type] || icons.info} mr-2"></i>
+                <span>${message}</span>
+                <button class="ml-auto pl-3" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
     }
 }
 

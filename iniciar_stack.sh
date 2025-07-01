@@ -41,6 +41,15 @@ check_command docker-compose || { echo "❌ Instalar Docker Compose primero"; ex
 check_command pnpm || { echo "❌ Instalar pnpm primero"; exit 1; }
 check_command curl || { echo "❌ Instalar curl primero"; exit 1; }
 
+# Verificar Python para frontend simple
+if command -v python3 &> /dev/null; then
+    echo -e "${GREEN}✅ python3: Disponible para frontend${NC}"
+elif command -v python &> /dev/null; then
+    echo -e "${GREEN}✅ python: Disponible para frontend${NC}"
+else
+    echo -e "${YELLOW}⚠️  Python no encontrado - Frontend simple no se iniciará${NC}"
+fi
+
 # Verificar que Docker está corriendo
 if ! docker info > /dev/null 2>&1; then
     echo -e "${YELLOW}⚠️  Docker no está corriendo. Iniciando...${NC}"
@@ -176,7 +185,49 @@ else
     echo -e "${RED}❌ Backend Metrics: Sin datos${NC}"
 fi
 
-show_step "PASO 6: Verificación Final"
+show_step "PASO 6: Iniciando Frontend Simple"
+
+cd ../frontend
+
+# Verificar si el puerto 4000 está libre
+if lsof -i :4000 > /dev/null 2>&1; then
+    echo -e "${YELLOW}⚠️  Puerto 4000 en uso. Matando proceso...${NC}"
+    lsof -ti :4000 | xargs kill -9 2>/dev/null
+    sleep 2
+fi
+
+# Verificar si Python está disponible
+if command -v python3 &> /dev/null; then
+    echo "🌐 Iniciando Frontend Simple con Python..."
+    nohup python3 -m http.server 4000 > ../frontend.log 2>&1 &
+    FRONTEND_PID=$!
+    echo "Frontend PID: $FRONTEND_PID"
+elif command -v python &> /dev/null; then
+    echo "🌐 Iniciando Frontend Simple con Python..."
+    nohup python -m http.server 4000 > ../frontend.log 2>&1 &
+    FRONTEND_PID=$!
+    echo "Frontend PID: $FRONTEND_PID"
+else
+    echo -e "${RED}❌ Python no encontrado. No se puede iniciar frontend simple${NC}"
+    FRONTEND_PID=""
+fi
+
+if [ ! -z "$FRONTEND_PID" ]; then
+    echo "Frontend Simple logs: frontend.log"
+    
+    # Esperar a que el frontend se inicie
+    echo "⌛ Esperando frontend (10s)..."
+    sleep 10
+    
+    # Verificar que responda
+    if curl -s http://localhost:4000 > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Frontend Simple: Disponible en puerto 4000${NC}"
+    else
+        echo -e "${RED}❌ Frontend Simple: No responde en puerto 4000${NC}"
+    fi
+fi
+
+show_step "PASO 7: Verificación Final"
 
 # Ejecutar script de verificación
 echo "🔍 Ejecutando verificación completa..."
@@ -187,9 +238,15 @@ else
     echo -e "${YELLOW}⚠️  Script de verificación no encontrado${NC}"
 fi
 
-show_step "PASO 7: URLs de Acceso"
+show_step "PASO 8: URLs de Acceso"
 
 echo -e "${BLUE}🔗 URLs PRINCIPALES:${NC}"
+echo "   🌐 Frontend Simple: http://localhost:4000"
+echo "      Páginas disponibles:"
+echo "      - http://localhost:4000/index.html (Principal)"
+echo "      - http://localhost:4000/learning-tools.html (Herramientas)"
+echo "      - http://localhost:4000/demo.html (Demo)"
+echo ""
 echo "   📊 Grafana Dashboard: http://localhost:3001"
 echo "      Usuario: admin"
 echo "      Contraseña: wayuu2024"
@@ -204,8 +261,17 @@ echo "   📚 Dataset Stats: http://localhost:3002/api/datasets/stats"
 
 echo -e "\n${BLUE}📋 INFORMACIÓN DEL SISTEMA:${NC}"
 echo "   Backend PID: $BACKEND_PID"
+if [ ! -z "$FRONTEND_PID" ]; then
+echo "   Frontend PID: $FRONTEND_PID"
+fi
 echo "   Logs Backend: tail -f backend.log"
+if [ ! -z "$FRONTEND_PID" ]; then
+echo "   Logs Frontend: tail -f frontend.log"
+fi
 echo "   Detener Backend: kill $BACKEND_PID"
+if [ ! -z "$FRONTEND_PID" ]; then
+echo "   Detener Frontend: kill $FRONTEND_PID"
+fi
 echo "   Detener Monitoring: cd monitoring && docker-compose down"
 
 echo -e "\n${BLUE}⚠️  IMPORTANTE PARA GRAFANA:${NC}"
@@ -221,13 +287,16 @@ echo -e "${GREEN}🎯 Estado: LISTO PARA USO${NC}"
 cat > stack_info.txt << EOF
 Stack iniciado: $(date)
 Backend PID: $BACKEND_PID
+$([ ! -z "$FRONTEND_PID" ] && echo "Frontend PID: $FRONTEND_PID")
 URLs:
+- Frontend Simple: http://localhost:4000
 - Grafana: http://localhost:3001 (admin/wayuu2024)
 - Prometheus: http://localhost:9090
 - Backend: http://localhost:3002/api/health
 
 Para detener:
 - Backend: kill $BACKEND_PID
+$([ ! -z "$FRONTEND_PID" ] && echo "- Frontend: kill $FRONTEND_PID")
 - Monitoring: cd monitoring && docker-compose down
 EOF
 
