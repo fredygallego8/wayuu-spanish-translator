@@ -380,15 +380,31 @@ export class MetricsService implements OnModuleInit {
 
   // Métodos de conveniencia para métricas de datasets
   updateDatasetTotalEntries(datasetName: string, datasetType: string, entries: number) {
-    this.datasetTotalEntries.set({ dataset_name: datasetName, dataset_type: datasetType }, entries);
+    // Validar que entries sea un número válido
+    if (typeof entries === 'number' && !isNaN(entries) && isFinite(entries)) {
+      this.datasetTotalEntries.set({ dataset_name: datasetName, dataset_type: datasetType }, entries);
+    } else {
+      console.warn(`⚠️ Invalid entries value for dataset ${datasetName}: ${entries}, setting to 0`);
+      this.datasetTotalEntries.set({ dataset_name: datasetName, dataset_type: datasetType }, 0);
+    }
   }
 
   updateDatasetUniqueWords(datasetName: string, language: string, datasetType: string, words: number) {
-    this.datasetUniqueWords.set({ dataset_name: datasetName, language, dataset_type: datasetType }, words);
+    if (typeof words === 'number' && !isNaN(words) && isFinite(words)) {
+      this.datasetUniqueWords.set({ dataset_name: datasetName, language, dataset_type: datasetType }, words);
+    } else {
+      console.warn(`⚠️ Invalid words value for dataset ${datasetName}: ${words}, setting to 0`);
+      this.datasetUniqueWords.set({ dataset_name: datasetName, language, dataset_type: datasetType }, 0);
+    }
   }
 
   updateDatasetAverageWordsPerEntry(datasetName: string, language: string, datasetType: string, average: number) {
-    this.datasetAverageWordsPerEntry.set({ dataset_name: datasetName, language, dataset_type: datasetType }, average);
+    if (typeof average === 'number' && !isNaN(average) && isFinite(average)) {
+      this.datasetAverageWordsPerEntry.set({ dataset_name: datasetName, language, dataset_type: datasetType }, average);
+    } else {
+      console.warn(`⚠️ Invalid average value for dataset ${datasetName}: ${average}, setting to 0`);
+      this.datasetAverageWordsPerEntry.set({ dataset_name: datasetName, language, dataset_type: datasetType }, 0);
+    }
   }
 
   updateDatasetCacheStatus(datasetName: string, datasetType: string, isAvailable: boolean) {
@@ -396,7 +412,12 @@ export class MetricsService implements OnModuleInit {
   }
 
   updateDatasetCacheSize(datasetName: string, datasetType: string, sizeBytes: number) {
-    this.datasetCacheSize.set({ dataset_name: datasetName, dataset_type: datasetType }, sizeBytes);
+    if (typeof sizeBytes === 'number' && !isNaN(sizeBytes) && isFinite(sizeBytes)) {
+      this.datasetCacheSize.set({ dataset_name: datasetName, dataset_type: datasetType }, sizeBytes);
+    } else {
+      console.warn(`⚠️ Invalid sizeBytes value for dataset ${datasetName}: ${sizeBytes}, setting to 0`);
+      this.datasetCacheSize.set({ dataset_name: datasetName, dataset_type: datasetType }, 0);
+    }
   }
 
   updateDatasetLoadStatus(datasetName: string, datasetType: string, isActive: boolean, isLoaded: boolean) {
@@ -404,7 +425,12 @@ export class MetricsService implements OnModuleInit {
   }
 
   updateDatasetLastUpdateTime(datasetName: string, datasetType: string, timestamp: number) {
-    this.datasetLastUpdateTime.set({ dataset_name: datasetName, dataset_type: datasetType }, timestamp);
+    if (typeof timestamp === 'number' && !isNaN(timestamp) && isFinite(timestamp)) {
+      this.datasetLastUpdateTime.set({ dataset_name: datasetName, dataset_type: datasetType }, timestamp);
+    } else {
+      console.warn(`⚠️ Invalid timestamp value for dataset ${datasetName}: ${timestamp}, setting to 0`);
+      this.datasetLastUpdateTime.set({ dataset_name: datasetName, dataset_type: datasetType }, 0);
+    }
   }
 
   updateAudioDatasetTotalDuration(datasetName: string, totalDurationSeconds: number) {

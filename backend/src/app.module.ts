@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ScheduleModule } from '@nestjs/schedule';
+// import { ScheduleModule } from '@nestjs/schedule'; // Temporalmente comentado para NLLB
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TranslationModule } from './translation/translation.module';
 import { DatasetsModule } from './datasets/datasets.module';
@@ -22,9 +22,9 @@ import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
       ttl: 60000,
       limit: 100,
     }]),
-    ScheduleModule.forRoot(),
+    // ScheduleModule.forRoot(), // Temporalmente comentado para NLLB
     AuthModule,
-    TranslationModule,
+    TranslationModule, // 🚀 INCLUYE NLLB-200 NATIVO
     DatasetsModule,
     YoutubeIngestionModule,
     HuggingfaceModule,

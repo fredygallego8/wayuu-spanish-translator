@@ -88,6 +88,10 @@
                 <button id="tab-exercises" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
                     <i class="fas fa-gamepad mr-2"></i>Ejercicios Interactivos
                 </button>
+                <button id="tab-massive-tools" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
+                    <i class="fas fa-rocket mr-2"></i>Herramientas Masivas
+                    <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full ml-2">7K+</span>
+                </button>
                 <button id="tab-patterns" class="tab-button px-6 py-3 text-sm font-medium rounded-lg">
                     <i class="fas fa-chart-line mr-2"></i>Patrones Fonéticos
                 </button>
@@ -320,6 +324,130 @@
                     <div id="hint-display" class="hidden mt-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
                         <p id="hint-text" class="text-yellow-800"></p>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🎯 NUEVA SECCIÓN: Herramientas Educativas Masivas -->
+        <div id="massive-tools-section" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-rocket mr-3 text-purple-600"></i>
+                    Herramientas Educativas Masivas
+                    <span class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full ml-3">Dataset: 7,033 entradas</span>
+                </h2>
+
+                <!-- Dataset Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-6 text-center">
+                        <i class="fas fa-database text-3xl mb-3"></i>
+                        <h3 class="text-2xl font-bold" id="total-entries">7,033</h3>
+                        <p class="text-sm opacity-90">Entradas Totales</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 text-center">
+                        <i class="fas fa-volume-up text-3xl mb-3"></i>
+                        <h3 class="text-2xl font-bold" id="audio-files">810</h3>
+                        <p class="text-sm opacity-90">Archivos de Audio</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6 text-center">
+                        <i class="fas fa-file-pdf text-3xl mb-3"></i>
+                        <h3 class="text-2xl font-bold" id="pdf-sources">4</h3>
+                        <p class="text-sm opacity-90">Fuentes PDF Académicas</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg p-6 text-center">
+                        <i class="fas fa-chart-line text-3xl mb-3"></i>
+                        <h3 class="text-2xl font-bold" id="growth-percentage">+222%</h3>
+                        <p class="text-sm opacity-90">Crecimiento del Dataset</p>
+                    </div>
+                </div>
+
+                <!-- Massive Tools Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Vocabulary Massive Explorer -->
+                    <div class="massive-tool-card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-blue-600 mb-4">
+                            <i class="fas fa-search text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Explorador Masivo de Vocabulario</h3>
+                        <p class="text-sm text-gray-600 mb-4">Navega através de las 7K+ entradas con filtros inteligentes y búsqueda semántica.</p>
+                        <button class="massive-tool-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="vocabulary-explorer">
+                            <i class="fas fa-rocket mr-2"></i>Explorar Dataset
+                        </button>
+                    </div>
+
+                    <!-- Audio Learning System -->
+                    <div class="massive-tool-card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-green-600 mb-4">
+                            <i class="fas fa-headphones text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Sistema de Audio Integral</h3>
+                        <p class="text-sm text-gray-600 mb-4">Accede a 810 archivos de audio con ejercicios adaptativos de pronunciación.</p>
+                        <button class="massive-tool-btn w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="audio-system">
+                            <i class="fas fa-play mr-2"></i>Iniciar Audio Learning
+                        </button>
+                    </div>
+
+                    <!-- Pattern Analysis Advanced -->
+                    <div class="massive-tool-card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-purple-600 mb-4">
+                            <i class="fas fa-brain text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Análisis de Patrones Avanzado</h3>
+                        <p class="text-sm text-gray-600 mb-4">IA aplicada para descubrir patrones fonéticos y morfológicos en el dataset completo.</p>
+                        <button class="massive-tool-btn w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="pattern-analysis">
+                            <i class="fas fa-magic mr-2"></i>Analizar Patrones
+                        </button>
+                    </div>
+
+                    <!-- Cultural Context Explorer -->
+                    <div class="massive-tool-card bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-orange-600 mb-4">
+                            <i class="fas fa-globe-americas text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Explorador de Contexto Cultural</h3>
+                        <p class="text-sm text-gray-600 mb-4">Descubre significados culturales y etimologías con fuentes académicas integradas.</p>
+                        <button class="massive-tool-btn w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="cultural-context">
+                            <i class="fas fa-book-open mr-2"></i>Explorar Cultura
+                        </button>
+                    </div>
+
+                    <!-- Adaptive Learning AI -->
+                    <div class="massive-tool-card bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-red-600 mb-4">
+                            <i class="fas fa-robot text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">IA de Aprendizaje Adaptativo</h3>
+                        <p class="text-sm text-gray-600 mb-4">Sistema inteligente que adapta ejercicios basado en tu progreso y el dataset masivo.</p>
+                        <button class="massive-tool-btn w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="adaptive-ai">
+                            <i class="fas fa-cogs mr-2"></i>Activar IA Adaptativa
+                        </button>
+                    </div>
+
+                    <!-- Dataset Statistics -->
+                    <div class="massive-tool-card bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div class="text-teal-600 mb-4">
+                            <i class="fas fa-chart-bar text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Estadísticas del Dataset</h3>
+                        <p class="text-sm text-gray-600 mb-4">Análisis completo: frecuencias, distribuciones, métricas de calidad y tendencias.</p>
+                        <button class="massive-tool-btn w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg transition-colors" data-tool="dataset-stats">
+                            <i class="fas fa-analytics mr-2"></i>Ver Estadísticas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Massive Tool Display Area -->
+            <div id="massive-tool-display" class="hidden bg-white rounded-xl shadow-lg p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 id="massive-tool-title" class="text-xl font-bold text-gray-900"></h3>
+                    <button id="close-massive-tool-btn" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div id="massive-tool-content" class="min-h-[400px]">
+                    <!-- Dynamic content will be loaded here -->
                 </div>
             </div>
         </div>

@@ -118,7 +118,9 @@ export class PhoneticAnalysisDto {
 
 export class LearningExerciseDto {
   @IsString()
-  exerciseType: 'pronunciation' | 'listening' | 'pattern-recognition' | 'vocabulary';
+  exerciseType: 'pronunciation' | 'listening' | 'pattern-recognition' | 'vocabulary' | 
+               'vocabulary-massive' | 'translation-challenge' | 'phonetic-pattern-advanced' | 
+               'cultural-context' | 'adaptive-learning' | 'audio-integrated';
 
   @IsOptional()
   @IsString()
@@ -159,4 +161,15 @@ export interface LearningExercise {
   expectedAnswer?: any;
   hints?: string[];
   audioId?: string;
+  metadata?: {
+    datasetSize?: number;
+    wordFrequency?: number;
+    sourceDataset?: string;
+    phoneticComplexity?: string;
+    adaptiveLevel?: string;
+    multiModal?: boolean;
+    sourceTypes?: string[];
+    culturalRelevance?: string;
+    integrationLevel?: string;
+  };
 }

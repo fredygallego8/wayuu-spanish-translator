@@ -95,6 +95,79 @@ export class TranslationController {
     }
   }
 
+  @Post('learning-exercises-massive')
+  @ApiOperation({ summary: 'Generate massive learning exercises using full 7K+ dataset' })
+  @ApiResponse({
+    status: 200,
+    description: 'Massive learning exercises generated successfully',
+  })
+  async generateMassiveLearningExercises(@Body() exerciseDto: LearningExerciseDto & {
+    useFullDataset?: boolean;
+    frequencyBasedDifficulty?: boolean;
+    adaptiveDifficulty?: boolean;
+    includeAudioExercises?: boolean;
+  }): Promise<{
+    success: boolean;
+    data: LearningExercise[];
+    message: string;
+    metadata: {
+      exerciseType: string;
+      difficulty: string;
+      count: number;
+      datasetSize: string;
+      generationTime: number;
+    };
+  }> {
+    const startTime = Date.now();
+    
+    this.logger.log(`Massive exercise generation request: ${exerciseDto.exerciseType} - ${exerciseDto.difficulty}`);
+    
+    try {
+      // Valores por defecto optimizados para dataset masivo
+      const enhancedDto = {
+        ...exerciseDto,
+        count: exerciseDto.count || 10,
+        difficulty: exerciseDto.difficulty || 'intermediate',
+        useFullDataset: exerciseDto.useFullDataset !== false, // default true
+        frequencyBasedDifficulty: exerciseDto.frequencyBasedDifficulty !== false, // default true
+        adaptiveDifficulty: exerciseDto.adaptiveDifficulty !== false, // default true
+        includeAudioExercises: exerciseDto.includeAudioExercises !== false // default true
+      };
+
+      const exercises = await this.translationService.generateMassiveExercises(enhancedDto);
+      const generationTime = Date.now() - startTime;
+      
+      return {
+        success: true,
+        data: exercises,
+        message: `Generated ${exercises.length} massive exercises using 7K+ dataset in ${generationTime}ms`,
+        metadata: {
+          exerciseType: enhancedDto.exerciseType,
+          difficulty: enhancedDto.difficulty,
+          count: exercises.length,
+          datasetSize: '7,033+ entries',
+          generationTime
+        }
+      };
+    } catch (error) {
+      this.logger.error(`Massive exercise generation error: ${error.message}`);
+      const generationTime = Date.now() - startTime;
+      
+      return {
+        success: false,
+        data: [],
+        message: `Error generating massive exercises: ${error.message}`,
+        metadata: {
+          exerciseType: exerciseDto.exerciseType || 'unknown',
+          difficulty: exerciseDto.difficulty || 'unknown',
+          count: 0,
+          datasetSize: '7,033+ entries (failed)',
+          generationTime
+        }
+      };
+    }
+  }
+
   @Get('phonetic-patterns')
   @ApiOperation({ summary: 'Get common Wayuu phonetic patterns' })
   @ApiQuery({ name: 'difficulty', required: false, enum: ['easy', 'medium', 'hard'] })

@@ -33,13 +33,26 @@ export class NllbTranslationService {
   };
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('HUGGINGFACE_API_KEY');
+    // Buscar token en múltiples variables (flexibilidad para el usuario)
+    const apiKey = this.configService.get<string>('HUGGING_FACE_TOKEN') || 
+                   this.configService.get<string>('HUGGINGFACE_API_KEY') ||
+                   this.configService.get<string>('HF_TOKEN');
+                   
     if (!apiKey) {
-      this.logger.warn('HUGGINGFACE_API_KEY not found, NLLB translation will be disabled');
+      this.logger.warn('🔑 Hugging Face token not found. Set HUGGING_FACE_TOKEN, HUGGINGFACE_API_KEY, or HF_TOKEN');
+      this.logger.warn('📝 Get your free token at: https://huggingface.co/settings/tokens');
+      this.logger.warn('⚠️  NLLB translation will be disabled until token is configured');
       return;
     }
+    
+    // Validar formato básico del token
+    if (!apiKey.startsWith('hf_')) {
+      this.logger.warn('⚠️  Token should start with "hf_" - please verify your Hugging Face token');
+    }
+    
     this.hf = new HfInference(apiKey);
     this.logger.log('✅ NLLB-200 Service initialized with native Wayuu support (guc_Latn)');
+    this.logger.log(`🔑 Using token: ${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}`);
   }
 
   /**
@@ -175,12 +188,12 @@ export class NllbTranslationService {
       
       batchResults.forEach((promiseResult, batchIndex) => {
         if (promiseResult.status === 'fulfilled') {
-          const { success, result, error, index } = promiseResult.value;
-          if (success) {
-            results[index] = result;
+          const value = promiseResult.value;
+          if (value.success && 'result' in value) {
+            results[value.index] = value.result;
             successCount++;
-          } else {
-            this.logger.error(`❌ Batch item ${index} failed: ${error.message}`);
+          } else if (!value.success && 'error' in value) {
+            this.logger.error(`❌ Batch item ${value.index} failed: ${value.error.message}`);
             errorCount++;
           }
         } else {
