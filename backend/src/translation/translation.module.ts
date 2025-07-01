@@ -4,6 +4,9 @@ import { TranslationController } from './translation.controller';
 import { TranslationService } from './translation.service';
 import { NllbController } from './nllb.controller';
 import { NllbTranslationService } from './nllb.service';
+import { FreeTranslationController } from './free-translation.controller';
+import { GoogleTranslateService } from './google-translate.service';
+import { LibreTranslateService } from './libre-translate.service';
 import { DatasetsModule } from '../datasets/datasets.module';
 import { MetricsModule } from '../metrics/metrics.module';
 
@@ -15,15 +18,20 @@ import { MetricsModule } from '../metrics/metrics.module';
   ],
   controllers: [
     TranslationController,
-    NllbController  // 🚀 NUEVO: Controlador NLLB-200 con soporte nativo wayuu
+    NllbController,  // 🚀 NLLB-200 con soporte nativo wayuu
+    FreeTranslationController  // 🆓 NUEVO: Servicios de traducción gratuitos
   ],
   providers: [
     TranslationService,
-    NllbTranslationService  // 🚀 NUEVO: Servicio de traducción directa wayuu-español
+    NllbTranslationService,  // 🚀 Traducción directa wayuu-español
+    GoogleTranslateService,  // 🆓 Google Translate gratis
+    LibreTranslateService    // 🆓 LibreTranslate open source
   ],
   exports: [
     TranslationService,
-    NllbTranslationService  // Exportar para uso en otros módulos
+    NllbTranslationService,
+    GoogleTranslateService,
+    LibreTranslateService
   ],
 })
 export class TranslationModule {}
