@@ -273,10 +273,7 @@ export class MetricsService implements OnModuleInit {
     // Registrar métricas por defecto del sistema (CPU, memoria, etc.)
     collectDefaultMetrics({ register });
     
-    // Limpiar el registro para evitar duplicados en hot reload
-    register.clear();
-    
-    // Re-registrar nuestras métricas personalizadas
+    // Registrar nuestras métricas personalizadas
     register.registerMetric(this.translationCounter);
     register.registerMetric(this.translationDuration);
     register.registerMetric(this.translationErrors);
@@ -328,9 +325,6 @@ export class MetricsService implements OnModuleInit {
     register.registerMetric(this.totalDictionaryEntries);
     register.registerMetric(this.totalAudioFiles);
     register.registerMetric(this.growthLastUpdateTimestamp);
-
-    // Volver a registrar métricas por defecto
-    collectDefaultMetrics({ register });
   }
 
   // Método para obtener todas las métricas en formato Prometheus
