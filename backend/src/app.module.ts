@@ -8,6 +8,7 @@ import { YoutubeIngestionModule } from './youtube-ingestion/youtube-ingestion.mo
 import { HuggingfaceModule } from './huggingface.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { AuthModule } from './auth/auth.module';
+import { PdfProcessingModule } from './pdf-processing/pdf-processing.module';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 @Module({
@@ -26,6 +27,7 @@ import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
     YoutubeIngestionModule,
     HuggingfaceModule,
     MetricsModule,
+    PdfProcessingModule,
   ],
   controllers: [],
   providers: [

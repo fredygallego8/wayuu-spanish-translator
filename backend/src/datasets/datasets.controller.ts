@@ -2,6 +2,7 @@ import { Controller, Get, Post, Query, Param, Body, Delete, HttpException, HttpS
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 import { AudioDurationService } from './audio-duration.service';
+import { PdfProcessingService } from '../pdf-processing/pdf-processing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,6 +18,7 @@ export class DatasetsController {
   constructor(
     private readonly datasetsService: DatasetsService,
     private readonly audioDurationService: AudioDurationService,
+    private readonly pdfProcessingService: PdfProcessingService,
   ) {}
 
   @Get()
@@ -408,6 +410,202 @@ export class DatasetsController {
       return {
         success: false,
         message: `Error loading complete additional dataset: ${error.message}`
+      };
+    }
+  }
+
+  // ==================== PDF PROCESSING ENDPOINTS ====================
+
+  @Post('pdf/process-all-test')
+  @ApiOperation({ 
+    summary: '📄 Process all PDF documents (TEST)',
+    description: 'TEST endpoint - Processes all PDF files to extract Wayuu linguistic content'
+  })
+  @ApiResponse({ status: 200, description: 'PDFs processed successfully' })
+  async processAllPDFsTest() {
+    try {
+      this.logger.log(`📄 Testing PDF processing`);
+      const results = await this.pdfProcessingService.processAllPDFs();
+      
+      return {
+        success: true,
+        message: `Successfully processed ${results.length} PDF documents`,
+        data: {
+          processedCount: results.length,
+          totalWayuuPhrases: results.reduce((sum, pdf) => sum + pdf.wayuuContent.wayuuPhrases.length, 0),
+          totalPages: results.reduce((sum, pdf) => sum + pdf.pageCount, 0),
+          avgWayuuPercentage: results.length > 0 
+            ? Math.round(results.reduce((sum, pdf) => sum + pdf.wayuuContent.estimatedWayuuPercentage, 0) / results.length)
+            : 0,
+          pdfs: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText
+          }))
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      this.logger.error(`Failed to process PDFs in test`, error.stack);
+      return {
+        success: false,
+        message: 'Failed to process PDF documents',
+        error: error.message
+      };
+    }
+  }
+
+  @Post('pdf/process-all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: '📄 Process all PDF documents (Admin)',
+    description: '🔒 Processes all PDF files to extract Wayuu linguistic content - Admin only'
+  })
+  @ApiResponse({ status: 200, description: 'PDFs processed successfully' })
+  @ApiResponse({ status: 401, description: 'Authentication required' })
+  @ApiResponse({ status: 403, description: 'Admin role required' })
+  async processAllPDFs(@CurrentUser() user: User) {
+    try {
+      this.logger.log(`📄 Admin ${user.email} initiated PDF processing`);
+      const results = await this.pdfProcessingService.processAllPDFs();
+      
+      return {
+        success: true,
+        message: `Successfully processed ${results.length} PDF documents`,
+        data: {
+          processedCount: results.length,
+          totalWayuuPhrases: results.reduce((sum, pdf) => sum + pdf.wayuuContent.wayuuPhrases.length, 0),
+          totalPages: results.reduce((sum, pdf) => sum + pdf.pageCount, 0),
+          avgWayuuPercentage: results.length > 0 
+            ? Math.round(results.reduce((sum, pdf) => sum + pdf.wayuuContent.estimatedWayuuPercentage, 0) / results.length)
+            : 0,
+          pdfs: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText
+          }))
+        },
+        processedBy: user.email,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      this.logger.error(`Failed to process PDFs for ${user.email}`, error.stack);
+      return {
+        success: false,
+        message: 'Failed to process PDF documents',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/stats')
+  @ApiOperation({ summary: 'Get PDF processing statistics' })
+  @ApiResponse({ status: 200, description: 'PDF statistics retrieved successfully' })
+  async getPDFStats() {
+    try {
+      const stats = await this.pdfProcessingService.getProcessingStats();
+      return {
+        success: true,
+        data: {
+          ...stats,
+          status: stats.totalPDFs > 0 ? 'active' : 'inactive',
+          cacheEfficiency: stats.totalPDFs > 0 
+            ? Math.round((stats.cacheHits / stats.totalPDFs) * 100) 
+            : 0
+        },
+        message: 'PDF processing statistics retrieved successfully'
+      };
+    } catch (error) {
+      this.logger.error('Failed to get PDF stats', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve PDF statistics',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/documents')
+  @ApiOperation({ summary: 'Get all processed PDF documents' })
+  @ApiResponse({ status: 200, description: 'Processed PDFs retrieved successfully' })
+  async getProcessedPDFs() {
+    try {
+      const pdfs = await this.pdfProcessingService.getAllProcessedPDFs();
+      return {
+        success: true,
+        message: `Retrieved ${pdfs.length} processed PDF documents`,
+        data: {
+          count: pdfs.length,
+          documents: pdfs.map(pdf => ({
+            id: pdf.id,
+            fileName: pdf.fileName,
+            title: pdf.title,
+            pageCount: pdf.pageCount,
+            wayuuPhrases: pdf.wayuuContent.wayuuPhrases.length,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            hasWayuuContent: pdf.wayuuContent.hasWayuuText,
+            processedAt: pdf.processedAt
+          }))
+        }
+      };
+    } catch (error) {
+      this.logger.error('Failed to get processed PDFs', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve processed PDFs',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('pdf/search')
+  @ApiOperation({ summary: 'Search Wayuu content in PDF documents' })
+  @ApiQuery({ name: 'q', required: true, description: 'Search query' })
+  @ApiResponse({ status: 200, description: 'PDF search completed successfully' })
+  async searchPDFContent(@Query('q') query: string) {
+    try {
+      if (!query || query.trim().length < 2) {
+        return {
+          success: false,
+          message: 'Search query must be at least 2 characters long'
+        };
+      }
+      
+      const results = await this.pdfProcessingService.searchWayuuContent(query.trim());
+      
+      return {
+        success: true,
+        message: `Found ${results.length} PDF documents matching "${query}"`,
+        data: {
+          query: query.trim(),
+          matchCount: results.length,
+          results: results.map(pdf => ({
+            fileName: pdf.fileName,
+            title: pdf.title,
+            wayuuPercentage: pdf.wayuuContent.estimatedWayuuPercentage,
+            matchingPhrases: pdf.wayuuContent.wayuuPhrases
+              .filter(phrase => phrase.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 5),
+            matchingTranslations: pdf.wayuuContent.spanishTranslations
+              .filter(translation => translation.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 3)
+          }))
+        }
+      };
+    } catch (error) {
+      this.logger.error(`Failed to search PDF content: ${query}`, error.stack);
+      return {
+        success: false,
+        message: `Failed to search PDF content for "${query}"`,
+        error: error.message
       };
     }
   }
