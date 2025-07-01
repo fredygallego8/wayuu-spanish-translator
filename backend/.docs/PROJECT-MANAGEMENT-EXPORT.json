@@ -1,0 +1,637 @@
+{
+  "project": {
+    "name": "Wayuu Spanish Translator v2.0",
+    "description": "Plataforma integral de traducción y aprendizaje wayuunaiki-español con IA",
+    "duration_weeks": "48-52",
+    "team_size": "2-3",
+    "methodology": "Agile/Scrum",
+    "sprint_duration": "2 weeks",
+    "total_story_points": 565
+  },
+  "epics": [
+    {
+      "id": "WYU-EPIC-001",
+      "name": "Pipeline de Videos",
+      "priority": "CRITICAL",
+      "story_points": 34,
+      "duration_sprints": "2-3",
+      "description": "Completar y optimizar el pipeline de procesamiento de videos YouTube con transcripciones wayuu",
+      "stories": [
+        {
+          "id": "WYU-001",
+          "name": "Completar Videos Pendientes",
+          "priority": "CRITICAL",
+          "story_points": 8,
+          "duration_days": "3-4",
+          "user_story": "Como administrador del sistema, quiero sincronizar todos los videos transcritos en la base de datos para tener un pipeline de videos completamente funcional",
+          "acceptance_criteria": [
+            "El Himno Nacional transcrito está sincronizado en BD",
+            "Todos los 5 videos tienen transcripciones verificadas",
+            "No hay videos en estado fallido",
+            "El pipeline procesa videos de inicio a fin sin errores"
+          ],
+          "tasks": [
+            {
+              "id": "WYU-001-T1",
+              "name": "Investigar estado actual del Himno Nacional",
+              "story_points": 2,
+              "description": "Verificar archivos de transcripción existentes, revisar logs de procesamiento, identificar punto de falla en sincronización"
+            },
+            {
+              "id": "WYU-001-T2", 
+              "name": "Sincronizar Himno Nacional en BD",
+              "story_points": 5,
+              "description": "Desarrollar script de migración manual, validar integridad de datos, actualizar registros en base de datos"
+            },
+            {
+              "id": "WYU-001-T3",
+              "name": "Auditoría completa de videos",
+              "story_points": 3,
+              "description": "Verificar estado de chavo-wayu y otros videos, documentar estado actual de cada video, crear reporte de calidad de transcripciones"
+            }
+          ]
+        },
+        {
+          "id": "WYU-002",
+          "name": "Optimizar Pipeline de Procesamiento",
+          "priority": "CRITICAL",
+          "story_points": 21,
+          "duration_days": "8-10",
+          "user_story": "Como usuario del sistema, quiero que los videos se procesen automáticamente en segundo plano para no tener que esperar manualmente por el procesamiento",
+          "acceptance_criteria": [
+            "Videos se procesan automáticamente al subir",
+            "Sistema maneja errores de yt-dlp graciosamente", 
+            "Reintentos automáticos para videos fallidos",
+            "Notificaciones de estado en tiempo real"
+          ],
+          "dependencies": ["WYU-001"],
+          "tasks": [
+            {
+              "id": "WYU-002-T1",
+              "name": "Implementar procesamiento en background",
+              "story_points": 8,
+              "description": "Queue system con BullMQ o similar, workers para procesamiento asíncrono, manejo de concurrencia"
+            },
+            {
+              "id": "WYU-002-T2",
+              "name": "Mejorar manejo de errores", 
+              "story_points": 5,
+              "description": "Try-catch robusto en yt-dlp, logging detallado de errores, fallback strategies"
+            },
+            {
+              "id": "WYU-002-T3",
+              "name": "Sistema de reintentos",
+              "story_points": 3,
+              "description": "Exponential backoff, max retry limits, dead letter queue"
+            },
+            {
+              "id": "WYU-002-T4",
+              "name": "Notificaciones en tiempo real",
+              "story_points": 5,
+              "description": "WebSocket integration, estado de progreso en frontend, email/push notifications opcionales"
+            }
+          ]
+        },
+        {
+          "id": "WYU-003",
+          "name": "Dashboard de Monitoreo",
+          "priority": "HIGH",
+          "story_points": 13,
+          "duration_days": "5-6",
+          "user_story": "Como administrador, quiero monitorear el estado de todos los videos en procesamiento para detectar y resolver problemas rápidamente",
+          "acceptance_criteria": [
+            "Dashboard muestra estado en tiempo real",
+            "Métricas de performance visibles",
+            "Alertas para videos fallidos",
+            "Historial de procesamiento"
+          ],
+          "dependencies": ["WYU-002"],
+          "tasks": [
+            {
+              "id": "WYU-003-T1",
+              "name": "Crear métricas de monitoreo",
+              "story_points": 5,
+              "description": "Prometheus metrics, Grafana dashboards, alerting rules"
+            },
+            {
+              "id": "WYU-003-T2",
+              "name": "Panel de administración",
+              "story_points": 8,
+              "description": "Lista de videos con estados, acciones de gestión (retry, cancel, delete), logs en tiempo real"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "WYU-EPIC-002",
+      "name": "Procesamiento de PDFs",
+      "priority": "HIGH",
+      "story_points": 55,
+      "duration_sprints": "3-4",
+      "description": "Implementar extracción inteligente de contenido wayuu-español de documentos PDF académicos",
+      "stories": [
+        {
+          "id": "WYU-004",
+          "name": "Extracción Inteligente de PDFs",
+          "priority": "HIGH",
+          "story_points": 47,
+          "duration_days": "18-20",
+          "user_story": "Como investigador lingüístico, quiero extraer automáticamente palabras wayuu con sus traducciones de PDFs académicos para expandir el diccionario con contenido verificado científicamente",
+          "acceptance_criteria": [
+            "Sistema procesa PDFs de Hugging Face automáticamente",
+            "Extrae pares wayuu-español con alta precisión (>85%)",
+            "Valida calidad del contenido extraído",
+            "Integra nuevas entradas al diccionario existente"
+          ],
+          "tasks": [
+            {
+              "id": "WYU-004-T1",
+              "name": "Desarrollar extractor base de PDFs",
+              "story_points": 8,
+              "description": "Integración con PyPDF2 y pdfplumber, manejo de diferentes formatos PDF, extracción de texto estructurado"
+            },
+            {
+              "id": "WYU-004-T2",
+              "name": "Parser específico wayuu-español",
+              "story_points": 13,
+              "description": "Regex patterns para identificar traducciones, ML para clasificar contenido relevante, validación de formato wayuu"
+            },
+            {
+              "id": "WYU-004-T3",
+              "name": "Procesamiento inteligente con NLP",
+              "story_points": 21,
+              "description": "Implementar spaCy o similar para análisis, detección de patrones lingüísticos, extracción de contexto semántico"
+            },
+            {
+              "id": "WYU-004-T4",
+              "name": "Integración con pipeline existente",
+              "story_points": 5,
+              "description": "Conectar con datasets service, actualización automática de métricas, cache de resultados procesados"
+            }
+          ]
+        },
+        {
+          "id": "WYU-005",
+          "name": "Integración con Hugging Face",
+          "priority": "HIGH",
+          "story_points": 18,
+          "duration_days": "7-8",
+          "user_story": "Como administrador de datos, quiero procesar automáticamente PDFs del repositorio wayuu_linguistic_sources para aprovechar los 125+ documentos académicos disponibles",
+          "acceptance_criteria": [
+            "Descarga automática de PDFs desde HF",
+            "Procesamiento batch de documentos",
+            "Cache inteligente para evitar reprocesamiento",
+            "Métricas de éxito de extracción por documento"
+          ],
+          "dependencies": ["WYU-004"],
+          "tasks": [
+            {
+              "id": "WYU-005-T1",
+              "name": "Cliente HF para PDFs",
+              "story_points": 5,
+              "description": "API integration con huggingface_hub, download manager con retry logic, metadata tracking"
+            },
+            {
+              "id": "WYU-005-T2",
+              "name": "Procesamiento batch",
+              "story_points": 8,
+              "description": "Queue system para PDFs, parallel processing, progress tracking"
+            },
+            {
+              "id": "WYU-005-T3",
+              "name": "Sistema de cache avanzado",
+              "story_points": 5,
+              "description": "Cache de contenido extraído, versioning de documentos, invalidación inteligente"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "WYU-EPIC-003",
+      "name": "Herramientas de Aprendizaje",
+      "priority": "MEDIUM",
+      "story_points": 89,
+      "duration_sprints": "4-5",
+      "description": "Desarrollar herramientas interactivas de aprendizaje con gamificación para wayuunaiki",
+      "stories": [
+        {
+          "id": "WYU-006",
+          "name": "Definición de Contenido Educativo",
+          "priority": "HIGH",
+          "story_points": 16,
+          "duration_days": "6-7",
+          "user_story": "Como diseñador educativo, quiero definir temas específicos basados en pedagogía moderna para lenguas indígenas para crear un curriculum estructurado y efectivo",
+          "acceptance_criteria": [
+            "15+ temas específicos definidos y validados",
+            "Estructura pedagógica progresiva (básico → avanzado)",
+            "Alineación con estándares educativos para lenguas indígenas",
+            "Validación con expertos en cultura wayuu"
+          ],
+          "educational_topics": {
+            "basic_level": [
+              "Saludos y cortesías - Expresiones básicas de saludo",
+              "Presentación personal - Nombre, origen, familia básica",
+              "Números 1-100 - Sistema numérico wayuu",
+              "Colores naturales - Colores en contexto wayuu",
+              "Tiempo y clima - Estaciones en La Guajira"
+            ],
+            "intermediate_level": [
+              "Familia extendida y clanes - Sistema de parentesco wayuu",
+              "Comida tradicional - Ingredientes y preparación",
+              "Territorio wayuu - Geografía de La Guajira",
+              "Animales del desierto - Fauna local y su importancia",
+              "Oficios tradicionales - Pesca, pastoreo, artesanías"
+            ],
+            "advanced_level": [
+              "Tejido y artesanías - Técnicas y simbolismo",
+              "Ceremonias y rituales - Yonna, encierro, matrimonio",
+              "Sistema de justicia - Palabreros y resolución de conflictos",
+              "Medicina ancestral - Plantas medicinales y prácticas",
+              "Narrativa oral - Mitos, leyendas y tradición oral"
+            ]
+          },
+          "tasks": [
+            {
+              "id": "WYU-006-T1",
+              "name": "Investigación pedagógica",
+              "story_points": 8,
+              "description": "Análisis de metodologías para lenguas indígenas, revisión de literatura académica, benchmarking con otras plataformas"
+            },
+            {
+              "id": "WYU-006-T2",
+              "name": "Definición de taxonomía temática",
+              "story_points": 5,
+              "description": "Categorización por niveles de dificultad, secuenciación lógica de aprendizaje, mapeo de competencias por tema"
+            },
+            {
+              "id": "WYU-006-T3",
+              "name": "Validación con expertos",
+              "story_points": 3,
+              "description": "Consulta con lingüistas wayuu, review de contenido cultural, ajustes basados en feedback"
+            }
+          ]
+        },
+        {
+          "id": "WYU-007",
+          "name": "Sistema de Ejercicios Interactivos",
+          "priority": "MEDIUM",
+          "story_points": 55,
+          "duration_days": "20-22",
+          "user_story": "Como estudiante de wayuunaiki, quiero practicar con ejercicios interactivos adaptados a mi nivel para mejorar mi comprensión y pronunciación del idioma",
+          "acceptance_criteria": [
+            "5+ tipos de ejercicios diferentes implementados",
+            "Ejercicios adaptativos según nivel del usuario",
+            "Feedback inmediato y constructivo",
+            "Integración con audio para pronunciación"
+          ],
+          "dependencies": ["WYU-006"],
+          "tasks": [
+            {
+              "id": "WYU-007-T1",
+              "name": "Framework de ejercicios",
+              "story_points": 13,
+              "description": "Sistema base de ejercicios, engine de evaluación, progress tracking"
+            },
+            {
+              "id": "WYU-007-T2",
+              "name": "Ejercicios de pronunciación",
+              "story_points": 21,
+              "description": "Integración con Web Speech API, análisis de pronunciación básico, feedback visual y auditivo"
+            },
+            {
+              "id": "WYU-007-T3",
+              "name": "Cuestionarios de vocabulario",
+              "story_points": 8,
+              "description": "Multiple choice questions, fill in the blanks, matching exercises"
+            },
+            {
+              "id": "WYU-007-T4",
+              "name": "Conjugación de verbos",
+              "story_points": 13,
+              "description": "Sistema de conjugaciones wayuu, ejercicios de construcción de oraciones, validación de respuestas"
+            }
+          ]
+        },
+        {
+          "id": "WYU-008",
+          "name": "Sistema de Gamificación",
+          "priority": "MEDIUM",
+          "story_points": 29,
+          "duration_days": "11-12",
+          "user_story": "Como estudiante, quiero sentirme motivado con un sistema de puntos y logros para mantener mi compromiso con el aprendizaje a largo plazo",
+          "acceptance_criteria": [
+            "Sistema de puntos por actividades completadas",
+            "20+ logros diferentes implementados",
+            "Progreso visual por niveles",
+            "Leaderboard opcional y anónimo"
+          ],
+          "dependencies": ["WYU-007"],
+          "tasks": [
+            {
+              "id": "WYU-008-T1",
+              "name": "Sistema de puntuación",
+              "story_points": 8,
+              "description": "Points calculation engine, activity tracking, bonus multipliers"
+            },
+            {
+              "id": "WYU-008-T2",
+              "name": "Sistema de logros",
+              "story_points": 13,
+              "description": "Achievement definitions, progress tracking, notification system"
+            },
+            {
+              "id": "WYU-008-T3",
+              "name": "Progreso por niveles",
+              "story_points": 8,
+              "description": "Level system design, XP requirements, visual progress indicators"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "WYU-EPIC-004",
+      "name": "Análisis y Lingüística",
+      "priority": "MEDIUM",
+      "story_points": 144,
+      "duration_sprints": "5-6",
+      "description": "Implementar análisis avanzado con IA y procesamiento de lenguaje natural para wayuu",
+      "stories": [
+        {
+          "id": "WYU-009",
+          "name": "Integración con LLM Gemini",
+          "priority": "MEDIUM",
+          "story_points": 50,
+          "duration_days": "18-20",
+          "user_story": "Como lingüista computacional, quiero generar automáticamente nuevas entradas del diccionario usando IA para expandir el vocabulario wayuu de manera inteligente y contextual",
+          "acceptance_criteria": [
+            "Integración funcional con Google Gemini API",
+            "Generación de 100+ nuevas entradas por ejecución",
+            "Validación automática de calidad de traducciones",
+            "Sistema de review manual para entradas generadas"
+          ],
+          "dependencies": ["WYU-004"],
+          "tasks": [
+            {
+              "id": "WYU-009-T1",
+              "name": "Integración con Gemini API",
+              "story_points": 8,
+              "description": "API client configuration, authentication and rate limiting, error handling and fallbacks"
+            },
+            {
+              "id": "WYU-009-T2",
+              "name": "Prompt engineering para wayuu",
+              "story_points": 13,
+              "description": "Desarrollo de prompts específicos, context injection con diccionario existente, output format standardization"
+            },
+            {
+              "id": "WYU-009-T3",
+              "name": "Sistema de validación automática",
+              "story_points": 21,
+              "description": "ML model para validar traducciones, confidence scoring, flagging de entradas sospechosas"
+            },
+            {
+              "id": "WYU-009-T4",
+              "name": "Pipeline de review manual",
+              "story_points": 8,
+              "description": "Interface para revisión de entradas, workflow de aprobación, integration con diccionario principal"
+            }
+          ]
+        },
+        {
+          "id": "WYU-010",
+          "name": "Análisis Fonético Avanzado",
+          "priority": "MEDIUM",
+          "story_points": 55,
+          "duration_days": "20-22",
+          "user_story": "Como investigador en fonética, quiero analizar patrones fonéticos en grabaciones wayuu para mejorar la precisión del reconocimiento de voz específico para wayuu",
+          "acceptance_criteria": [
+            "Análisis de espectrogramas de audio wayuu",
+            "Detección de patrones fonéticos únicos",
+            "Mapeo de sonidos wayuu → español",
+            "Herramientas de comparación de pronunciación"
+          ],
+          "tasks": [
+            {
+              "id": "WYU-010-T1",
+              "name": "Análisis de espectrogramas",
+              "story_points": 21,
+              "description": "Integración con librosa o similar, feature extraction de audio, pattern recognition algorithms"
+            },
+            {
+              "id": "WYU-010-T2",
+              "name": "Mapeo fonético",
+              "story_points": 13,
+              "description": "Identificación de fonemas wayuu, correspondencias con IPA, database de mapeos fonéticos"
+            },
+            {
+              "id": "WYU-010-T3",
+              "name": "Comparación de pronunciación",
+              "story_points": 21,
+              "description": "DTW (Dynamic Time Warping) para comparación, scoring algorithm para similaridad, visual feedback para usuarios"
+            }
+          ]
+        },
+        {
+          "id": "WYU-011",
+          "name": "Procesamiento NLP Avanzado",
+          "priority": "MEDIUM",
+          "story_points": 68,
+          "duration_days": "25-28",
+          "user_story": "Como investigador en NLP, quiero implementar análisis sintáctico para oraciones wayuu para mejorar la calidad de las traducciones automáticas",
+          "acceptance_criteria": [
+            "Parser sintáctico para wayuu implementado",
+            "Detección de entidades culturales wayuu",
+            "Clasificación automática de contenido por temas",
+            "Sugerencias de mejora para traducciones"
+          ],
+          "dependencies": ["WYU-009"],
+          "tasks": [
+            {
+              "id": "WYU-011-T1",
+              "name": "Parser sintáctico wayuu",
+              "story_points": 34,
+              "description": "Grammar rules para wayuu, dependency parsing, syntax tree generation"
+            },
+            {
+              "id": "WYU-011-T2",
+              "name": "Named Entity Recognition",
+              "story_points": 21,
+              "description": "Training data preparation, model training para entidades wayuu, integration con pipeline principal"
+            },
+            {
+              "id": "WYU-011-T3",
+              "name": "Clasificación de contenido",
+              "story_points": 13,
+              "description": "Topic modeling, content categorization, automated tagging system"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "WYU-EPIC-005",
+      "name": "Escalabilidad y Performance",
+      "priority": "LOW",
+      "story_points": 89,
+      "duration_sprints": "3-4",
+      "description": "Migrar a arquitectura escalable con microservicios y optimización de performance",
+      "stories": [
+        {
+          "id": "WYU-012",
+          "name": "Optimización Backend",
+          "priority": "LOW",
+          "story_points": 55,
+          "duration_days": "20-22",
+          "user_story": "Como architect de sistema, quiero migrar a una arquitectura de microservicios para mejorar la escalabilidad y mantenibilidad del sistema",
+          "acceptance_criteria": [
+            "Servicios separados por dominio funcional",
+            "API Gateway implementado",
+            "Database optimization completada",
+            "Load balancing configurado"
+          ]
+        },
+        {
+          "id": "WYU-013",
+          "name": "Frontend Moderno",
+          "priority": "LOW",
+          "story_points": 68,
+          "duration_days": "25-28",
+          "user_story": "Como usuario final, quiero una interfaz moderna y responsiva para tener una mejor experiencia de usuario en todos los dispositivos",
+          "acceptance_criteria": [
+            "Migración completa a Next.js finalizada",
+            "PWA capabilities implementadas",
+            "Modo offline básico funcional",
+            "Performance score >90 en Lighthouse"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "WYU-EPIC-006",
+      "name": "Comunidad y Colaboración",
+      "priority": "LOW",
+      "story_points": 144,
+      "duration_sprints": "4-5",
+      "description": "Desarrollar plataforma de colaboración comunitaria con sistema de usuarios completo",
+      "stories": [
+        {
+          "id": "WYU-014",
+          "name": "Sistema de Usuarios Completo",
+          "priority": "LOW",
+          "story_points": 47,
+          "duration_days": "17-19",
+          "user_story": "Como usuario de la plataforma, quiero tener un perfil personalizado con historial de aprendizaje para trackear mi progreso y personalizar mi experiencia",
+          "acceptance_criteria": [
+            "Autenticación con Google y GitHub",
+            "Perfiles de usuario personalizables",
+            "Historial completo de actividades",
+            "Configuraciones personalizadas por usuario"
+          ]
+        },
+        {
+          "id": "WYU-015",
+          "name": "Plataforma de Colaboración",
+          "priority": "LOW",
+          "story_points": 76,
+          "duration_days": "28-30",
+          "user_story": "Como miembro de la comunidad wayuu, quiero contribuir con contenido y revisar traducciones para mejorar la calidad y autenticidad del material educativo",
+          "acceptance_criteria": [
+            "Sistema de contribuciones de contenido",
+            "Peer review workflow implementado",
+            "Foro de discusión integrado",
+            "API pública documentada para desarrolladores"
+          ],
+          "dependencies": ["WYU-014"]
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "name": "Pipeline Completado",
+      "target_date": "2025-01-21",
+      "sprint": 3,
+      "description": "Pipeline de videos completamente funcional y optimizado"
+    },
+    {
+      "name": "PDFs Procesados",
+      "target_date": "2025-02-18",
+      "sprint": 7,
+      "description": "Sistema de procesamiento de PDFs completamente integrado"
+    },
+    {
+      "name": "Herramientas Básicas",
+      "target_date": "2025-04-01",
+      "sprint": 12,
+      "description": "Sistema básico de aprendizaje con ejercicios y gamificación"
+    },
+    {
+      "name": "IA Integrada",
+      "target_date": "2025-05-27",
+      "sprint": 18,
+      "description": "Integración completa con IA para análisis lingüístico"
+    },
+    {
+      "name": "Sistema Escalable",  
+      "target_date": "2025-08-26",
+      "sprint": 24,
+      "description": "Arquitectura escalable y plataforma comunitaria funcionando"
+    }
+  ],
+  "labels": [
+    "frontend", "backend", "ml", "nlp", "audio", "pdf", "api",
+    "bug", "enhancement", "documentation", "research",
+    "wayuu", "spanish", "translation", "education",
+    "video", "youtube", "database", "sync", "investigation",
+    "migration", "audit", "quality", "queue", "automation",
+    "async", "error-handling", "logging", "retry", "websocket",
+    "notifications", "monitoring", "prometheus", "grafana",
+    "admin", "management", "extraction", "parsing", "linguistics",
+    "huggingface", "batch", "parallel", "cache", "optimization",
+    "gamification", "achievements", "leaderboard", "content",
+    "moderation", "exercises", "interactive", "speech",
+    "pronunciation", "vocabulary", "quiz", "grammar", "verbs",
+    "points", "scoring", "tracking", "levels", "xp",
+    "visual-progress", "ai", "gemini", "dictionary", "integration",
+    "prompts", "validation", "review", "workflow", "manual",
+    "phonetics", "analysis", "spectrogram", "ipa", "mapping",
+    "comparison", "dtw", "syntax", "entities", "ner", "cultural",
+    "classification", "topics", "microservices", "architecture",
+    "design", "infrastructure", "containers", "nextjs", "pwa",
+    "offline", "performance", "migration", "data", "auth",
+    "oauth", "security", "profiles", "privacy", "analytics",
+    "collaboration", "forum", "community", "documentation"
+  ],
+  "import_instructions": {
+    "jira": {
+      "steps": [
+        "Crear Épicas con los IDs proporcionados",
+        "Importar Historias de Usuario como Stories",
+        "Convertir Tareas Técnicas en Sub-tasks",
+        "Configurar Story Points y estimaciones",
+        "Establecer dependencias usando 'Blocks/Blocked by'"
+      ]
+    },
+    "trello": {
+      "steps": [
+        "Crear tableros por Épica",
+        "Listas: Backlog, In Progress, Review, Done",
+        "Cards para cada Historia de Usuario",
+        "Checklists para Tareas Técnicas",
+        "Labels para categorización"
+      ]
+    },
+    "asana": {
+      "steps": [
+        "Proyecto principal: 'Wayuu Translator v2.0'",
+        "Secciones por Épica",
+        "Tareas para Historias de Usuario",
+        "Subtareas para componentes técnicos",
+        "Custom fields para Story Points"
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as fs from 'fs/promises';
@@ -6,6 +6,7 @@ import * as path from 'path';
 import { TranslationDirection } from '../translation/dto/translate.dto';
 import { AudioDurationService } from './audio-duration.service';
 import { MetricsService } from '../metrics/metrics.service';
+import { PdfProcessingService } from '../pdf-processing/pdf-processing.service';
 import * as crypto from 'crypto';
 
 export interface DictionaryEntry {
@@ -174,6 +175,8 @@ export class DatasetsService implements OnModuleInit {
     private readonly configService: ConfigService,
     private readonly audioDurationService: AudioDurationService,
     private readonly metricsService: MetricsService,
+    @Inject(forwardRef(() => PdfProcessingService))
+    private readonly pdfProcessingService: PdfProcessingService,
   ) {}
 
   async onModuleInit() {
@@ -2201,6 +2204,26 @@ export class DatasetsService implements OnModuleInit {
             this.metricsService.updateDatasetLastUpdateTime(source.name, source.type, Date.now());
           }
         }
+      }
+
+      // Update PDF processing metrics
+      try {
+        const pdfStats = await this.pdfProcessingService.getProcessingStats();
+        this.metricsService.updatePdfProcessingTotalPdfs(pdfStats.totalPDFs);
+        this.metricsService.updatePdfProcessingProcessedPdfs(pdfStats.processedPDFs);
+        this.metricsService.updatePdfProcessingTotalPages(pdfStats.totalPages);
+        this.metricsService.updatePdfProcessingWayuuPhrases(pdfStats.totalWayuuPhrases);
+        this.metricsService.updatePdfProcessingWayuuPercentage(pdfStats.avgWayuuPercentage);
+        this.metricsService.updatePdfProcessingTimeSeconds(pdfStats.processingTime / 1000); // Convert to seconds
+      } catch (pdfError) {
+        this.logger.warn(`⚠️ Could not update PDF metrics: ${pdfError.message}`);
+        // Set default values if PDF service is not available
+        this.metricsService.updatePdfProcessingTotalPdfs(0);
+        this.metricsService.updatePdfProcessingProcessedPdfs(0);
+        this.metricsService.updatePdfProcessingTotalPages(0);
+        this.metricsService.updatePdfProcessingWayuuPhrases(0);
+        this.metricsService.updatePdfProcessingWayuuPercentage(0);
+        this.metricsService.updatePdfProcessingTimeSeconds(0);
       }
 
       // Log current state for metrics collection
