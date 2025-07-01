@@ -126,10 +126,7 @@ export class FreeTranslationController {
           return await this.libreService.translateBatch(texts, sourceLang, targetLang);
         
         case 'nllb':
-          if (!this.nllbService.isAvailable()) {
-            throw new Error('NLLB service not available');
-          }
-          return await this.nllbService.translateBatch(texts, sourceLang as any, targetLang as any);
+          throw new Error('NLLB service not available in this simplified version');
         
         default:
           throw new Error(`Unknown service: ${service}`);
