@@ -12,6 +12,19 @@ export class ScheduledTasksService {
     private readonly datasetsService: DatasetsService,
   ) {}
 
+  // Nueva tarea: Actualizar métricas cada hora para mayor frecuencia de datos
+  @Cron(CronExpression.EVERY_HOUR)
+  async updateGrowthMetricsHourly() {
+    this.logger.log('🔄 Ejecutando actualización horaria de métricas de crecimiento...');
+    
+    try {
+      const result = await this.updateGrowthMetrics();
+      this.logger.log(`✅ Métricas de crecimiento actualizadas (horario): ${JSON.stringify(result.metrics)}`);
+    } catch (error) {
+      this.logger.error(`❌ Error actualizando métricas de crecimiento (horario): ${error.message}`, error.stack);
+    }
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_8AM)
   async updateGrowthMetricsDaily() {
     this.logger.log('🔄 Ejecutando actualización diaria de métricas de crecimiento...');

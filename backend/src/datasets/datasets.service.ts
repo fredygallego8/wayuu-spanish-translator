@@ -86,6 +86,25 @@ export class DatasetsService implements OnModuleInit {
   private loadingPromise: Promise<void> | null = null;
   private audioLoadingPromise: Promise<void> | null = null;
 
+  // 🚀 PERFORMANCE OPTIMIZATION: Cache en memoria
+  private memoryCache = {
+    stats: {
+      data: null as any,
+      timestamp: 0,
+      ttl: 60000 // 1 minuto para stats generales
+    },
+    audioStats: {
+      data: null as any,
+      timestamp: 0,
+      ttl: 300000 // 5 minutos para audio stats (más pesado)
+    },
+    frequentSearches: new Map<string, {
+      result: any,
+      timestamp: number,
+      ttl: number
+    }>()
+  };
+
   // Lista de fuentes de Hugging Face
   private readonly huggingFaceSources: HuggingFaceSource[] = [
     {
@@ -1403,6 +1422,13 @@ export class DatasetsService implements OnModuleInit {
   }
 
   async getDictionaryStats(): Promise<any> {
+    // 🚀 OPTIMIZACIÓN: Verificar cache en memoria primero
+    const now = Date.now();
+    if (this.memoryCache.stats.data && 
+        (now - this.memoryCache.stats.timestamp) < this.memoryCache.stats.ttl) {
+      return this.memoryCache.stats.data;
+    }
+
     if (!this.isLoaded) {
       await this.loadWayuuDictionary();
     }
@@ -1416,19 +1442,20 @@ export class DatasetsService implements OnModuleInit {
       allEntries.push(...entries);
     });
 
+    // 🚀 OPTIMIZACIÓN: Calcular solo si no está en cache
     const wayuuWords = new Set(allEntries.map(entry => entry.guc)).size;
     const spanishWords = new Set(
       allEntries.flatMap(entry => entry.spa.toLowerCase().split(' '))
     ).size;
 
-    // Audio statistics
+    // Audio statistics - cálculo optimizado
     const totalAudioDuration = this.wayuuAudioDataset.reduce((sum, entry) => sum + entry.audioDuration, 0);
     const averageAudioDuration = this.wayuuAudioDataset.length > 0 ? totalAudioDuration / this.wayuuAudioDataset.length : 0;
     const audioTranscriptionWords = new Set(
       this.wayuuAudioDataset.flatMap(entry => entry.transcription.toLowerCase().split(' ').filter(word => word.length > 0))
     ).size;
 
-    return {
+    const result = {
       // Dictionary statistics (incluyendo todos los datasets)
       totalEntries: allEntries.length,
       totalEntriesExpected: this.calculateTotalExpectedEntries(),
@@ -1456,7 +1483,19 @@ export class DatasetsService implements OnModuleInit {
       sampleAudioEntries: this.wayuuAudioDataset.slice(0, 5),
       datasetInfo: this.getLoadedDatasetInfo(),
       lastLoaded: new Date().toISOString(),
+      
+      // 🚀 Indicador de performance
+      performance: {
+        cached: false,
+        computeTime: Date.now() - now
+      }
     };
+
+    // 🚀 OPTIMIZACIÓN: Guardar en cache en memoria
+    this.memoryCache.stats.data = result;
+    this.memoryCache.stats.timestamp = now;
+
+    return result;
   }
 
   // ==================== AUDIO METHODS ====================
