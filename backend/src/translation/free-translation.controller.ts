@@ -23,10 +23,21 @@ export class FreeTranslateDto {
 }
 
 export class BatchFreeTranslateDto {
+  @IsString({ each: true })
   texts: string[];
+
+  @IsString()
+  @IsIn(['wayuu', 'spanish'])
   sourceLang: 'wayuu' | 'spanish';
+
+  @IsString()
+  @IsIn(['wayuu', 'spanish'])
   targetLang: 'wayuu' | 'spanish';
-  service?: 'google' | 'libre' | 'nllb' | 'auto';
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['google', 'libre', 'auto'])
+  service?: 'google' | 'libre' | 'auto';
 }
 
 @ApiTags('🆓 Free Translation')
@@ -124,9 +135,6 @@ export class FreeTranslationController {
         
         case 'libre':
           return await this.libreService.translateBatch(texts, sourceLang, targetLang);
-        
-        case 'nllb':
-          throw new Error('NLLB service not available in this simplified version');
         
         default:
           throw new Error(`Unknown service: ${service}`);
