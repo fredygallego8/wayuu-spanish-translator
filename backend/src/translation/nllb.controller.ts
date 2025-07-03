@@ -74,6 +74,71 @@ export class NllbController {
     }
   }
 
+  @Post('translate/smart')
+  @ApiOperation({ 
+    summary: '🧠 Smart Wayuu ↔ Spanish Translation (With Fallback & Timeouts)',
+    description: 'Intelligent translation with automatic fallback and enterprise-class timeouts. Tries NLLB-200-3.3B first, falls back to smaller model if needed. 30s timeout aligned with frontend.'
+  })
+  @ApiBody({ type: DirectTranslateDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Translation completed successfully (may use fallback model)',
+    type: DirectTranslationResponseDto 
+  })
+  @ApiResponse({ 
+    status: 408, 
+    description: 'Request timeout - text too long or service overloaded' 
+  })
+  @ApiResponse({ 
+    status: 503, 
+    description: 'All translation models unavailable' 
+  })
+  async translateSmart(@Body() dto: DirectTranslateDto): Promise<DirectTranslationResponseDto> {
+    try {
+      this.logger.log(`🧠 Smart translation request: ${dto.sourceLang} → ${dto.targetLang}`);
+      this.logger.log(`📝 Text preview: "${dto.text.substring(0, 50)}..."`);
+      this.logger.log(`⏱️  Using 30s timeout with automatic fallback`);
+
+      if (!this.nllbService.isAvailable()) {
+        throw new HttpException(
+          'NLLB service is not available. Please configure HUGGINGFACE_API_KEY.',
+          HttpStatus.SERVICE_UNAVAILABLE
+        );
+      }
+
+      const result = await this.nllbService.translateIntelligent(
+        dto.text,
+        dto.sourceLang,
+        dto.targetLang
+      );
+
+      this.logger.log(`✅ Smart translation completed with ${(result.confidence * 100).toFixed(1)}% confidence`);
+      this.logger.log(`🔧 Model used: ${result.model}`);
+
+      return result;
+
+    } catch (error) {
+      this.logger.error(`❌ Smart translation failed: ${error.message}`, error.stack);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      // Handle timeout errors specifically
+      if (error.message.includes('timeout')) {
+        throw new HttpException(
+          `Translation timeout: ${error.message}`,
+          HttpStatus.REQUEST_TIMEOUT
+        );
+      }
+      
+      throw new HttpException(
+        `Smart translation failed: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   @Post('translate/back-translate')
   @ApiOperation({ 
     summary: '🔄 Back-Translation Quality Validation',
@@ -313,6 +378,47 @@ export class NllbController {
 
       throw new HttpException(
         'Service health check failed',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Post('translate/demo')
+  @ApiOperation({ 
+    summary: '🎯 Demo Wayuu ↔ Spanish Translation (No Token Required)',
+    description: 'Demonstration translation using built-in wayuu-spanish dictionary. Perfect for testing the interface without needing Hugging Face API key. Includes realistic processing times and confidence scores.'
+  })
+  @ApiBody({ type: DirectTranslateDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Demo translation completed successfully',
+    type: DirectTranslationResponseDto 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid input parameters' 
+  })
+  async translateDemo(@Body() dto: DirectTranslateDto): Promise<DirectTranslationResponseDto> {
+    try {
+      this.logger.log(`🎯 Demo translation request: ${dto.sourceLang} → ${dto.targetLang}`);
+      this.logger.log(`📝 Text preview: "${dto.text.substring(0, 50)}..."`);
+      this.logger.log(`💡 Using built-in wayuu-spanish dictionary (no API key required)`);
+
+      const result = await this.nllbService.translateDemo(
+        dto.text,
+        dto.sourceLang,
+        dto.targetLang
+      );
+
+      this.logger.log(`✅ Demo translation completed with ${(result.confidence * 100).toFixed(1)}% confidence`);
+
+      return result;
+
+    } catch (error) {
+      this.logger.error(`❌ Demo translation failed: ${error.message}`, error.stack);
+      
+      throw new HttpException(
+        `Demo translation failed: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }

@@ -1,93 +1,13 @@
-Wayuu Spanish Translator - Stack Information
-============================================
-🚀 ESTADO ACTUAL: TODOS LOS SERVICIOS FUNCIONANDO
-Actualizado: $(date)
-Versión Stack Manager: 2.0.0
+Stack iniciado: Thu Jul  3 08:43:40 -05 2025
+Backend PID: 623325
+Frontend PID: 623725
+URLs:
+- Frontend Simple: http://localhost:4000
+- Grafana: http://localhost:3001 (admin/wayuu2024)
+- Prometheus: http://localhost:9090
+- Backend: http://localhost:3002/api/health
 
-✅ SERVICIOS ACTIVOS (4/4):
-==========================================
-
-📊 Stack de Monitoring (Docker):
-   - Grafana:       ✅ http://localhost:3001 (admin/wayuu2024)
-   - Prometheus:    ✅ http://localhost:9090
-   - AlertManager:  ✅ http://localhost:9093
-   - Node Exporter: ✅ http://localhost:9100
-
-🚀 Backend NestJS:
-   - API:           ✅ http://localhost:3002
-   - PID:           38014
-   - Health:        ✅ http://localhost:3002/api/datasets/stats
-   - Metrics:       ✅ http://localhost:3002/api/metrics
-   - API Docs:      ✅ http://localhost:3002/api/docs
-
-🌐 Frontend Estático (Python):
-   - Interface:     ✅ http://localhost:4000
-   - PID:           38241
-   - Principal:     ✅ http://localhost:4000/index.html
-   - Herramientas:  ✅ http://localhost:4000/learning-tools.html
-   - Demo:          ✅ http://localhost:4000/demo.html
-
-⚛️ Frontend Next.js (Nuevo):
-   - Interface:     ✅ http://localhost:4001
-   - PID:           124649
-   - Herramientas:  ✅ http://localhost:4001/learning-tools
-   - Status:        ✅ Funcionando con Next.js 15
-
-🔗 URLs PRINCIPALES:
-==========================================
-🏠 FRONTEND APPLICATIONS:
-   • Next.js (Avanzado):     http://localhost:4001
-   • Estático (Básico):     http://localhost:4000
-
-🔧 BACKEND SERVICES:
-   • API Principal:         http://localhost:3002
-   • Dataset Stats:         http://localhost:3002/api/datasets/stats
-   • Translation API:       http://localhost:3002/api/translation/health
-   • API Documentation:     http://localhost:3002/api/docs
-
-📊 MONITORING:
-   • Grafana Dashboard:     http://localhost:3001 (admin/wayuu2024)
-   • Prometheus:            http://localhost:9090
-   • Targets Status:        http://localhost:9090/targets
-
-📋 GESTIÓN DEL STACK:
-==========================================
-Script Profesional: ./wayuu-stack-manager.sh
-
-🛠️ COMANDOS DISPONIBLES:
-   • Ver estado:            ./wayuu-stack-manager.sh status
-   • Detener servicios:     ./wayuu-stack-manager.sh stop
-   • Reiniciar stack:       ./wayuu-stack-manager.sh restart
-   • Ver logs backend:      ./wayuu-stack-manager.sh logs backend
-   • Ver logs Next.js:      ./wayuu-stack-manager.sh logs frontend-nextjs
-   • Ver ayuda:             ./wayuu-stack-manager.sh help
-
-📄 ARCHIVOS DE LOG:
-   • Stack Manager:         logs/stack-manager.log
-   • Backend NestJS:        logs/backend.log
-   • Frontend Static:       logs/frontend-static.log
-   • Frontend Next.js:      logs/frontend-nextjs.log
-
-📈 DATOS DEL PROYECTO:
-==========================================
-   • Entradas Diccionario:  7,033+ palabras
-   • Archivos de Audio:     810 grabaciones
-   • Fuentes Académicas:    4 datasets
-   • Crecimiento:           +222% dataset
-
-🎯 CARACTERÍSTICAS PRINCIPALES:
-   ✅ Backend NestJS con API REST completa
-   ✅ Frontend Next.js con herramientas educativas avanzadas
-   ✅ Frontend estático para acceso básico
-   ✅ Stack de monitoring completo (Grafana + Prometheus)
-   ✅ Gestión profesional con scripts automatizados
-   ✅ Sistema de logging centralizado
-   ✅ Documentación API automática
-
-🔧 HERRAMIENTAS CURSOR:
-==========================================
-El script wayuu-stack-manager.sh está listo para ser usado como herramienta
-en Cursor IDE para gestión completa del stack de desarrollo.
-
-ESTADO: ✅ STACK COMPLETAMENTE OPERATIVO
-Todos los servicios están funcionando correctamente y listos para uso.
+Para detener:
+- Backend: kill 623325
+- Frontend: kill 623725
+- Monitoring: cd monitoring && docker-compose down
