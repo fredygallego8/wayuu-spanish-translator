@@ -10,6 +10,9 @@ import {
   GlobeAltIcon,
   CpuChipIcon,
   CircleStackIcon,
+  LanguageIcon,
+  ArrowRightIcon,
+  ArrowsRightLeftIcon,
 } from "@heroicons/react/24/solid";
 
 interface DatasetStats {
@@ -27,7 +30,16 @@ interface VocabularyEntry {
   examples?: string[];
 }
 
+interface TranslationResult {
+  translatedText: string;
+  confidence: number;
+  sourceDataset: string;
+  alternatives?: string[];
+  contextInfo?: string;
+}
+
 type MassiveToolType =
+  | "basic-translator"
   | "vocabulary-explorer"
   | "audio-system"
   | "pattern-analysis"
@@ -35,13 +47,22 @@ type MassiveToolType =
   | "adaptive-ai"
   | "dataset-stats";
 
+type TranslationDirection = "WAYUU_TO_SPANISH" | "SPANISH_TO_WAYUU";
+
 const toolTypes = [
+  {
+    id: "basic-translator" as MassiveToolType,
+    name: "🗣️ Traductor Básico",
+    description: "Traduce entre Wayuunaiki y Español con 7K+ entradas",
+    icon: LanguageIcon,
+    color: "from-blue-500 to-cyan-500",
+  },
   {
     id: "vocabulary-explorer" as MassiveToolType,
     name: "Explorador de Vocabulario",
     description: "Navega por 7K+ entradas con búsqueda avanzada",
     icon: MagnifyingGlassIcon,
-    color: "from-blue-500 to-cyan-500",
+    color: "from-green-500 to-emerald-500",
   },
   {
     id: "audio-system" as MassiveToolType,
@@ -81,9 +102,8 @@ const toolTypes = [
 ];
 
 export default function MassiveTools() {
-  const [selectedTool, setSelectedTool] = useState<MassiveToolType>(
-    "vocabulary-explorer"
-  );
+  const [selectedTool, setSelectedTool] =
+    useState<MassiveToolType>("basic-translator");
   const [datasetStats, setDatasetStats] = useState<DatasetStats>({
     totalEntries: 7033,
     audioFiles: 810,
@@ -95,6 +115,14 @@ export default function MassiveTools() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Translation states
+  const [translationInput, setTranslationInput] = useState("");
+  const [translationResult, setTranslationResult] =
+    useState<TranslationResult | null>(null);
+  const [translationDirection, setTranslationDirection] =
+    useState<TranslationDirection>("WAYUU_TO_SPANISH");
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
     loadDatasetStats();
@@ -144,8 +172,244 @@ export default function MassiveTools() {
     }
   };
 
+  const translateText = async () => {
+    if (!translationInput.trim()) return;
+
+    setIsTranslating(true);
+    setTranslationResult(null);
+
+    try {
+      const response = await fetch(
+        `http://localhost:3002/api/datasets/dictionary/search?q=${encodeURIComponent(
+          translationInput.trim()
+        )}&direction=${translationDirection}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.result) {
+          setTranslationResult(data.result);
+        } else {
+          // No translation found
+          setTranslationResult({
+            translatedText: "No se encontró traducción",
+            confidence: 0,
+            sourceDataset: "N/A",
+            alternatives: [],
+            contextInfo: "Intenta con otra palabra o verifica la ortografía",
+          });
+        }
+      } else {
+        throw new Error("Error en la respuesta del servidor");
+      }
+    } catch (error) {
+      console.error("Error translating:", error);
+      setTranslationResult({
+        translatedText: "Error en la traducción",
+        confidence: 0,
+        sourceDataset: "Error",
+        alternatives: [],
+        contextInfo: "Problema de conexión con el servidor",
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const toggleTranslationDirection = () => {
+    setTranslationDirection(
+      translationDirection === "WAYUU_TO_SPANISH"
+        ? "SPANISH_TO_WAYUU"
+        : "WAYUU_TO_SPANISH"
+    );
+    setTranslationInput("");
+    setTranslationResult(null);
+  };
+
   const renderToolContent = () => {
     switch (selectedTool) {
+      case "basic-translator":
+        return (
+          <div className="space-y-6">
+            {/* Direction Toggle */}
+            <div className="flex items-center justify-center">
+              <div className="bg-gray-100 rounded-lg p-1 flex items-center">
+                <button
+                  onClick={toggleTranslationDirection}
+                  className="flex items-center gap-3 px-6 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all"
+                >
+                  <span
+                    className={`font-medium ${translationDirection === "WAYUU_TO_SPANISH" ? "text-blue-600" : "text-gray-500"}`}
+                  >
+                    {translationDirection === "WAYUU_TO_SPANISH"
+                      ? "Wayuunaiki"
+                      : "Español"}
+                  </span>
+                  <ArrowsRightLeftIcon className="w-5 h-5 text-gray-400" />
+                  <span
+                    className={`font-medium ${translationDirection === "SPANISH_TO_WAYUU" ? "text-blue-600" : "text-gray-500"}`}
+                  >
+                    {translationDirection === "SPANISH_TO_WAYUU"
+                      ? "Wayuunaiki"
+                      : "Español"}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Translation Input */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Input Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    {translationDirection === "WAYUU_TO_SPANISH"
+                      ? "Wayuunaiki"
+                      : "Español"}
+                  </h4>
+                  <span className="text-sm text-gray-500">
+                    Texto a traducir
+                  </span>
+                </div>
+                <div className="relative">
+                  <textarea
+                    value={translationInput}
+                    onChange={(e) => setTranslationInput(e.target.value)}
+                    placeholder={
+                      translationDirection === "WAYUU_TO_SPANISH"
+                        ? "Escribe en wayuunaiki... (ej: wayuu, müshia, Maleiwa)"
+                        : "Escribe en español... (ej: persona, nosotros, creador)"
+                    }
+                    className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        translateText();
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={translateText}
+                    disabled={isTranslating || !translationInput.trim()}
+                    className="absolute bottom-3 right-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isTranslating ? "..." : "Traducir"}
+                  </button>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Presiona Enter para traducir
+                </div>
+              </div>
+
+              {/* Output Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    {translationDirection === "SPANISH_TO_WAYUU"
+                      ? "Wayuunaiki"
+                      : "Español"}
+                  </h4>
+                  <span className="text-sm text-gray-500">Traducción</span>
+                </div>
+                <div className="h-32 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg overflow-y-auto">
+                  {isTranslating ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600">Traduciendo...</span>
+                    </div>
+                  ) : translationResult ? (
+                    <div className="space-y-3">
+                      <div className="text-lg font-semibold text-blue-600">
+                        {translationResult.translatedText}
+                      </div>
+                      {translationResult.confidence > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">
+                            Confianza:
+                          </span>
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${translationResult.confidence * 100}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-medium text-green-600">
+                            {Math.round(translationResult.confidence * 100)}%
+                          </span>
+                        </div>
+                      )}
+                      {translationResult.alternatives &&
+                        translationResult.alternatives.length > 0 && (
+                          <div>
+                            <div className="text-sm text-gray-600 mb-1">
+                              Alternativas:
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {translationResult.alternatives
+                                .slice(0, 3)
+                                .map((alt, index) => (
+                                  <span
+                                    key={index}
+                                    className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded"
+                                  >
+                                    {alt}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      <div className="text-xs text-gray-400">
+                        Fuente: {translationResult.sourceDataset}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      La traducción aparecerá aquí...
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Examples */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
+              <h5 className="font-semibold text-gray-900 mb-3">
+                💡 Ejemplos rápidos:
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { wayuu: "wayuu", spanish: "persona" },
+                  { wayuu: "Maleiwa", spanish: "Creador" },
+                  { wayuu: "müshia", spanish: "nosotros" },
+                ].map((example, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setTranslationInput(
+                        translationDirection === "WAYUU_TO_SPANISH"
+                          ? example.wayuu
+                          : example.spanish
+                      );
+                      setTranslationResult(null);
+                    }}
+                    className="text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                  >
+                    <div className="text-sm text-blue-600 font-medium">
+                      {example.wayuu}
+                    </div>
+                    <ArrowRightIcon className="w-3 h-3 text-gray-400 inline mx-2" />
+                    <div className="text-sm text-gray-900 inline">
+                      {example.spanish}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
       case "vocabulary-explorer":
         return (
           <div className="space-y-6">
