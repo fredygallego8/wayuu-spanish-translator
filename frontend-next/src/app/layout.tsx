@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Wayuu Translator - Herramientas de Aprendizaje",
-  description: "Traductor y herramientas educativas para el idioma Wayuunaiki",
+  description:
+    "Traductor y herramientas educativas para el idioma Wayuunaiki con procesamiento de PDFs y análisis lingüístico avanzado",
 };
 
 export const viewport: Viewport = {
@@ -21,9 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
-        {children}
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }

@@ -528,7 +528,7 @@ export default function LearningToolsPage() {
 
         {/* Active Tab Description */}
         <motion.div
-          key={activeTab}
+          key={`description-${activeTab}`}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -541,7 +541,7 @@ export default function LearningToolsPage() {
 
         {/* Tab Content */}
         <motion.div
-          key={activeTab}
+          key={`content-${activeTab}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}

@@ -1,6 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { useMetrics } from "../hooks/useMetrics";
+import { motion } from "framer-motion";
+import {
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 
 export default function HomePage() {
+  const { metrics, loading, error, refreshMetrics, lastUpdated } = useMetrics();
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -25,6 +34,12 @@ export default function HomePage() {
                 className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium font-semibold"
               >
                 🧠 Herramientas Educativas
+              </Link>
+              <Link
+                href="/pdf-processing"
+                className="text-purple-600 hover:text-purple-800 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                📚 PDFs Wayuu
               </Link>
               <a
                 href="http://localhost:3001/d/wayuu-growth/wayuu-growth-dashboard"
@@ -54,7 +69,7 @@ export default function HomePage() {
           </p>
 
           {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             {/* Traditional Translator */}
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">🗣️</div>
@@ -112,31 +127,128 @@ export default function HomePage() {
                 🚀 Explorar Herramientas
               </Link>
             </div>
+
+            {/* PDF Processing */}
+            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-purple-200">
+              <div className="text-4xl mb-4">📚</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Procesamiento de PDFs
+                <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2">
+                  Activo
+                </span>
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Análisis inteligente de documentos académicos wayuu con
+                extracción automática de contenido lingüístico y cultural.
+              </p>
+              <div className="bg-gradient-to-r from-purple-50 to-green-50 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-bold text-purple-600">4</div>
+                    <div className="text-gray-600">PDFs</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-green-600">568</div>
+                    <div className="text-gray-600">Páginas</div>
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/pdf-processing"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                📊 Ver Análisis
+              </Link>
+            </div>
           </div>
 
           {/* Stats */}
           <div className="mt-16 bg-white rounded-xl shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">
-              Estado del Proyecto
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">7,033</div>
-                <div className="text-gray-600">Entradas de Diccionario</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">810</div>
-                <div className="text-gray-600">Archivos de Audio</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">4</div>
-                <div className="text-gray-600">Fuentes Académicas</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600">+222%</div>
-                <div className="text-gray-600">Crecimiento</div>
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-bold text-gray-900">
+                Estado del Proyecto
+              </h3>
+              <div className="flex items-center space-x-4">
+                {error && (
+                  <div className="flex items-center text-amber-600">
+                    <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
+                    <span className="text-sm">Datos offline</span>
+                  </div>
+                )}
+                <button
+                  onClick={refreshMetrics}
+                  disabled={loading}
+                  className="flex items-center text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                >
+                  <ArrowPathIcon
+                    className={`w-5 h-5 mr-2 ${loading ? "animate-spin" : ""}`}
+                  />
+                  <span className="text-sm">
+                    {loading ? "Actualizando..." : "Actualizar"}
+                  </span>
+                </button>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-center"
+              >
+                <div className="text-3xl font-bold text-blue-600">
+                  {loading
+                    ? "..."
+                    : metrics?.wayuu_entries.toLocaleString() || "7,033"}
+                </div>
+                <div className="text-gray-600">Entradas de Diccionario</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-center"
+              >
+                <div className="text-3xl font-bold text-green-600">
+                  {loading
+                    ? "..."
+                    : metrics?.audio_files.toLocaleString() || "810"}
+                </div>
+                <div className="text-gray-600">Archivos de Audio</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-center"
+              >
+                <div className="text-3xl font-bold text-purple-600">
+                  {loading ? "..." : metrics?.pdf_documents || "4"}
+                </div>
+                <div className="text-gray-600">PDFs Procesados</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-center"
+              >
+                <div className="text-3xl font-bold text-orange-600">
+                  +{loading ? "..." : metrics?.growth_percentage || "222"}%
+                </div>
+                <div className="text-gray-600">Crecimiento</div>
+              </motion.div>
+            </div>
+
+            {lastUpdated && (
+              <div className="mt-4 text-center text-sm text-gray-500">
+                Última actualización: {lastUpdated.toLocaleTimeString()}
+              </div>
+            )}
           </div>
 
           {/* CTA */}
