@@ -2,16 +2,13 @@
 const nextConfig = {
   // Optimizaciones para Next.js 15
   reactStrictMode: true,
-  swcMinify: true,
   
-  // Configuración experimental para Next.js 15
-  experimental: {
-    turbo: {
-      rules: {
-        // Optimizaciones para CSS
-        '*.css': {
-          loaders: ['css-loader'],
-        },
+  // Configuración de Turbopack (ya no experimental)
+  turbopack: {
+    rules: {
+      // Optimizaciones para CSS
+      '*.css': {
+        loaders: ['css-loader'],
       },
     },
   },

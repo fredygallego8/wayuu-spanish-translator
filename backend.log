@@ -178,3 +178,117 @@
 [32m[Nest] 38152  - [39m02/07/2025, 19:27:10 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 4866 dictionary entries extracted from 4 PDFs[39m
 [32m[Nest] 38152  - [39m02/07/2025, 19:27:11 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 4866 dictionary entries from 4 PDFs[39m
 [32m[Nest] 38152  - [39m02/07/2025, 19:27:11 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 4866 dictionary entries extracted from 4 PDFs[39m
+[31m[Nest] 38152  - [39m02/07/2025, 19:27:13 [31m  ERROR[39m [38;5;3m[PipelineHealthService] [39m[31m🚨 CRITICAL ISSUES (1): System Resources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[31m[Nest] 38152  - [39m02/07/2025, 19:28:08 [31m  ERROR[39m [38;5;3m[PipelineHealthService] [39m[31m🚨 CRITICAL ISSUES (1): System Resources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:28:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[33m[Nest] 38152  - [39m02/07/2025, 19:29:08 [33m   WARN[39m [38;5;3m[PipelineHealthService] [39m[33m⚠️ WARNINGS (1): System Resources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:29:34 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[2J[3J[H[[90m19:30:01[0m] File change detected. Starting incremental compilation...
+
+[32m[Nest] 38152  - [39m02/07/2025, 19:30:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:30:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:30:04 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[[90m19:30:08[0m] Found 0 errors. Watching for file changes.
+
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module './dto/translate.dto'
+Require stack:
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.service.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.controller.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.module.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/app.module.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/main.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Module.require (node:internal/modules/cjs/loader:1311:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (/home/fredy/Escritorio/wayuu-spanish-translator/backend/src/translation/translation.service.ts:2:1)
+    at Module._compile (node:internal/modules/cjs/loader:1554:14)
+    at Object..js (node:internal/modules/cjs/loader:1706:10)
+    at Module.load (node:internal/modules/cjs/loader:1289:32) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.service.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.controller.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.module.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/app.module.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/main.js'
+  ]
+}
+
+Node.js v22.14.0
+[2J[3J[H[[90m19:30:43[0m] File change detected. Starting incremental compilation...
+
+[[90m19:30:51[0m] Found 0 errors. Watching for file changes.
+
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module './audio-duration.service'
+Require stack:
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/datasets/datasets.service.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.service.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.controller.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.module.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/app.module.js
+- /home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/main.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Module.require (node:internal/modules/cjs/loader:1311:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (/home/fredy/Escritorio/wayuu-spanish-translator/backend/src/datasets/datasets.service.ts:7:1)
+    at Module._compile (node:internal/modules/cjs/loader:1554:14)
+    at Object..js (node:internal/modules/cjs/loader:1706:10)
+    at Module.load (node:internal/modules/cjs/loader:1289:32) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/datasets/datasets.service.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.service.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.controller.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/translation/translation.module.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/app.module.js',
+    '/home/fredy/Escritorio/wayuu-spanish-translator/backend/dist/main.js'
+  ]
+}
+
+Node.js v22.14.0
+[2J[3J[H[[90m19:31:34[0m] File change detected. Starting incremental compilation...
+
+[96msrc/metrics/scheduled-tasks.service.ts[0m:[93m7[0m:[93m86[0m - [91merror[0m[90m TS2556: [0mA spread argument must either have a tuple type or be passed to a rest parameter.
+
+[7m7[0m const nodeFetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+[7m [0m [91m                                                                                     ~~~~~~~[0m
+
+[[90m19:31:40[0m] Found 1 error. Watching for file changes.
+
+[2J[3J[H[[90m19:32:08[0m] File change detected. Starting incremental compilation...
+
+[96msrc/metrics/scheduled-tasks.service.ts[0m:[93m7[0m:[93m86[0m - [91merror[0m[90m TS2556: [0mA spread argument must either have a tuple type or be passed to a rest parameter.
+
+[7m7[0m const nodeFetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+[7m [0m [91m                                                                                     ~~~~~~~[0m
+
+[[90m19:32:13[0m] Found 1 error. Watching for file changes.
+
+ ELIFECYCLE  Command failed.

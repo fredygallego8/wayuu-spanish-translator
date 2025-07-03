@@ -414,4 +414,110 @@ nodejs_heap_size_used_bytes 12345678`,
       );
     }
   }
+
+  @Get('growth/health')
+  @ApiOperation({
+    summary: '🩺 Verificar Estado de Métricas de Crecimiento',
+    description: `
+      <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 15px; border-radius: 8px; color: white; margin: 10px 0;">
+        <h4>🩺 Verificación de Salud de Métricas</h4>
+        <p>Endpoint para verificar rápidamente si las métricas de crecimiento están funcionando correctamente.</p>
+      </div>
+      
+      Este endpoint verifica:
+      - Si las métricas principales tienen valores > 0
+      - Cuándo fue la última actualización
+      - Si hay algún problema detectado
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado de salud de las métricas de crecimiento',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'healthy' },
+        timestamp: { type: 'string' },
+        metrics_status: {
+          type: 'object',
+          properties: {
+            wayuu_words: { type: 'number' },
+            spanish_words: { type: 'number' },
+            audio_minutes: { type: 'number' },
+            phrases: { type: 'number' },
+            transcribed: { type: 'number' },
+            dictionary_entries: { type: 'number' },
+            audio_files: { type: 'number' }
+          }
+        },
+        is_healthy: { type: 'boolean' },
+        last_update: { type: 'string' },
+        warnings: { type: 'array', items: { type: 'string' } }
+      },
+    },
+  })
+  async getGrowthMetricsHealth(): Promise<any> {
+    try {
+      // Obtener las métricas actuales desde Prometheus
+      const metricsText = await this.metricsService.getMetrics();
+      
+      // Parsear las métricas principales
+      const wayuuWordsMatch = metricsText.match(/wayuu_total_words_wayuu\s+(\d+)/);
+      const spanishWordsMatch = metricsText.match(/wayuu_total_words_spanish\s+(\d+)/);
+      const audioMinutesMatch = metricsText.match(/wayuu_total_audio_minutes\s+(\d+\.?\d*)/);
+      const phrasesMatch = metricsText.match(/wayuu_total_phrases\s+(\d+)/);
+      const transcribedMatch = metricsText.match(/wayuu_total_transcribed\s+(\d+)/);
+      const dictionaryMatch = metricsText.match(/wayuu_total_dictionary_entries\s+(\d+)/);
+      const audioFilesMatch = metricsText.match(/wayuu_total_audio_files\s+(\d+)/);
+      const lastUpdateMatch = metricsText.match(/wayuu_growth_last_update_timestamp\s+(\d+)/);
+
+      const metrics = {
+        wayuu_words: wayuuWordsMatch ? parseInt(wayuuWordsMatch[1]) : 0,
+        spanish_words: spanishWordsMatch ? parseInt(spanishWordsMatch[1]) : 0,
+        audio_minutes: audioMinutesMatch ? parseFloat(audioMinutesMatch[1]) : 0,
+        phrases: phrasesMatch ? parseInt(phrasesMatch[1]) : 0,
+        transcribed: transcribedMatch ? parseInt(transcribedMatch[1]) : 0,
+        dictionary_entries: dictionaryMatch ? parseInt(dictionaryMatch[1]) : 0,
+        audio_files: audioFilesMatch ? parseInt(audioFilesMatch[1]) : 0
+      };
+
+      const lastUpdateTimestamp = lastUpdateMatch ? parseInt(lastUpdateMatch[1]) : 0;
+      const lastUpdate = lastUpdateTimestamp > 0 ? new Date(lastUpdateTimestamp) : null;
+
+      // Verificar si las métricas están saludables
+      const warnings = [];
+      const isHealthy = metrics.wayuu_words > 0 && 
+                       metrics.spanish_words > 0 && 
+                       metrics.audio_minutes > 0;
+
+      if (!isHealthy) {
+        warnings.push('Métricas principales en 0 - Posible problema de inicialización');
+      }
+
+      if (lastUpdateTimestamp === 0) {
+        warnings.push('Sin timestamp de última actualización');
+      } else if (Date.now() - lastUpdateTimestamp > 7200000) { // 2 horas
+        warnings.push('Última actualización hace más de 2 horas');
+      }
+
+      return {
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        timestamp: new Date().toISOString(),
+        metrics_status: metrics,
+        is_healthy: isHealthy,
+        last_update: lastUpdate ? lastUpdate.toISOString() : 'nunca',
+        warnings: warnings,
+        uptime_seconds: process.uptime()
+      };
+
+    } catch (error) {
+      return {
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error.message,
+        is_healthy: false,
+        warnings: ['Error obteniendo métricas']
+      };
+    }
+  }
 }
