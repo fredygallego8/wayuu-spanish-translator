@@ -36,3 +36,4 @@ Thumbs.db
 pids/
 logs/
 *.pid
+backend/data/audio-cache-metadata.json
