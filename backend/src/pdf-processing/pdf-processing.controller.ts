@@ -4,16 +4,26 @@ import { PdfProcessingService } from './pdf-processing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('PDF Processing')
-@Controller('api/pdf-processing')
-@UseGuards(JwtAuthGuard)
+@Controller('pdf-processing')
 export class PdfProcessingController {
   private readonly logger = new Logger(PdfProcessingController.name);
 
   constructor(private readonly pdfProcessingService: PdfProcessingService) {}
 
+  @Get('health')
+  @ApiOperation({ summary: 'Health check for PDF processing module' })
+  async healthCheck() {
+    return {
+      success: true,
+      message: 'PDF Processing module is working',
+      timestamp: new Date().toISOString()
+    };
+  }
+
   @Post('process-all')
   @ApiOperation({ summary: 'Process all PDF documents' })
   @ApiResponse({ status: 200, description: 'PDFs processed successfully' })
+  @UseGuards(JwtAuthGuard)
   async processAllPDFs() {
     try {
       this.logger.log('Processing all PDF documents...');
@@ -45,7 +55,7 @@ export class PdfProcessingController {
   }
 
   @Get('stats')
-  @ApiOperation({ summary: 'Get PDF processing statistics' })
+  @ApiOperation({ summary: 'Get PDF processing statistics (Public)' })
   async getProcessingStats() {
     try {
       const stats = await this.pdfProcessingService.getProcessingStats();
@@ -65,7 +75,7 @@ export class PdfProcessingController {
   }
 
   @Get('documents')
-  @ApiOperation({ summary: 'Get all processed PDF documents' })
+  @ApiOperation({ summary: 'Get all processed PDF documents (Public)' })
   async getAllProcessedDocuments() {
     try {
       const pdfs = await this.pdfProcessingService.getAllProcessedPDFs();
@@ -95,7 +105,7 @@ export class PdfProcessingController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search Wayuu content in PDFs' })
+  @ApiOperation({ summary: 'Search Wayuu content in PDFs (Public)' })
   async searchWayuuContent(@Query('q') query: string) {
     try {
       if (!query || query.trim().length < 2) {
@@ -128,6 +138,57 @@ export class PdfProcessingController {
       return {
         success: false,
         message: `Failed to search for "${query}"`,
+        error: error.message
+      };
+    }
+  }
+
+  // =======================
+  // ENDPOINTS PROTEGIDOS
+  // =======================
+
+  @Get('admin/stats')
+  @ApiOperation({ summary: 'Get detailed processing statistics (Admin)' })
+  @UseGuards(JwtAuthGuard)
+  async getDetailedStats() {
+    try {
+      const stats = await this.pdfProcessingService.getProcessingStats();
+      const extractionStats = this.pdfProcessingService.getDictionaryExtractionStats();
+      
+      return {
+        success: true,
+        message: 'Detailed statistics retrieved successfully',
+        data: {
+          processing: stats,
+          extraction: extractionStats
+        }
+      };
+    } catch (error) {
+      this.logger.error('Failed to get detailed stats', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve detailed statistics',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('admin/extraction-stats')
+  @ApiOperation({ summary: 'Get dictionary extraction statistics (Admin)' })
+  @UseGuards(JwtAuthGuard)
+  async getDictionaryExtractionStats() {
+    try {
+      const stats = this.pdfProcessingService.getDictionaryExtractionStats();
+      return {
+        success: true,
+        message: 'Dictionary extraction statistics retrieved successfully',
+        data: stats
+      };
+    } catch (error) {
+      this.logger.error('Failed to get extraction stats', error.stack);
+      return {
+        success: false,
+        message: 'Failed to retrieve extraction statistics',
         error: error.message
       };
     }
