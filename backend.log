@@ -1,170 +1,180 @@
 
-> wayuu-spanish-translator@1.0.0 start:dev /home/fredy/Escritorio/wayuu-spanish-translator
-> cd backend && pnpm run start:dev
-
-
 > wayuu-spanish-translator-backend@1.0.0 start:dev /home/fredy/Escritorio/wayuu-spanish-translator/backend
 > nest start --watch
 
-[2J[3J[H[[90m3:33:42[0m] Starting compilation in watch mode...
+[2J[3J[H[[90m19:22:59[0m] Starting compilation in watch mode...
 
-[[90m3:33:49[0m] Found 0 errors. Watching for file changes.
+[[90m19:23:04[0m] Found 0 errors. Watching for file changes.
 
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
-🔧 Using stub ASR strategy for development
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[PipelineHealthService] [39m[32m🏥 Iniciando monitoreo de salud del pipeline[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +27ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +8ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mIngestion database loaded.[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mMetricsModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[NllbTranslationService] [39m[32m✅ NLLB-200 Service initialized with native Wayuu support (guc_Latn)[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[NllbTranslationService] [39m[32m🔑 Using token: hf_your...here[39m
-[33m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [33m   WARN[39m [38;5;3m[HuggingfaceService] [39m[33m⚠️ Hugging Face Repo ID not configured. Service will run in offline mode.[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPdfProcessingModule dependencies initialized[39m[38;5;3m +2ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTranslationModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mYoutubeIngestionModule dependencies initialized[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[JwtStrategy] [39m[32m🔑 JWT Strategy initialized[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHuggingfaceModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatasetsModule dependencies initialized[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +104ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/google, GET} route[39m[38;5;3m +5ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/google/callback, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/profile, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/logout, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/status, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/users, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/health, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTranslationController {/api/translation}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/translate, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/phonetic-analysis, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-exercises, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-exercises-massive, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/phonetic-patterns, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-progress, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/health, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/datasets, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mNllbController {/api/nllb}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/direct, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/back-translate, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/batch, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/detect-language, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/service/info, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/service/health, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDatasetsController {/api/datasets}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/stats, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/reload, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/cache, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/cache/clear, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/stats, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/entries, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/search, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/reload, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/cache, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/cache/clear, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/active, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/toggle, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/load, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/load-full, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/process-all-test, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/process-all, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/stats, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/stats-complete, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/documents, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/search, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/extract-dictionary, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/integrate, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/stats, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/batch, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/all, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/:audioId, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/clear, DELETE} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/stats, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/recalculate, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/update, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/dictionary/search, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mMetricsController {/api/metrics}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/health, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/datasets/update, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/growth/update, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/growth, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mPdfProcessingController {/api/api/pdf-processing}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/process-all, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/stats, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/documents, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/search, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mYoutubeIngestionController {/api/youtube-ingestion}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/ingest, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/process-pending-transcriptions, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/upload, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/process-pending, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/status, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/asr-config, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/delete/:videoId, DELETE} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/hello, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/reset-for-translation, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/reprocess-translations, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/health, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/queue/stats, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/retry-failed, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/optimize, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/metrics, GET} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHuggingfaceController {/api/huggingface}:[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/status, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/cached-files, GET} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/fetch-sources, POST} route[39m[38;5;3m +0ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/fetch-orkidea-dataset, POST} route[39m[38;5;3m +1ms[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔧 Datasets service ready for on-demand loading...[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Dictionary and audio data will be loaded when requested by authorized users[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔄 Loading additional datasets from cache...[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[AudioDurationService] [39m[32m📚 Loaded audio duration cache: 810 entries[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Cache for wayuu_spa_large: 2230 entries, age: 3h[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✅ Loaded 2230 entries for wayuu_spa_large from cache[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Cache for wayuu_parallel_corpus: 300 entries, age: 3h[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✅ Loaded 300 entries for wayuu_parallel_corpus from cache[39m
-[33m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [33m   WARN[39m [38;5;3m[DatasetsService] [39m[33m⚠️ No cache found for wayuu_linguistic_sources: Cache files not found[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Restored 2530 additional entries from cache across 2 datasets[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✨ Service ready - lazy loading enabled[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔄 Updating dataset metrics...[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🚀 Loading Wayuu-Spanish dictionary with intelligent cache...[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Cache loaded: undefined entries from 2025-07-01T01:09:45.041Z (fresh-cache)[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎯 Loaded undefined entries from local cache (fresh-cache)[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎵 Loading Wayuu audio dataset with intelligent cache...[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Audio cache loaded: 810 entries (fresh-cache, age: 0h)[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎯 Loaded 810 audio entries from local cache (fresh-cache)[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎵 Applied audio durations: 810/810 entries, total: 36.5 minutes[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📊 Updated audio cache metadata: 2190.6s total, 2.70s average[39m
-[33m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [33m   WARN[39m [38;5;3m[DatasetsService] [39m[33m⚠️ Could not calculate entries for Wayuu-Spanish Dictionary: Cannot read properties of undefined (reading 'toLocaleString')[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 0 dictionary entries from 0 PDFs[39m
-[32m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 0 dictionary entries extracted from 0 PDFs[39m
-[31m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [31m  ERROR[39m [38;5;3m[DatasetsService] [39m[31m❌ Error updating dataset metrics:[39m
-[31m[Nest] 1338741  - [39m01/07/2025, 3:33:51 [31m  ERROR[39m [38;5;3m[DatasetsService] [39m[31mTypeError: Value is not a valid number: undefined[39m
-/home/fredy/Escritorio/wayuu-spanish-translator/node_modules/.pnpm/prom-client@15.1.3/node_modules/prom-client/lib/gauge.js:148
-		throw new TypeError(`Value is not a valid number: ${util.format(value)}`);
-		      ^
-
-TypeError: Value is not a valid number: undefined
-    at set (/home/fredy/Escritorio/wayuu-spanish-translator/node_modules/.pnpm/prom-client@15.1.3/node_modules/prom-client/lib/gauge.js:148:9)
-    at Gauge.set (/home/fredy/Escritorio/wayuu-spanish-translator/node_modules/.pnpm/prom-client@15.1.3/node_modules/prom-client/lib/gauge.js:34:3)
-    at MetricsService.updateDatasetTotalEntries (/home/fredy/Escritorio/wayuu-spanish-translator/backend/src/metrics/metrics.service.ts:383:30)
-    at DatasetsService.updateDatasetMetrics (/home/fredy/Escritorio/wayuu-spanish-translator/backend/src/datasets/datasets.service.ts:2211:33)
-    at async DatasetsService.onModuleInit (/home/fredy/Escritorio/wayuu-spanish-translator/backend/src/datasets/datasets.service.ts:209:5)
-    at async Promise.all (index 0)
-    at async callModuleInitHook (/home/fredy/Escritorio/wayuu-spanish-translator/backend/node_modules/.pnpm/@nestjs+core@10.4.19_@nestjs+common@10.4.19_class-transformer@0.5.1_class-validator@0.1_7c169985b3e5cabb536209e29b4050a4/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
-    at async NestApplication.callInitHook (/home/fredy/Escritorio/wayuu-spanish-translator/backend/node_modules/.pnpm/@nestjs+core@10.4.19_@nestjs+common@10.4.19_class-transformer@0.5.1_class-validator@0.1_7c169985b3e5cabb536209e29b4050a4/node_modules/@nestjs/core/nest-application-context.js:234:13)
-    at async NestApplication.init (/home/fredy/Escritorio/wayuu-spanish-translator/backend/node_modules/.pnpm/@nestjs+core@10.4.19_@nestjs+common@10.4.19_class-transformer@0.5.1_class-validator@0.1_7c169985b3e5cabb536209e29b4050a4/node_modules/@nestjs/core/nest-application.js:100:9)
-    at async NestApplication.listen (/home/fredy/Escritorio/wayuu-spanish-translator/backend/node_modules/.pnpm/@nestjs+core@10.4.19_@nestjs+common@10.4.19_class-transformer@0.5.1_class-validator@0.1_7c169985b3e5cabb536209e29b4050a4/node_modules/@nestjs/core/nest-application.js:170:13)
-
-Node.js v20.18.1
-Terminated
- ELIFECYCLE  Command failed with exit code 143.
- ELIFECYCLE  Command failed with exit code 143.
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[PipelineHealthService] [39m[32m🏥 Iniciando monitoreo de salud del pipeline[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDiscoveryModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mIngestion database loaded.[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mScheduleModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[NllbTranslationService] [39m[32m✅ NLLB-200 Service initialized with native Wayuu support (guc_Latn)[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[NllbTranslationService] [39m[32m🔑 Using token: hf_cTkT...ZOQW[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[HuggingfaceService] [39m[32m✅ HuggingfaceService initialized for repo: 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[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mMetricsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPdfProcessingModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTranslationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mYoutubeIngestionModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[JwtStrategy] [39m[32m🔑 JWT Strategy initialized[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHuggingfaceModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatasetsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +73ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/google, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/google/callback, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/profile, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/logout, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/status, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/users, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/health, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTranslationController {/api/translation}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/translate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/phonetic-analysis, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-exercises, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-exercises-massive, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/phonetic-patterns, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/learning-progress, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/health, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/translation/datasets, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mNllbController {/api/nllb}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/direct, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/back-translate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/translate/batch, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/detect-language, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/service/info, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/nllb/service/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mFreeTranslationController {/api/free-translate}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/free-translate/services, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/free-translate/translate, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/free-translate/detect-language, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/free-translate/translate/batch, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/free-translate/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDatasetsController {/api/datasets}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/reload, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/cache, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/cache/clear, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/entries, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/search, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/reload, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/cache, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/cache/clear, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/active, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/toggle, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/load, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/sources/:id/load-full, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/process-all-test, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/process-all, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/stats-complete, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/documents, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/search, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/extract-dictionary, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/pdf/integrate, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/batch, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/all, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/:audioId, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/download/clear, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/recalculate, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/audio/duration/update, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/datasets/dictionary/search, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mMetricsController {/api/metrics}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/datasets/update, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/growth/update, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/metrics/growth, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mPdfProcessingController {/api/api/pdf-processing}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/process-all, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/documents, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/api/pdf-processing/search, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mYoutubeIngestionController {/api/youtube-ingestion}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/ingest, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/process-pending-transcriptions, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/upload, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/process-pending, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/status, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/asr-config, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/delete/:videoId, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/hello, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/reset-for-translation, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/reprocess-translations, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/queue/stats, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/retry-failed, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/optimize, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/youtube-ingestion/pipeline/metrics, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHuggingfaceController {/api/huggingface}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/status, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/cached-files, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/fetch-sources, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/huggingface/fetch-orkidea-dataset, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔧 Datasets service ready for on-demand loading...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Dictionary and audio data will be loaded when requested by authorized users[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔄 Loading additional datasets from cache...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[AudioDurationService] [39m[32m📚 Loaded audio duration cache: 810 entries[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Cache for wayuu_spa_large: 2230 entries, age: 43h[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✅ Loaded 2230 entries for wayuu_spa_large from cache[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Cache for wayuu_parallel_corpus: 300 entries, age: 43h[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✅ Loaded 300 entries for wayuu_parallel_corpus from cache[39m
+[33m[Nest] 38152  - [39m02/07/2025, 19:23:06 [33m   WARN[39m [38;5;3m[DatasetsService] [39m[33m⚠️ No cache found for wayuu_linguistic_sources: Cache files not found[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Restored 2530 additional entries from cache across 2 datasets[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✨ Service ready - lazy loading enabled[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔄 Updating dataset metrics...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🚀 Loading Wayuu-Spanish dictionary with intelligent cache...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 Cache loaded: 2183 entries from 2025-07-02T04:22:05.913Z (fresh-cache)[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎯 Loaded 2183 entries from local cache (fresh-cache)[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📡 Checking for dataset updates in background...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎵 Loading Wayuu audio dataset with intelligent cache...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📦 Audio cache loaded: 810 entries (fresh-cache, age: 12h)[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎯 Loaded 810 audio entries from local cache (fresh-cache)[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🎵 Applied audio durations: 810/810 entries, total: 36.5 minutes[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📊 Updated audio cache metadata: 2190.6s total, 2.70s average[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 0 dictionary entries from 0 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 0 dictionary entries extracted from 0 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📊 Metrics updated: Dictionary=2183, Audio=810, Sources=6, Active=6[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m🔧 PDF Processing service starting...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Loaded PDF cache: 4 processed documents[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m✨ PDF Processing service ready for wayuu linguistic documents[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[HuggingfaceService] [39m[32m🔧 Hugging Face service ready for on-demand loading...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[HuggingfaceService] [39m[32mDirectory ensured: /home/fredy/Escritorio/wayuu-spanish-translator/backend/data/sources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[HuggingfaceService] [39m[32m✨ Service ready - PDFs and sources will be loaded on-demand by authorized users[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:06 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +10ms[39m
+🚀 Wayuu-Spanish Translator API v2.0 is running on: http://localhost:3002
+📚 API Documentation available at: http://localhost:3002/api/docs
+🎵 Audio files served at: http://localhost:3002/api/audio/files/
+📹 YouTube Ingestion ready for processing wayuunaiki content!
+✨ Professional Swagger UI v2.0 with enhanced styling and YouTube features loaded!
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:10 [32m    LOG[39m [38;5;3m[PipelineHealthService] [39m[32m✅ All health checks passed[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:10 [32m    LOG[39m [38;5;3m[WhisperAsrStrategy] [39m[32m✅ Whisper is installed and available[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:11 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m🔍 Checking for dataset updates...[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:23:12 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m✅ Dataset is up to date[39m
+[33m[Nest] 38152  - [39m02/07/2025, 19:24:08 [33m   WARN[39m [38;5;3m[PipelineHealthService] [39m[33m⚠️ WARNINGS (1): System Resources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:25:09 [32m    LOG[39m [38;5;3m[PipelineHealthService] [39m[32m✅ All health checks passed[39m
+[33m[Nest] 38152  - [39m02/07/2025, 19:26:09 [33m   WARN[39m [38;5;3m[PipelineHealthService] [39m[33m⚠️ WARNINGS (1): System Resources[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:09 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 4866 dictionary entries from 4 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:09 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 4866 dictionary entries extracted from 4 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:09 [32m    LOG[39m [38;5;3m[YoutubeIngestionController] [39m[32mFetching database status[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:09 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mDatabase status: 5 total videos, distributed across statuses: {"completed":5}[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:09 [32m    LOG[39m [38;5;3m[YoutubeIngestionService] [39m[32mASR Configuration - Provider: whisper, Available: true[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:10 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 4866 dictionary entries from 4 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:10 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 4866 dictionary entries extracted from 4 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:11 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 4866 dictionary entries from 4 PDFs[39m
+[32m[Nest] 38152  - [39m02/07/2025, 19:27:11 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 4866 dictionary entries extracted from 4 PDFs[39m

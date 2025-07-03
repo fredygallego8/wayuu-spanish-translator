@@ -8,7 +8,7 @@ import {
   MicrophoneIcon,
   BookOpenIcon,
   ChartBarIcon,
-  BrainIcon,
+  CpuChipIcon,
   GlobeAltIcon,
   AcademicCapIcon,
   PlayIcon,
@@ -89,7 +89,7 @@ const exerciseTypes: ExerciseTypeConfig[] = [
     id: "phonetic-pattern-advanced",
     name: "Fonética Avanzada",
     description: "Análisis profundo de patrones fonéticos",
-    icon: BrainIcon,
+    icon: CpuChipIcon,
     color: "from-pink-500 to-rose-500",
   },
   {

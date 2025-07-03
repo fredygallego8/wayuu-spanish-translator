@@ -8,8 +8,8 @@ import {
   SpeakerWaveIcon,
   ChartBarIcon,
   GlobeAltIcon,
-  BrainIcon,
-  DatabaseIcon,
+  CpuChipIcon,
+  CircleStackIcon,
 } from "@heroicons/react/24/solid";
 
 interface DatasetStats {
@@ -68,14 +68,14 @@ const toolTypes = [
     id: "adaptive-ai" as MassiveToolType,
     name: "IA Adaptativa",
     description: "Aprendizaje personalizado basado en dataset",
-    icon: BrainIcon,
+    icon: CpuChipIcon,
     color: "from-indigo-500 to-purple-500",
   },
   {
     id: "dataset-stats" as MassiveToolType,
     name: "Estadísticas de Dataset",
     description: "Métricas en tiempo real del proyecto",
-    icon: DatabaseIcon,
+    icon: CircleStackIcon,
     color: "from-teal-500 to-green-500",
   },
 ];

@@ -3,17 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4001",
+    "dev": "next dev --turbopack -p 4001",
     "build": "next build",
     "start": "next start -p 4001",
     "lint": "next lint"
   },
   "dependencies": {
-    "@heroicons/react": "^2.0.18",
+    "@heroicons/react": "^2.2.0",
     "framer-motion": "^10.16.16",
-    "next": "14.2.17",
-    "react": "^18",
-    "react-dom": "^18"
+    "next": "15.3.4",
+    "react": "19.0.0-rc.1",
+    "react-dom": "19.0.0-rc.1"
   },
   "devDependencies": {
     "@types/node": "^20",
