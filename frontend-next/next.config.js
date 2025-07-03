@@ -3,16 +3,6 @@ const nextConfig = {
   // Optimizaciones para Next.js 15
   reactStrictMode: true,
   
-  // Configuración de Turbopack (ya no experimental)
-  turbopack: {
-    rules: {
-      // Optimizaciones para CSS
-      '*.css': {
-        loaders: ['css-loader'],
-      },
-    },
-  },
-  
   // Configuración de imágenes mejorada
   images: {
     domains: ['localhost'],

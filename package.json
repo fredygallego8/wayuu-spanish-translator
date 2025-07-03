@@ -8,15 +8,18 @@
     "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
     "dev:backend": "cd backend && pnpm run start:dev",
     "dev:frontend": "cd frontend && pnpm run dev",
-    "build": "concurrently \"pnpm run build:backend\" \"pnpm run build:frontend\"",
+    "dev:turbo": "turbo dev",
+    "dev:next-turbo": "cd frontend-next && pnpm run dev:turbo",
+    "build": "turbo build",
     "build:backend": "cd backend && pnpm run build",
     "build:frontend": "cd frontend && pnpm run build",
-    "test": "concurrently \"pnpm run test:backend\" \"pnpm run test:frontend\"",
+    "test": "turbo test",
     "test:backend": "cd backend && pnpm run test",
     "test:frontend": "cd frontend && pnpm run test",
-    "lint": "concurrently \"pnpm run lint:backend\" \"pnpm run lint:frontend\"",
+    "lint": "turbo lint",
     "lint:backend": "cd backend && pnpm run lint",
-    "lint:frontend": "cd frontend && pnpm run lint"
+    "lint:frontend": "cd frontend && pnpm run lint",
+    "clean": "turbo clean"
   },
   "keywords": [
     "wayuu",
@@ -31,7 +34,8 @@
   "author": "Fredy Gallego <fredy.gallego@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "turbo": "^2.5.4"
   },
   "engines": {
     "node": ">=18.0.0",
