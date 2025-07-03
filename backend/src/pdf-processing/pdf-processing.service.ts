@@ -562,6 +562,7 @@ export class PdfProcessingService implements OnModuleInit {
     
     // 🎯 Factor 2: Tipo de patrón usado (peso medio)
     switch (patternType) {
+      case 'dictionary_format': confidence += 0.25; break; // ← NUEVO: Formato específico diccionario wayuu
       case 'academic_dash': confidence += 0.20; break;
       case 'definition': confidence += 0.18; break;
       case 'table': confidence += 0.15; break;

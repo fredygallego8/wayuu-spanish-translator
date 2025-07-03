@@ -649,7 +649,8 @@ export class DatasetsService implements OnModuleInit {
 
       // Leer datos del cache
       const cacheContent = await fs.readFile(this.cacheFile, 'utf-8');
-      const cachedData: DictionaryEntry[] = JSON.parse(cacheContent);
+      const cacheObject = JSON.parse(cacheContent);
+      const cachedData: DictionaryEntry[] = cacheObject.entries || cacheObject || [];
 
       // Determinar si necesita actualización (cache válido pero no muy reciente)
       const shouldUpdate = isExpired || (now.getTime() - lastUpdated.getTime()) > (this.cacheMaxAge / 2);
@@ -686,7 +687,8 @@ export class DatasetsService implements OnModuleInit {
       };
 
       // Guardar datos y metadata
-      await fs.writeFile(this.cacheFile, JSON.stringify(data, null, 2), 'utf-8');
+      const cacheData = { entries: data, metadata };
+      await fs.writeFile(this.cacheFile, JSON.stringify(cacheData, null, 2), 'utf-8');
       await fs.writeFile(this.metadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
 
       this.logger.log(`💾 Cache saved: ${data.length} entries to ${this.cacheFile}`);
@@ -2981,8 +2983,8 @@ export class DatasetsService implements OnModuleInit {
     try {
       const { minConfidence = 0.5, maxEntries = 5000, dryRun = false } = options;
       
-      // 1. Obtener entradas PDF extraídas
-      const pdfEntries = this.pdfProcessingService.extractDictionaryEntries();
+      // 1. Obtener entradas PDF extraídas (FORZAR EXTRACCIÓN SIN CACHE)
+      const pdfEntries = this.pdfProcessingService.extractDictionaryEntries(true);
       if (!pdfEntries || pdfEntries.length === 0) {
         throw new Error('No PDF entries available for integration');
       }
