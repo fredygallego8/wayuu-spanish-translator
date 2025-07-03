@@ -23,22 +23,30 @@ interface UseMetricsReturn {
   lastUpdated: Date | null;
 }
 
-export function useMetrics(autoRefresh = true, intervalMs = 30000): UseMetricsReturn {
+export function useMetrics(autoRefresh = true, intervalMs = 120000): UseMetricsReturn {
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const fetchMetrics = useCallback(async () => {
     try {
       setError(null);
+      
+      // Add timeout for frontend API calls
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout for frontend
       
       const response = await fetch('/api/metrics', {
         credentials: 'omit',
         headers: {
           'Cache-Control': 'no-cache',
         },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -49,12 +57,14 @@ export function useMetrics(autoRefresh = true, intervalMs = 30000): UseMetricsRe
       if (data.success && data.data) {
         setMetrics(data.data);
         setLastUpdated(new Date());
+        setRetryCount(0);
       } else {
         throw new Error('Invalid response format');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
+      setRetryCount(prev => prev + 1);
       console.error('Error fetching metrics:', err);
       
       // Set fallback metrics if none exist
@@ -87,19 +97,22 @@ export function useMetrics(autoRefresh = true, intervalMs = 30000): UseMetricsRe
     fetchMetrics();
   }, [fetchMetrics]);
 
-  // Auto-refresh interval
+  // Auto-refresh interval with intelligent back-off
   useEffect(() => {
     if (!autoRefresh) return;
 
+    // Implement exponential back-off when errors occur
+    const dynamicInterval = Math.min(intervalMs * Math.pow(1.5, retryCount), 300000); // Max 5 minutes
+
     const interval = setInterval(() => {
-      // Only refresh if not already loading
-      if (!loading) {
+      // Only refresh if not already loading and within reasonable error count
+      if (!loading && retryCount < 5) {
         fetchMetrics();
       }
-    }, intervalMs);
+    }, dynamicInterval);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, intervalMs, loading, fetchMetrics]);
+  }, [autoRefresh, intervalMs, loading, fetchMetrics, retryCount]);
 
   return {
     metrics,

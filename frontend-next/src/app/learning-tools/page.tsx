@@ -152,7 +152,8 @@ export default function LearningToolsPage() {
         const data = await response.json();
         if (data.success && data.data?.current_metrics) {
           setDatasetStats({
-            totalEntries: data.data.current_metrics.total_dictionary_entries || 7033,
+            totalEntries:
+              data.data.current_metrics.total_dictionary_entries || 7033,
             audioFiles: data.data.current_metrics.total_audio_files || 810,
             pdfSources: 4,
             growthPercentage: 222,
@@ -188,8 +189,8 @@ export default function LearningToolsPage() {
           words.length > 2
             ? "advanced"
             : words.length > 1
-            ? "intermediate"
-            : "beginner",
+              ? "intermediate"
+              : "beginner",
         recommendations: [
           "Practica la pronunciación de consonantes glotales",
           "Enfócate en los patrones de acento wayuu",
@@ -259,7 +260,7 @@ export default function LearningToolsPage() {
         setCurrentAudio(null);
       }
 
-      const audio = new Audio(`${API_BASE_URL}/api/audio/play/${filename}`);
+      const audio = new Audio(`${API_BASE_URL}/api/audio/files/${filename}`);
       setCurrentAudio(audio);
       setIsPlaying(true);
 

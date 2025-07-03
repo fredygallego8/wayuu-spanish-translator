@@ -2,10 +2,22 @@ import { Controller, Get, Header, HttpException, HttpStatus, Post } from '@nestj
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
 import { DatasetsService } from '../datasets/datasets.service';
+import { Logger } from '@nestjs/common';
 
 @ApiTags('📊 Metrics')
 @Controller('metrics')
 export class MetricsController {
+  private readonly logger = new Logger(MetricsController.name);
+  
+  // Simple cache for JSON metrics endpoint
+  private jsonMetricsCache: {
+    data: any;
+    timestamp: number;
+    ttl: number; // Time to live in milliseconds
+  } | null = null;
+  
+  private readonly CACHE_TTL = 60000; // 60 seconds cache
+
   constructor(
     private readonly metricsService: MetricsService,
     private readonly datasetsService: DatasetsService,
@@ -557,6 +569,16 @@ nodejs_heap_size_used_bytes 12345678`,
   })
   async getJsonMetrics(): Promise<any> {
     try {
+      // Check cache first
+      const now = Date.now();
+      if (this.jsonMetricsCache && 
+          (now - this.jsonMetricsCache.timestamp) < this.CACHE_TTL) {
+        this.logger.debug('📦 Returning cached JSON metrics');
+        return this.jsonMetricsCache.data;
+      }
+
+      this.logger.debug('🔄 Fetching fresh JSON metrics');
+      
       // Obtener datos de crecimiento
       const growthData = await this.getGrowthDashboard();
       
@@ -566,7 +588,7 @@ nodejs_heap_size_used_bytes 12345678`,
 
       const metrics = growthData.data.current_metrics;
       
-      return {
+      const result = {
         success: true,
         data: {
           wayuu_entries: metrics.total_wayuu_words || 7033,
@@ -580,9 +602,20 @@ nodejs_heap_size_used_bytes 12345678`,
           timestamp: new Date().toISOString(),
         },
       };
+
+      // Cache the result
+      this.jsonMetricsCache = {
+        data: result,
+        timestamp: now,
+        ttl: this.CACHE_TTL
+      };
+
+      return result;
     } catch (error) {
+      this.logger.warn('⚠️ JSON metrics error, returning fallback:', error.message);
+      
       // Fallback metrics si hay error
-      return {
+      const fallbackResult = {
         success: true,
         data: {
           wayuu_entries: 7033,
@@ -597,6 +630,9 @@ nodejs_heap_size_used_bytes 12345678`,
           note: 'Fallback metrics due to error: ' + error.message,
         },
       };
+
+      // Don't cache error results, but return them
+      return fallbackResult;
     }
   }
 }

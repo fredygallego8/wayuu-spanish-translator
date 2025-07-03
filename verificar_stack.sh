@@ -2,7 +2,10 @@
 # Archivo: verificar_stack.sh
 # Propósito: Verificación completa del stack Wayuu Translator
 
-echo "🔍 VERIFICACIÓN COMPLETA DEL STACK WAYUU TRANSLATOR"
+set -e
+trap 'echo "❌ Error en línea $LINENO"' ERR
+
+echo "🚀 Verificando Stack Wayuu-Spanish Translator v2.0"
 echo "=================================================="
 
 # Colores para output
@@ -15,12 +18,12 @@ NC='\033[0m' # No Color
 # Función para verificar puerto
 check_port() {
     local port=$1
-    local service=$2
-    if curl -s http://localhost:$port > /dev/null 2>&1; then
-        echo -e "${GREEN}✅ $service (puerto $port): UP${NC}"
+    local timeout=5
+    if curl -s --connect-timeout $timeout --max-time $timeout http://localhost:$port > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Puerto $port: UP${NC}"
         return 0
     else
-        echo -e "${RED}❌ $service (puerto $port): DOWN${NC}"
+        echo -e "${RED}❌ Puerto $port: DOWN${NC}"
         return 1
     fi
 }
@@ -71,15 +74,15 @@ if check_port 3002 "Backend NestJS"; then
     echo "   🔗 http://localhost:3002"
     
     # Verificar endpoints específicos
-    if curl -s http://localhost:3002/api/health > /dev/null; then
-        health_response=$(curl -s http://localhost:3002/api/health | jq -r '.status // "unknown"' 2>/dev/null || echo "unknown")
+    if curl -s --connect-timeout 10 --max-time 15 http://localhost:3002/api/health > /dev/null; then
+        health_response=$(curl -s --connect-timeout 10 --max-time 15 http://localhost:3002/api/health | jq -r '.status // "unknown"' 2>/dev/null || echo "unknown")
         echo -e "${GREEN}✅ Backend Health: $health_response${NC}"
     else
         echo -e "${RED}❌ Backend Health: No responde${NC}"
     fi
     
-    if curl -s http://localhost:3002/api/metrics | head -1 | grep -q "#"; then
-        metric_count=$(curl -s http://localhost:3002/api/metrics | grep -c "^# HELP" 2>/dev/null || echo "0")
+    if curl -s --connect-timeout 10 --max-time 20 http://localhost:3002/api/metrics | head -1 | grep -q "#"; then
+        metric_count=$(curl -s --connect-timeout 10 --max-time 20 http://localhost:3002/api/metrics | grep -c "^# HELP" 2>/dev/null || echo "0")
         echo -e "${GREEN}✅ Backend Metrics: $metric_count métricas disponibles${NC}"
     else
         echo -e "${RED}❌ Backend Metrics: Sin datos${NC}"
@@ -92,14 +95,14 @@ fi
 show_section "VERIFICANDO INTEGRACIÓN PROMETHEUS"
 
 # Verificar targets en Prometheus  
-if curl -s 'http://localhost:9090/api/v1/query?query=up' 2>/dev/null | grep -q "wayuu-translator-backend"; then
+if curl -s --connect-timeout 10 --max-time 15 'http://localhost:9090/api/v1/query?query=up' 2>/dev/null | grep -q "wayuu-translator-backend"; then
     # Verificar si backend target está UP
-    backend_status=$(curl -s 'http://localhost:9090/api/v1/query?query=up{job="wayuu-translator-backend"}' 2>/dev/null | jq -r '.data.result[0].value[1]' 2>/dev/null)
+    backend_status=$(curl -s --connect-timeout 10 --max-time 15 'http://localhost:9090/api/v1/query?query=up{job="wayuu-translator-backend"}' 2>/dev/null | jq -r '.data.result[0].value[1]' 2>/dev/null)
     if [ "$backend_status" = "1" ]; then
         echo -e "${GREEN}✅ Prometheus → Backend: Conectado${NC}"
         
         # Verificar métricas específicas
-        wayuu_metrics=$(curl -s 'http://localhost:9090/api/v1/label/__name__/values' 2>/dev/null | jq -r '.data[]' 2>/dev/null | grep -c "wayuu_" || echo "0")
+        wayuu_metrics=$(curl -s --connect-timeout 10 --max-time 15 'http://localhost:9090/api/v1/label/__name__/values' 2>/dev/null | jq -r '.data[]' 2>/dev/null | grep -c "wayuu_" || echo "0")
         echo -e "${GREEN}   📊 Métricas Wayuu disponibles: $wayuu_metrics${NC}"
     else
         echo -e "${RED}❌ Prometheus → Backend: Desconectado (status: $backend_status)${NC}"
@@ -111,7 +114,7 @@ fi
 
 # Verificar todos los targets
 echo -e "\n📈 Targets de Prometheus:"
-if curl -s http://localhost:9090/api/v1/targets 2>/dev/null | jq -r '.data.activeTargets[] | "   \(.labels.job): \(.health)"' 2>/dev/null; then
+if curl -s --connect-timeout 10 --max-time 15 http://localhost:9090/api/v1/targets 2>/dev/null | jq -r '.data.activeTargets[] | "   \(.labels.job): \(.health)"' 2>/dev/null; then
     : # Output ya mostrado por jq
 else
     echo "   ⚠️  No se pudieron obtener targets"
@@ -120,12 +123,12 @@ fi
 show_section "VERIFICANDO GRAFANA"
 
 # Verificar Grafana y datasource
-if curl -s http://localhost:3001/api/health > /dev/null; then
+if curl -s --connect-timeout 10 --max-time 15 http://localhost:3001/api/health > /dev/null; then
     echo -e "${GREEN}✅ Grafana: Accesible${NC}"
     echo -e "${BLUE}   🔗 Dashboard: http://localhost:3001 (admin/wayuu2024)${NC}"
     
     # Verificar datasource Prometheus
-    if curl -s -u admin:wayuu2024 http://localhost:3001/api/datasources 2>/dev/null | grep -q "prometheus"; then
+    if curl -s --connect-timeout 10 --max-time 15 -u admin:wayuu2024 http://localhost:3001/api/datasources 2>/dev/null | grep -q "prometheus"; then
         echo -e "${GREEN}✅ Datasource Prometheus: Configurado${NC}"
     else
         echo -e "${YELLOW}⚠️  Datasource Prometheus: Verificar configuración${NC}"
@@ -140,11 +143,11 @@ show_section "RESUMEN FINAL"
 services_up=0
 total_services=5
 
-curl -s http://localhost:3001 >/dev/null 2>&1 && ((services_up++))
-curl -s http://localhost:9090 >/dev/null 2>&1 && ((services_up++))
-curl -s http://localhost:9100 >/dev/null 2>&1 && ((services_up++))
-curl -s http://localhost:9093 >/dev/null 2>&1 && ((services_up++))
-curl -s http://localhost:3002 >/dev/null 2>&1 && ((services_up++))
+curl -s --connect-timeout 5 --max-time 10 http://localhost:3001 >/dev/null 2>&1 && ((services_up++))
+curl -s --connect-timeout 5 --max-time 10 http://localhost:9090 >/dev/null 2>&1 && ((services_up++))
+curl -s --connect-timeout 5 --max-time 10 http://localhost:9100 >/dev/null 2>&1 && ((services_up++))
+curl -s --connect-timeout 5 --max-time 10 http://localhost:9093 >/dev/null 2>&1 && ((services_up++))
+curl -s --connect-timeout 5 --max-time 10 http://localhost:3002 >/dev/null 2>&1 && ((services_up++))
 
 echo "📊 Servicios funcionando: $services_up/$total_services"
 
@@ -155,7 +158,7 @@ if [ $services_up -eq $total_services ]; then
     echo -e "${GREEN}   🎯 Estado: LISTO PARA USO${NC}"
 elif [ $services_up -ge 4 ]; then
     echo -e "${YELLOW}⚠️  Stack casi completo ($services_up/5 servicios)${NC}"
-    if ! curl -s http://localhost:3002 >/dev/null 2>&1; then
+    if ! curl -s --connect-timeout 5 --max-time 10 http://localhost:3002 >/dev/null 2>&1; then
         echo -e "${YELLOW}   🔧 Falta: Backend NestJS${NC}"
     fi
 else
@@ -163,7 +166,7 @@ else
 fi
 
 echo -e "\n${BLUE}💡 PRÓXIMOS PASOS:${NC}"
-if ! curl -s http://localhost:3002 >/dev/null 2>&1; then
+if ! curl -s --connect-timeout 5 --max-time 10 http://localhost:3002 >/dev/null 2>&1; then
     echo "   1. 🚀 Iniciar Backend: cd backend && pnpm run start:dev"
 fi
 echo "   2. 📊 Acceder a Grafana: http://localhost:3001"

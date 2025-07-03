@@ -4,7 +4,10 @@ const BACKEND_URL = 'http://localhost:3002';
 
 export async function GET(request: NextRequest) {
   try {
-    // Forward the request to the NestJS backend JSON endpoint
+    // Forward the request to the NestJS backend JSON endpoint with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout for metrics
+
     const response = await fetch(`${BACKEND_URL}/api/metrics/json`, {
       method: 'GET',
       headers: {
@@ -17,7 +20,10 @@ export async function GET(request: NextRequest) {
             )
         ),
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       // If backend is not available, return mock metrics
@@ -43,7 +49,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching metrics:', error);
     
-    // Return fallback metrics if backend is unavailable
+    // Return fallback metrics if backend is unavailable or times out
     return NextResponse.json({
       success: true,
       data: {
@@ -56,7 +62,7 @@ export async function GET(request: NextRequest) {
         growth_percentage: 222,
         status: 'fallback',
         timestamp: new Date().toISOString(),
-        note: 'Metrics from fallback due to backend unavailability',
+        note: 'Metrics from fallback due to backend timeout or unavailability',
       },
     });
   }

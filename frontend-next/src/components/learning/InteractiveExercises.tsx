@@ -120,42 +120,135 @@ export default function InteractiveExercises() {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Progress tracking with localStorage
+  const [progressStats, setProgressStats] = useState({
+    totalExercises: 0,
+    correctAnswers: 0,
+    exercisesCompleted: 0,
+    accuracy: 0,
+    streakDays: 0,
+    lastPlayDate: null as Date | null,
+  });
+
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem("wayuu-learning-progress");
+    if (savedProgress) {
+      try {
+        const parsed = JSON.parse(savedProgress);
+        setProgressStats({
+          ...parsed,
+          lastPlayDate: parsed.lastPlayDate
+            ? new Date(parsed.lastPlayDate)
+            : null,
+        });
+      } catch (error) {
+        console.error("Error loading progress:", error);
+      }
+    }
+  }, []);
+
+  // Save progress to localStorage
+  const saveProgress = (newStats: typeof progressStats) => {
+    try {
+      localStorage.setItem("wayuu-learning-progress", JSON.stringify(newStats));
+      setProgressStats(newStats);
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
+  };
+
+  // Update progress when exercise is completed
+  const updateProgress = (isCorrect: boolean) => {
+    const today = new Date();
+    const lastPlay = progressStats.lastPlayDate;
+    const isNewDay =
+      !lastPlay || today.toDateString() !== lastPlay.toDateString();
+
+    const newStats = {
+      totalExercises: progressStats.totalExercises + 1,
+      correctAnswers: progressStats.correctAnswers + (isCorrect ? 1 : 0),
+      exercisesCompleted: progressStats.exercisesCompleted + 1,
+      accuracy: 0,
+      streakDays: isNewDay
+        ? progressStats.streakDays + 1
+        : progressStats.streakDays,
+      lastPlayDate: today,
+    };
+
+    // Calculate accuracy
+    newStats.accuracy =
+      newStats.totalExercises > 0
+        ? Math.round((newStats.correctAnswers / newStats.totalExercises) * 100)
+        : 0;
+
+    saveProgress(newStats);
+  };
+
   const generateExercises = async () => {
     setIsGenerating(true);
 
     try {
-      // Call backend API for exercise generation
-      const response = await fetch(
-        "http://localhost:3002/api/datasets/generate-exercises",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            type: selectedType,
-            count: 10,
-            difficulty: "mixed",
-          }),
-        }
-      );
+      let exercisesData: Exercise[] = [];
 
-      if (response.ok) {
-        const result = await response.json();
-        setExercises(result.data);
-      } else {
-        // Fallback to mock exercises
-        const mockExercises = generateMockExercises(selectedType);
-        setExercises(mockExercises);
+      // Use real vocabulary for vocabulary-massive exercises
+      if (selectedType === "vocabulary-massive") {
+        // Generate multiple real vocabulary exercises
+        const promises = Array(5)
+          .fill(null)
+          .map(() => generateRealVocabularyExercises());
+        const results = await Promise.all(promises);
+        exercisesData = results
+          .flat()
+          .filter((ex) => ex.options && ex.options.length > 0);
+
+        // If we got some real exercises, add some mock ones to reach 10 total
+        if (exercisesData.length > 0) {
+          const mockExercises = generateMockExercises(selectedType);
+          exercisesData = [...exercisesData, ...mockExercises].slice(0, 10);
+        }
       }
 
+      // Fallback to API call for other exercise types
+      if (exercisesData.length === 0) {
+        try {
+          const response = await fetch(
+            "http://localhost:3002/api/datasets/generate-exercises",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                type: selectedType,
+                count: 10,
+                difficulty: "mixed",
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            exercisesData = result.data;
+          }
+        } catch (apiError) {
+          console.log("API not available, using mock exercises");
+        }
+      }
+
+      // Final fallback to mock exercises
+      if (exercisesData.length === 0) {
+        exercisesData = generateMockExercises(selectedType);
+      }
+
+      setExercises(exercisesData);
       setCurrentIndex(0);
       setShowExercises(true);
       setSelectedAnswer(null);
       setShowResult(false);
     } catch (error) {
       console.error("Error generating exercises:", error);
-      // Fallback to mock exercises
+      // Final fallback to mock exercises
       const mockExercises = generateMockExercises(selectedType);
       setExercises(mockExercises);
       setCurrentIndex(0);
@@ -228,6 +321,112 @@ export default function InteractiveExercises() {
     return baseExercises[type] || baseExercises["vocabulary-massive"];
   };
 
+  const generateRealVocabularyExercises = async (): Promise<Exercise[]> => {
+    try {
+      // Get random vocabulary entries from the backend
+      const searchTerms = [
+        "a",
+        "e",
+        "i",
+        "o",
+        "u",
+        "wa",
+        "ma",
+        "ka",
+        "la",
+        "ta",
+      ];
+      const randomTerm =
+        searchTerms[Math.floor(Math.random() * searchTerms.length)];
+
+      const response = await fetch(
+        `http://localhost:3002/api/datasets/dictionary/search?q=${randomTerm}&limit=20`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.success && data.result) {
+          // Create exercise from real dictionary entry
+          const entry = data.result;
+
+          // Generate multiple choice options
+          const correctAnswer = entry.spanish || entry.translation;
+          const wrongOptions = [
+            "agua",
+            "tierra",
+            "fuego",
+            "viento",
+            "sol",
+            "luna",
+            "estrella",
+            "árbol",
+            "casa",
+            "familia",
+            "amor",
+            "paz",
+            "tiempo",
+            "vida",
+          ]
+            .filter((opt) => opt !== correctAnswer)
+            .slice(0, 3);
+
+          const allOptions = [correctAnswer, ...wrongOptions].sort(
+            () => Math.random() - 0.5
+          );
+
+          return [
+            {
+              id: `real-${Date.now()}`,
+              type: selectedType,
+              question: `¿Cómo se dice "${entry.wayuu || entry.word}" en español?`,
+              options: allOptions,
+              correctAnswer,
+              hint: `Esta palabra pertenece al vocabulario wayuu auténtico`,
+              audio: entry.audio,
+              difficulty: "intermediate" as const,
+            },
+          ];
+        }
+      }
+
+      // Fallback to random vocabulary if API fails
+      const fallbackTerms = [
+        { wayuu: "wayuu", spanish: "persona" },
+        { wayuu: "Maleiwa", spanish: "Creador" },
+        { wayuu: "müshia", spanish: "nosotros" },
+        { wayuu: "tü", spanish: "tú" },
+        { wayuu: "süpüla", spanish: "tierra" },
+      ];
+
+      const randomEntry =
+        fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
+      const wrongOptions = fallbackTerms
+        .filter((t) => t.spanish !== randomEntry.spanish)
+        .slice(0, 3)
+        .map((t) => t.spanish);
+
+      const allOptions = [randomEntry.spanish, ...wrongOptions].sort(
+        () => Math.random() - 0.5
+      );
+
+      return [
+        {
+          id: `fallback-${Date.now()}`,
+          type: selectedType,
+          question: `¿Cómo se dice "${randomEntry.wayuu}" en español?`,
+          options: allOptions,
+          correctAnswer: randomEntry.spanish,
+          hint: `Palabra fundamental del vocabulario wayuu`,
+          difficulty: "beginner" as const,
+        },
+      ];
+    } catch (error) {
+      console.error("Error generating real vocabulary exercises:", error);
+      return [];
+    }
+  };
+
   const handleAnswerSelect = (answer: string) => {
     setSelectedAnswer(answer);
   };
@@ -246,6 +445,9 @@ export default function InteractiveExercises() {
     } else {
       setScore((prev) => ({ ...prev, total: prev.total + 1 }));
     }
+
+    // Update progress when exercise is completed
+    updateProgress(isCorrect);
   };
 
   const nextExercise = () => {
@@ -267,11 +469,20 @@ export default function InteractiveExercises() {
   const playAudio = async (audioFile: string) => {
     try {
       setIsPlaying(true);
-      // Mock audio playback - in real implementation, would use Web Audio API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Try to play real audio file first
+      const audioUrl = `http://localhost:3002/api/audio/files/${audioFile}`;
+      const audio = new Audio(audioUrl);
+
+      audio.addEventListener("ended", () => {
+        setIsPlaying(false);
+      });
+
+      await audio.play();
     } catch (error) {
       console.error("Error playing audio:", error);
-    } finally {
+      // Mock audio playback as fallback
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setIsPlaying(false);
     }
   };
@@ -292,6 +503,62 @@ export default function InteractiveExercises() {
           vocabulario masivo hasta análisis cultural profundo.
         </p>
       </div>
+
+      {/* Progress Dashboard */}
+      {progressStats.totalExercises > 0 && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <TrophyIcon className="w-6 h-6 text-yellow-600 mr-2" />
+            Tu Progreso de Aprendizaje
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {progressStats.exercisesCompleted}
+              </div>
+              <div className="text-sm text-gray-600">
+                Ejercicios completados
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {progressStats.accuracy}%
+              </div>
+              <div className="text-sm text-gray-600">Precisión</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {progressStats.streakDays}
+              </div>
+              <div className="text-sm text-gray-600">Días consecutivos</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">
+                {Math.floor(progressStats.correctAnswers / 10)}
+              </div>
+              <div className="text-sm text-gray-600">Nivel alcanzado</div>
+            </div>
+          </div>
+          <div className="mt-4 bg-white rounded-lg p-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600">
+                Progreso hacia el siguiente nivel:
+              </span>
+              <span className="font-medium text-gray-900">
+                {progressStats.correctAnswers % 10}/10
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div
+                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(progressStats.correctAnswers % 10) * 10}%`,
+                }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!showExercises ? (
         <>

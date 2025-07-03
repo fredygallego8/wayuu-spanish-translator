@@ -575,10 +575,16 @@
                 // Simular progreso
                 updateProgress(10, 'Subiendo archivo...');
                 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds for upload
+                
                 const response = await fetch('http://localhost:3002/api/youtube-ingestion/upload', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 updateProgress(50, 'Archivo subido, iniciando procesamiento...');
 
@@ -633,7 +639,14 @@
         // Verificar estado del procesamiento
         async function checkProcessingStatus(fileId) {
             try {
-                const response = await fetch('http://localhost:3002/api/youtube-ingestion/status');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds for status check
+                
+                const response = await fetch('http://localhost:3002/api/youtube-ingestion/status', {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
                 const result = await response.json();
                 
                 if (result.success) {

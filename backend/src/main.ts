@@ -21,9 +21,15 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Serve static audio files
+  // Serve static audio files with CORS headers
   app.useStaticAssets(join(__dirname, '..', 'data', 'audio'), {
     prefix: '/api/audio/files/',
+    setHeaders: (res, path, stat) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+      res.set('Cache-Control', 'public, max-age=3600');
+    },
   });
 
   // Global validation pipe

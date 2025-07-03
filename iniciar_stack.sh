@@ -96,7 +96,7 @@ docker-compose ps
 # Verificar que servicios estén UP
 monitoring_ok=true
 for port in 3001 9090 9100 9093; do
-    if curl -s http://localhost:$port > /dev/null 2>&1; then
+    if curl -s --connect-timeout 5 --max-time 10 http://localhost:$port > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Puerto $port: Disponible${NC}"
     else
         echo -e "${RED}❌ Puerto $port: No disponible${NC}"
@@ -159,7 +159,7 @@ show_step "PASO 5: Verificando Backend"
 # Esperar a que el backend se inicie
 echo "⌛ Esperando backend (30s)..."
 for i in {1..30}; do
-    if curl -s http://localhost:3002/api/health > /dev/null 2>&1; then
+    if curl -s --connect-timeout 10 --max-time 15 http://localhost:3002/api/health > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Backend respondiendo después de ${i}s${NC}"
         break
     fi
@@ -170,16 +170,16 @@ done
 echo ""
 
 # Verificar endpoints del backend
-if curl -s http://localhost:3002/api/health > /dev/null; then
+if curl -s --connect-timeout 10 --max-time 15 http://localhost:3002/api/health > /dev/null; then
     echo -e "${GREEN}✅ Backend Health: Disponible${NC}"
-    health_response=$(curl -s http://localhost:3002/api/health)
+    health_response=$(curl -s --connect-timeout 10 --max-time 15 http://localhost:3002/api/health)
     echo "   Response: $health_response"
 else
     echo -e "${RED}❌ Backend Health: No responde${NC}"
     echo "   Verificar logs: tail -f backend.log"
 fi
 
-if curl -s http://localhost:3002/api/metrics | head -1 | grep -q "#"; then
+if curl -s --connect-timeout 10 --max-time 20 http://localhost:3002/api/metrics | head -1 | grep -q "#"; then
     echo -e "${GREEN}✅ Backend Metrics: Disponibles${NC}"
 else
     echo -e "${RED}❌ Backend Metrics: Sin datos${NC}"
@@ -220,7 +220,7 @@ if [ ! -z "$FRONTEND_PID" ]; then
     sleep 10
     
     # Verificar que responda
-    if curl -s http://localhost:4000 > /dev/null 2>&1; then
+    if curl -s --connect-timeout 5 --max-time 10 http://localhost:4000 > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Frontend Simple: Disponible en puerto 4000${NC}"
     else
         echo -e "${RED}❌ Frontend Simple: No responde en puerto 4000${NC}"

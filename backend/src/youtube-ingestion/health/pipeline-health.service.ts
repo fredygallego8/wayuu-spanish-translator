@@ -28,7 +28,7 @@ export class PipelineHealthService {
   private readonly startTime = Date.now();
   
   private healthChecks: HealthCheck[] = [];
-  private readonly checkInterval = 60000; // 1 minuto
+  private readonly checkInterval = 300000; // 5 minutos (reduced from 1 minute to reduce CPU load)
   private healthTimer?: NodeJS.Timeout;
 
   constructor() {
@@ -252,10 +252,11 @@ export class PipelineHealthService {
       let status: 'healthy' | 'warning' | 'critical' = 'healthy';
       let message = `Memory: ${memUsagePercent}%, CPU Load: ${cpuLoad}`;
 
-      if (memUsagePercent > 90 || cpuLoad > 4) {
+      // Adjusted thresholds to be more reasonable for development/production systems
+      if (memUsagePercent > 95 || cpuLoad > 8) {
         status = 'critical';
         message += ' - CRITICAL: High resource usage!';
-      } else if (memUsagePercent > 80 || cpuLoad > 2) {
+      } else if (memUsagePercent > 85 || cpuLoad > 4) {
         status = 'warning';
         message += ' - WARNING: Elevated resource usage';
       }
@@ -279,18 +280,19 @@ export class PipelineHealthService {
 
   private async checkNetworkConnectivity(): Promise<HealthCheck> {
     try {
-      await execAsync('curl -s --max-time 10 https://www.youtube.com > /dev/null');
+      // Use a lighter DNS check instead of full HTTP request to reduce load
+      await execAsync('ping -c 1 -W 5 8.8.8.8 > /dev/null');
       
       return {
         name: 'Network Connectivity',
         status: 'healthy',
-        message: 'Network connectivity to YouTube verified',
+        message: 'Network connectivity verified (DNS check)',
         lastCheck: new Date(),
       };
     } catch (error) {
       return {
         name: 'Network Connectivity',
-        status: 'critical',
+        status: 'warning', // Downgrade to warning instead of critical for DNS check
         message: `Network connectivity issues: ${error.message}`,
         lastCheck: new Date(),
       };

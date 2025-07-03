@@ -124,13 +124,31 @@ export default function MassiveTools() {
     useState<TranslationDirection>("WAYUU_TO_SPANISH");
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // Audio states
+  const [audioFiles, setAudioFiles] = useState<string[]>([]);
+  const [currentAudioFile, setCurrentAudioFile] = useState<string | null>(null);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
   useEffect(() => {
     loadDatasetStats();
   }, []);
 
   const loadDatasetStats = async () => {
     try {
-      const response = await fetch("http://localhost:3002/api/metrics/growth");
+      // Add timeout for growth metrics fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds for stats
+
+      const response = await fetch("http://localhost:3002/api/metrics/growth", {
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data?.current_metrics) {
@@ -153,14 +171,37 @@ export default function MassiveTools() {
 
     setIsLoading(true);
     try {
+      // Add timeout for dictionary search
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds for search
+
       const response = await fetch(
-        `http://localhost:3002/api/datasets/search?q=${encodeURIComponent(
+        `http://localhost:3002/api/datasets/dictionary/search?q=${encodeURIComponent(
           searchQuery
-        )}&limit=50`
+        )}&limit=50`,
+        {
+          signal: controller.signal,
+        }
       );
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
-        setVocabularyEntries(data.data);
+        if (data.success && data.result) {
+          // Convert single result to array format for display
+          setVocabularyEntries([
+            {
+              wayuu: data.result.wayuu || data.result.word,
+              spanish: data.result.spanish || data.result.translation,
+              category: data.result.category || "general",
+              audio: data.result.audio,
+            },
+          ]);
+        } else {
+          // No results found
+          setVocabularyEntries([]);
+        }
       } else {
         // Mock data fallback
         setVocabularyEntries([
@@ -187,11 +228,20 @@ export default function MassiveTools() {
     setTranslationResult(null);
 
     try {
+      // Add timeout for translation search
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds for translation
+
       const response = await fetch(
         `http://localhost:3002/api/datasets/dictionary/search?q=${encodeURIComponent(
           translationInput.trim()
-        )}&direction=${translationDirection}`
+        )}&direction=${translationDirection}`,
+        {
+          signal: controller.signal,
+        }
       );
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -233,6 +283,78 @@ export default function MassiveTools() {
     setTranslationInput("");
     setTranslationResult(null);
   };
+
+  // Load available audio files
+  const loadAudioFiles = async () => {
+    setIsLoadingAudio(true);
+    try {
+      // Generate list of available audio files (0-809 based on your data)
+      const files = [];
+      for (let i = 0; i <= 809; i++) {
+        files.push(`audio_${i.toString().padStart(3, "0")}.wav`);
+      }
+      setAudioFiles(files);
+    } catch (error) {
+      console.error("Error loading audio files:", error);
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
+
+  // Play audio file
+  const playAudioFile = async (filename: string) => {
+    try {
+      // Stop current audio if playing
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+      }
+
+      const audioUrl = `http://localhost:3002/api/audio/files/${filename}`;
+      const audio = new Audio(audioUrl);
+
+      audio.addEventListener("loadedmetadata", () => {
+        setAudioDuration(audio.duration);
+      });
+
+      audio.addEventListener("timeupdate", () => {
+        setAudioProgress((audio.currentTime / audio.duration) * 100);
+      });
+
+      audio.addEventListener("ended", () => {
+        setIsPlayingAudio(false);
+        setCurrentAudioFile(null);
+        setAudioProgress(0);
+      });
+
+      setAudioPlayer(audio);
+      setCurrentAudioFile(filename);
+      setIsPlayingAudio(true);
+
+      await audio.play();
+    } catch (error) {
+      console.error("Error playing audio:", error);
+      setIsPlayingAudio(false);
+      setCurrentAudioFile(null);
+    }
+  };
+
+  // Stop audio
+  const stopAudio = () => {
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      setIsPlayingAudio(false);
+      setCurrentAudioFile(null);
+      setAudioProgress(0);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTool === "audio-system") {
+      loadAudioFiles();
+    }
+  }, [selectedTool]);
 
   const renderToolContent = () => {
     switch (selectedTool) {
@@ -464,6 +586,141 @@ export default function MassiveTools() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        );
+
+      case "audio-system":
+        return (
+          <div className="space-y-6">
+            {/* Audio Player Header */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                🎵 Sistema de Audio Nativo
+              </h3>
+              <p className="text-gray-600">
+                Explora y escucha {datasetStats.audioFiles} archivos de audio
+                auténticos en wayuunaiki
+              </p>
+
+              {/* Current Audio Player */}
+              {currentAudioFile && (
+                <div className="mt-4 bg-white rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900">
+                      🎧 {currentAudioFile}
+                    </span>
+                    <button
+                      onClick={stopAudio}
+                      className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    >
+                      Detener
+                    </button>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${audioProgress}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>
+                      {Math.round((audioProgress / 100) * audioDuration)}s
+                    </span>
+                    <span>{Math.round(audioDuration)}s</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Audio File Grid */}
+            <div className="bg-white rounded-lg border border-gray-200">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-gray-900">
+                    📂 Archivo de Audio ({audioFiles.length} disponibles)
+                  </h4>
+                  {isLoadingAudio && (
+                    <div className="flex items-center text-gray-500">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                      Cargando...
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-96 overflow-y-auto">
+                  {audioFiles.slice(0, 100).map((filename, index) => (
+                    <button
+                      key={filename}
+                      onClick={() => playAudioFile(filename)}
+                      disabled={isPlayingAudio && currentAudioFile === filename}
+                      className={`
+                        p-3 rounded-lg border border-gray-200 hover:border-green-300 
+                        hover:bg-green-50 transition-all text-left
+                        ${
+                          currentAudioFile === filename && isPlayingAudio
+                            ? "bg-green-100 border-green-400"
+                            : "bg-white"
+                        }
+                        ${
+                          isPlayingAudio && currentAudioFile === filename
+                            ? "cursor-not-allowed opacity-75"
+                            : "cursor-pointer"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-2">
+                        {currentAudioFile === filename && isPlayingAudio ? (
+                          <div className="w-4 h-4 flex items-center justify-center">
+                            <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
+                          </div>
+                        ) : (
+                          <SpeakerWaveIcon className="w-4 h-4 text-green-600" />
+                        )}
+                        <div>
+                          <div className="text-xs font-medium text-gray-900">
+                            Audio {index.toString().padStart(3, "0")}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {filename}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {audioFiles.length > 100 && (
+                  <div className="mt-4 text-center">
+                    <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                      Cargar más archivos... ({audioFiles.length - 100}{" "}
+                      restantes)
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Audio Tips */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h5 className="font-semibold text-blue-900 mb-2">
+                💡 Consejos para el Audio:
+              </h5>
+              <ul className="text-blue-800 text-sm space-y-1">
+                <li>• Escucha con atención la pronunciación nativa</li>
+                <li>
+                  • Repite después del audio para mejorar tu pronunciación
+                </li>
+                <li>
+                  • Los archivos están organizados por contexto y complejidad
+                </li>
+                <li>• Usa auriculares para mejor calidad de audio</li>
+              </ul>
             </div>
           </div>
         );

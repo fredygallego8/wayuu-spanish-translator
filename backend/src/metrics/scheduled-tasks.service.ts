@@ -13,8 +13,8 @@ export class ScheduledTasksService {
     private readonly datasetsService: DatasetsService,
   ) {}
 
-  // 🚨 NUEVA TAREA: Verificación automática cada 15 minutos
-  @Cron('*/15 * * * *') // Cada 15 minutos
+  // 🔧 OPTIMIZACIÓN: Verificación automática cada 30 minutos (reducido de 15)
+  @Cron('*/30 * * * *') // Cada 30 minutos
   async autoRecoveryMetricsCheck() {
     this.logger.log('🔍 Verificando estado de métricas automáticamente...');
     
@@ -33,15 +33,15 @@ export class ScheduledTasksService {
     }
   }
 
-  // 🚨 NUEVA TAREA: Verificación intensiva cada 5 minutos en las primeras 2 horas
-  @Cron('*/5 * * * *') // Cada 5 minutos
+  // 🔧 OPTIMIZACIÓN: Verificación intensiva cada 15 minutos solo en primera hora (reducido de 2 horas)
+  @Cron('*/15 * * * *') // Cada 15 minutos
   async intensiveMetricsCheck() {
-    // Solo ejecutar en las primeras 2 horas después del arranque
-    if (process.uptime() > 7200) { // 2 horas = 7200 segundos
+    // Solo ejecutar en la primera hora después del arranque (reducido de 2 horas)
+    if (process.uptime() > 3600) { // 1 hora = 3600 segundos
       return;
     }
 
-    this.logger.log('🔍 Verificación intensiva de métricas (primeras 2 horas)...');
+    this.logger.log('🔍 Verificación intensiva de métricas (primera hora)...');
     
     try {
       const metricsEmpty = await this.checkIfMetricsAreEmpty();
