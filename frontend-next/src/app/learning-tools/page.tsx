@@ -147,15 +147,17 @@ export default function LearningToolsPage() {
 
   const loadDatasetStats = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/datasets/stats`);
+      const response = await fetch(`${API_BASE_URL}/api/metrics/growth`);
       if (response.ok) {
         const data = await response.json();
-        setDatasetStats({
-          totalEntries: data.data.totalEntries || 7033,
-          audioFiles: data.data.audioFiles || 810,
-          pdfSources: 4,
-          growthPercentage: 222,
-        });
+        if (data.success && data.data?.current_metrics) {
+          setDatasetStats({
+            totalEntries: data.data.current_metrics.total_dictionary_entries || 7033,
+            audioFiles: data.data.current_metrics.total_audio_files || 810,
+            pdfSources: 4,
+            growthPercentage: 222,
+          });
+        }
       }
     } catch (error) {
       console.error("Error loading dataset stats:", error);

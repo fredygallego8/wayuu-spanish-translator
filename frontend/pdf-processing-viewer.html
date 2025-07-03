@@ -213,6 +213,9 @@
                 <button class="button" onclick="loadDocuments()">
                     📄 Cargar Documentos
                 </button>
+                <button class="button" onclick="testConnection()" style="background: #17a2b8;">
+                    🔍 Test Conexión
+                </button>
             </div>
 
             <!-- Sección de Estadísticas -->
@@ -369,10 +372,32 @@
             container.innerHTML = '<div class="loading">Cargando documentos...</div>';
             
             addLog('Cargando documentos procesados...');
+            addLog(`🔗 URL: ${API_BASE}/documents`);
             
             try {
-                const response = await fetch(`${API_BASE}/documents`);
+                // Hacer petición sin headers de autenticación explícitos
+                const response = await fetch(`${API_BASE}/documents`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit', // No enviar cookies ni headers de auth
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                addLog(`📊 Response Status: ${response.status} ${response.statusText}`);
+                addLog(`📊 Response Headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    addLog(`❌ HTTP Error ${response.status}: ${errorText}`);
+                    container.innerHTML = `<div class="error">Error HTTP ${response.status}: ${response.statusText}<br/>Detalles: ${errorText}</div>`;
+                    return;
+                }
+                
                 const data = await response.json();
+                addLog(`✅ Response received: ${JSON.stringify(data).substring(0, 200)}...`);
                 
                 if (data.success) {
                     const documents = data.data.documents;
@@ -391,14 +416,16 @@
                             `).join('')}
                         </div>
                     `;
-                    addLog(`✅ ${documents.length} documentos cargados`);
+                    addLog(`✅ ${documents.length} documentos cargados exitosamente`);
                 } else {
                     container.innerHTML = '<div class="error">Error al cargar documentos</div>';
-                    addLog(`❌ Error: ${data.message}`);
+                    addLog(`❌ API Error: ${data.message}`);
                 }
             } catch (error) {
-                container.innerHTML = '<div class="error">Error de conexión</div>';
-                addLog(`❌ Error de conexión: ${error.message}`);
+                container.innerHTML = `<div class="error">Error de conexión<br/>Detalles: ${error.message}</div>`;
+                addLog(`❌ Network Error: ${error.message}`);
+                addLog(`❌ Error Stack: ${error.stack}`);
+                console.error('Full error details:', error);
             }
         }
 
@@ -457,6 +484,55 @@
                 searchContent();
             }
         });
+
+        // Función de prueba de conexión
+        async function testConnection() {
+            addLog('🔍 Iniciando test de conexión...');
+            
+            // Test 1: Health Check
+            try {
+                addLog('Test 1: Health Check...');
+                const healthResponse = await fetch(`${API_BASE}/health`, {
+                    credentials: 'omit',
+                    headers: { 'Accept': 'application/json' }
+                });
+                addLog(`Health Status: ${healthResponse.status}`);
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    addLog(`✅ Health: ${healthData.message}`);
+                } else {
+                    addLog(`❌ Health failed: ${healthResponse.status}`);
+                }
+            } catch (error) {
+                addLog(`❌ Health error: ${error.message}`);
+            }
+            
+            // Test 2: Documents (simplified)
+            try {
+                addLog('Test 2: Documents endpoint...');
+                const docsResponse = await fetch(`${API_BASE}/documents`, {
+                    credentials: 'omit',
+                    headers: { 'Accept': 'application/json' }
+                });
+                addLog(`Documents Status: ${docsResponse.status}`);
+                if (docsResponse.ok) {
+                    const docsData = await docsResponse.json();
+                    addLog(`✅ Documents: ${docsData.data?.count || 0} docs available`);
+                } else {
+                    const errorText = await docsResponse.text();
+                    addLog(`❌ Documents failed: ${docsResponse.status} - ${errorText}`);
+                }
+            } catch (error) {
+                addLog(`❌ Documents error: ${error.message}`);
+            }
+            
+            // Test 3: CORS Check
+            addLog('Test 3: CORS headers check...');
+            addLog(`Frontend origin: ${window.location.origin}`);
+            addLog(`API base: ${API_BASE}`);
+            
+            addLog('🏁 Test de conexión completado');
+        }
 
         // Cargar datos iniciales
         document.addEventListener('DOMContentLoaded', function() {
