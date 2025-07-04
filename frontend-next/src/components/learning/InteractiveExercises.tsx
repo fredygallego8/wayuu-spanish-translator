@@ -318,7 +318,7 @@ export default function InteractiveExercises() {
     };
 
     // Return exercises for the selected type or default to vocabulary-massive
-    return baseExercises[type] || baseExercises["vocabulary-massive"];
+    return baseExercises[type as keyof typeof baseExercises] || baseExercises["vocabulary-massive"];
   };
 
   const generateRealVocabularyExercises = async (): Promise<Exercise[]> => {
@@ -508,7 +508,7 @@ export default function InteractiveExercises() {
       {progressStats.totalExercises > 0 && (
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-            <TrophyIcon className="w-6 h-6 text-yellow-600 mr-2" />
+            <AcademicCapIcon className="w-6 h-6 text-yellow-600 mr-2" />
             Tu Progreso de Aprendizaje
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

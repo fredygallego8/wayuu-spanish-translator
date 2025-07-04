@@ -30,8 +30,20 @@ export default function HomePage() {
                 🏠 Traductor
               </Link>
               <Link
+                href="/nllb-translator"
+                className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                🚀 NLLB Pro
+              </Link>
+              <Link
+                href="/contextual-translator"
+                className="text-purple-600 hover:text-purple-800 px-3 py-2 rounded-md text-sm font-medium font-semibold"
+              >
+                🧠 Contextual
+              </Link>
+              <Link
                 href="/learning-tools"
-                className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium font-semibold"
+                className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium"
               >
                 🧠 Herramientas Educativas
               </Link>
@@ -40,6 +52,12 @@ export default function HomePage() {
                 className="text-purple-600 hover:text-purple-800 px-3 py-2 rounded-md text-sm font-medium"
               >
                 📚 PDFs Wayuu
+              </Link>
+              <Link
+                href="/admin-dashboard"
+                className="text-orange-600 hover:text-orange-800 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                🛠️ Admin
               </Link>
               <a
                 href="http://localhost:3001/d/wayuu-growth/wayuu-growth-dashboard"
@@ -69,6 +87,106 @@ export default function HomePage() {
           </p>
 
           {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            
+            {/* NLLB Pro Translator */}
+            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-blue-200">
+              <div className="text-4xl mb-4">🚀</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                NLLB Pro
+                <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">
+                  Avanzado
+                </span>
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Traductor neural avanzado con fallback automático y timeouts empresariales para alta disponibilidad.
+              </p>
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-bold text-blue-600">⚡ 30s</div>
+                    <div className="text-gray-600">Timeout</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-cyan-600">3.3B</div>
+                    <div className="text-gray-600">Parámetros</div>
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/nllb-translator"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                🚀 Usar NLLB Pro
+              </Link>
+            </div>
+
+            {/* Contextual Translator */}
+            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-purple-200">
+              <div className="text-4xl mb-4">🧠</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Traductor Contextual
+                <span className="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded-full ml-2">
+                  Fase 2
+                </span>
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Traducción consciente del contexto cultural con memoria de traducciones y adaptaciones terminológicas.
+              </p>
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-bold text-purple-600">🎯</div>
+                    <div className="text-gray-600">Context-Aware</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-indigo-600">📚</div>
+                    <div className="text-gray-600">Cultural</div>
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/contextual-translator"
+                className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                🧠 Traducir Contextual
+              </Link>
+            </div>
+
+            {/* Admin Dashboard */}
+            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-orange-200">
+              <div className="text-4xl mb-4">🛠️</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Dashboard Admin
+                <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded-full ml-2">
+                  Analytics
+                </span>
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Panel de administración con analytics avanzados, gestión de cache y métricas de rendimiento.
+              </p>
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-bold text-orange-600">📊</div>
+                    <div className="text-gray-600">Analytics</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-red-600">⚡</div>
+                    <div className="text-gray-600">Cache</div>
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/admin-dashboard"
+                className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                🛠️ Ver Dashboard
+              </Link>
+            </div>
+          </div>
+
+          {/* Legacy Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             {/* Traditional Translator */}
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">

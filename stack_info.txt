@@ -1,6 +1,6 @@
-Stack iniciado: Thu Jul  3 08:43:40 -05 2025
-Backend PID: 623325
-Frontend PID: 623725
+Stack iniciado: Fri Jul  4 07:07:42 -05 2025
+Backend PID: 1262099
+Frontend PID: 1262478
 URLs:
 - Frontend Simple: http://localhost:4000
 - Grafana: http://localhost:3001 (admin/wayuu2024)
@@ -8,6 +8,6 @@ URLs:
 - Backend: http://localhost:3002/api/health
 
 Para detener:
-- Backend: kill 623325
-- Frontend: kill 623725
+- Backend: kill 1262099
+- Frontend: kill 1262478
 - Monitoring: cd monitoring && docker-compose down
