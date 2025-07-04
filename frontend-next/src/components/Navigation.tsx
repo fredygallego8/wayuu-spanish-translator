@@ -24,6 +24,21 @@ export default function Navigation() {
             <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
               Inicio
             </Link>
+            <Link href="/nllb-translator" className="text-gray-700 hover:text-blue-600 transition-colors">
+              🔤 Traductor NLLB
+            </Link>
+            <Link href="/batch-translation" className="text-gray-700 hover:text-blue-600 transition-colors">
+              📋 Traducción por Lotes
+            </Link>
+            <Link href="/translation-history" className="text-gray-700 hover:text-blue-600 transition-colors">
+              📚 Historial
+            </Link>
+            <Link href="/analytics-dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">
+              📊 Analytics
+            </Link>
+            <Link href="/quality-metrics" className="text-gray-700 hover:text-blue-600 transition-colors">
+              🏆 Calidad
+            </Link>
             <Link href="/documentation" className="text-gray-700 hover:text-blue-600 transition-colors">
               📚 Documentación
             </Link>
@@ -88,6 +103,41 @@ export default function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Inicio
+              </Link>
+              <Link 
+                href="/nllb-translator" 
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🔤 Traductor NLLB
+              </Link>
+              <Link 
+                href="/batch-translation" 
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📋 Traducción por Lotes
+              </Link>
+              <Link 
+                href="/translation-history" 
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📚 Historial
+              </Link>
+              <Link 
+                href="/analytics-dashboard" 
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📊 Analytics
+              </Link>
+              <Link 
+                href="/quality-metrics" 
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🏆 Calidad
               </Link>
               <Link 
                 href="/documentation" 
