@@ -528,9 +528,9 @@ export class PdfProcessingService implements OnModuleInit {
         }
       }
       
-      // 🔧 LÍMITE AUMENTADO: Máximo 500 entradas por PDF para capturar más información
-      if (entries.length >= 500) {
-        this.logger.debug(`📊 Reached maximum entries per PDF (500), stopping processing for ${fileName}`);
+      // 🔧 LÍMITE EXPANDIDO: Máximo 1000 entradas por PDF para capturar diccionario completo
+      if (entries.length >= 1000) {
+        this.logger.debug(`📊 Reached maximum entries per PDF (1000), stopping processing for ${fileName}`);
         break;
       }
       
