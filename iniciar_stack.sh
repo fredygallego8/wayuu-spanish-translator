@@ -139,11 +139,19 @@ fi
 
 show_step "PASO 4: Iniciando Backend NestJS"
 
-# Verificar si el puerto 3002 está libre
-if lsof -i :3002 > /dev/null 2>&1; then
-    echo -e "${YELLOW}⚠️  Puerto 3002 en uso. Matando proceso...${NC}"
-    lsof -ti :3002 | xargs kill -9 2>/dev/null
-    sleep 2
+# Verificar y limpiar puertos usando port-manager
+echo "🔧 Verificando puertos con port-manager..."
+if [ -f "./scripts/port-manager.sh" ]; then
+    ./scripts/port-manager.sh prepare
+elif [ -f "../scripts/port-manager.sh" ]; then
+    ../scripts/port-manager.sh prepare
+else
+    echo -e "${YELLOW}⚠️  Port manager no encontrado. Verificando puerto 3002 manualmente...${NC}"
+    if lsof -i :3002 > /dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️  Puerto 3002 en uso. Matando proceso...${NC}"
+        lsof -ti :3002 | xargs kill -9 2>/dev/null
+        sleep 2
+    fi
 fi
 
 # Iniciar backend en background
@@ -189,9 +197,9 @@ show_step "PASO 6: Iniciando Frontend Simple"
 
 cd ../frontend
 
-# Verificar si el puerto 4000 está libre
+# Verificar puerto 4000 (ya debería estar limpio por port-manager)
 if lsof -i :4000 > /dev/null 2>&1; then
-    echo -e "${YELLOW}⚠️  Puerto 4000 en uso. Matando proceso...${NC}"
+    echo -e "${YELLOW}⚠️  Puerto 4000 aún en uso. Matando proceso...${NC}"
     lsof -ti :4000 | xargs kill -9 2>/dev/null
     sleep 2
 fi

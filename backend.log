@@ -667,3 +667,34 @@
 ✨ Professional Swagger UI v2.0 with enhanced styling and YouTube features loaded!
 [31m[Nest] 1683002  - [39m04/07/2025, 16:25:50 [31m  ERROR[39m [38;5;3m[PipelineHealthService] [39m[31m🚨 CRITICAL ISSUES (2): Whisper Availability, System Resources[39m
 [32m[Nest] 1683002  - [39m04/07/2025, 16:25:50 [32m    LOG[39m [38;5;3m[WhisperAsrStrategy] [39m[32m✅ Whisper is installed and available[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [32m    LOG[39m [38;5;3m[ScheduledTasksService] [39m[32m🔍 Verificando estado de métricas automáticamente...[39m
+[33m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [33m   WARN[39m [38;5;3m[ScheduledTasksService] [39m[33m⚠️ Métricas detectadas en 0: wayuu=0, spanish=0, audio=0[39m
+[33m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [33m   WARN[39m [38;5;3m[ScheduledTasksService] [39m[33m⚠️ Métricas detectadas en 0 - Iniciando recuperación automática[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [32m    LOG[39m [38;5;3m[ScheduledTasksService] [39m[32m🚨 Iniciando recuperación de emergencia de métricas...[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [32m    LOG[39m [38;5;3m[ScheduledTasksService] [39m[32m✅ Recuperación exitosa mediante método directo[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:30:00 [32m    LOG[39m [38;5;3m[ScheduledTasksService] [39m[32m🔍 Verificación intensiva de métricas (primera hora)...[39m
+[33m[Nest] 1683002  - [39m04/07/2025, 16:30:42 [33m   WARN[39m [38;5;3m[PipelineHealthService] [39m[33m⚠️ WARNINGS (1): System Resources[39m
+[33m[Nest] 1683002  - [39m04/07/2025, 16:35:44 [33m   WARN[39m [38;5;3m[PipelineHealthService] [39m[33m⚠️ WARNINGS (1): System Resources[39m
+[31m[Nest] 1683002  - [39m04/07/2025, 16:40:50 [31m  ERROR[39m [38;5;3m[PipelineHealthService] [39m[31m🚨 CRITICAL ISSUES (2): Whisper Availability, System Resources[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m🔄 Fetching fresh JSON metrics[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m🔄 Starting optimized dictionary extraction with NLP patterns...[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[PdfProcessingService] [39m[95m⏭️ Skipping non-dictionary PDF: 124. Cartilla Wayunaiki -web-.pdf[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[PdfProcessingService] [39m[95m⏭️ Skipping non-dictionary PDF: 2626340-Wayuunkeera-Manual-de-wayuu.pdf[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[PdfProcessingService] [39m[95m⏭️ Skipping non-dictionary PDF: Manual_de_la_lengua_wayuu.pdf[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📖 Processing dictionary PDF: WayuuDict_45801.pdf[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[PdfProcessingService] [39m[95m📝 Processing 5000 lines from WayuuDict_45801.pdf[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [95m  DEBUG[39m [38;5;3m[PdfProcessingService] [39m[95m📊 Reached maximum entries per PDF (100), stopping processing for WayuuDict_45801.pdf[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📖 Extracted 100 entries from WayuuDict_45801.pdf (processed 5000 lines)[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m✅ Optimized extraction completed: 100 entries in 287ms from 1 PDFs (cached for 15 minutes)[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[PdfProcessingService] [39m[32m📚 Extracted 100 dictionary entries from 4 PDFs (cached for 15 minutes)[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:42:56 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 100 dictionary entries extracted from 4 PDFs[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:42:57 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m📦 Returning cached JSON metrics[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:43:11 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m📦 Returning cached JSON metrics[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:43:41 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m📦 Returning cached JSON metrics[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:44:11 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m🔄 Fetching fresh JSON metrics[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:44:11 [32m    LOG[39m [38;5;3m[DatasetsService] [39m[32m📚 PDF Linguistic Sources: 100 dictionary entries extracted from 4 PDFs[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:44:41 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m📦 Returning cached JSON metrics[39m
+[32m[Nest] 1683002  - [39m04/07/2025, 16:45:00 [32m    LOG[39m [38;5;3m[ScheduledTasksService] [39m[32m🔍 Verificación intensiva de métricas (primera hora)...[39m
+[95m[Nest] 1683002  - [39m04/07/2025, 16:45:11 [95m  DEBUG[39m [38;5;3m[MetricsController] [39m[95m📦 Returning cached JSON metrics[39m
+[31m[Nest] 1683002  - [39m04/07/2025, 16:45:50 [31m  ERROR[39m [38;5;3m[PipelineHealthService] [39m[31m🚨 CRITICAL ISSUES (3): yt-dlp Availability, Whisper Availability, System Resources[39m
+ ELIFECYCLE  Command failed.
