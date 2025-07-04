@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-// import { GoogleStrategy } from './strategies/google.strategy'; // Temporalmente deshabilitado para NLLB
+import { GoogleStrategy } from './strategies/google.strategy'; // Re-enabled for admin authentication
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -28,7 +28,7 @@ import { RolesGuard } from './guards/roles.guard';
   controllers: [AuthController],
   providers: [
     AuthService, 
-    // GoogleStrategy, // Temporalmente deshabilitado para NLLB
+    GoogleStrategy, // Re-enabled for admin authentication
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard
