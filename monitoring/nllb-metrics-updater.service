@@ -1,0 +1,41 @@
+[Unit]
+Description=NLLB Metrics Updater Service
+Documentation=https://github.com/wayuu-spanish-translator/docs
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/fredy/Escritorio/wayuu-spanish-translator
+ExecStart=/home/fredy/Escritorio/wayuu-spanish-translator/monitoring/update-nllb-metrics.sh daemon 300
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Configuración de logging
+SyslogIdentifier=nllb-metrics-updater
+
+# Configuración de límites
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Variables de entorno
+Environment=NODE_ENV=production
+Environment=BACKEND_URL=http://localhost:3002
+
+# Configuración de seguridad
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log
+ReadOnlyPaths=/home/fredy/Escritorio/wayuu-spanish-translator
+
+[Install]
+WantedBy=multi-user.target
+Alias=nllb-metrics.service 
