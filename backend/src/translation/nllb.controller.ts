@@ -392,7 +392,7 @@ export class NllbController {
         return {
           status: 'healthy',
           available: true,
-          model: 'facebook/nllb-200-3.3B',
+          model: 'facebook/nllb-200-distilled-600M',
           testTranslation: {
             input: 'wayuu',
             output: testResult.translatedText,
