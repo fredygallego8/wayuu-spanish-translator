@@ -51,7 +51,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -102,7 +102,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(wayuu_translations_total[5m])",
+          "expr": "rate(nllb_translations_total[5m])",
           "interval": "",
           "legendFormat": "{{source_lang}} → {{target_lang}} ({{model}})",
           "refId": "A"
@@ -171,7 +171,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(wayuu_translations_total)",
+          "expr": "sum(nllb_translations_total)",
           "interval": "",
           "legendFormat": "Total",
           "refId": "A"
@@ -242,7 +242,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(wayuu_translation_quality_score)",
+          "expr": "avg(nllb_translation_confidence)",
           "interval": "",
           "legendFormat": "Confianza Promedio",
           "refId": "A"
@@ -311,7 +311,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(rate(wayuu_translation_duration_seconds_sum[5m]) / rate(wayuu_translation_duration_seconds_count[5m]))",
+          "expr": "avg(nllb_performance_average_seconds)",
           "interval": "",
           "legendFormat": "Tiempo Promedio",
           "refId": "A"
@@ -380,7 +380,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(wayuu_cache_hit_ratio)",
+          "expr": "avg(nllb_cache_hit_rate)",
           "interval": "",
           "legendFormat": "Cache Hit Rate",
           "refId": "A"
@@ -449,7 +449,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(wayuu_translation_quality_score)",
+          "expr": "avg(nllb_translation_quality_score)",
           "interval": "",
           "legendFormat": "Calidad Promedio",
           "refId": "A"
@@ -487,7 +487,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -538,7 +538,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(wayuu_translation_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, rate(nllb_translation_duration_seconds_bucket[5m]))",
           "interval": "",
           "legendFormat": "P95 - {{model}}",
           "refId": "A"
@@ -548,7 +548,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.99, rate(wayuu_translation_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, rate(nllb_translation_duration_seconds_bucket[5m]))",
           "interval": "",
           "legendFormat": "P99 - {{model}}",
           "refId": "B"
@@ -558,7 +558,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(wayuu_translation_duration_seconds_sum[5m]) / rate(wayuu_translation_duration_seconds_count[5m])",
+          "expr": "rate(nllb_translation_duration_seconds_sum[5m]) / rate(nllb_translation_duration_seconds_count[5m])",
           "interval": "",
           "legendFormat": "Promedio - {{model}}",
           "refId": "C"
@@ -615,7 +615,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Quality by domain not available",
+          "expr": "nllb_quality_by_domain",
           "interval": "",
           "legendFormat": "{{domain}}",
           "refId": "A"
@@ -676,7 +676,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Quality distribution not available",
+          "expr": "nllb_quality_distribution",
           "interval": "",
           "legendFormat": "{{quality_range}}",
           "refId": "A"
@@ -714,7 +714,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -765,7 +765,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(wayuu_cache_operations_total[5m])",
+          "expr": "rate(nllb_cache_operations_total[5m])",
           "interval": "",
           "legendFormat": "{{operation}} - {{result}}",
           "refId": "A"
@@ -822,7 +822,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Top translations count not available",
+          "expr": "topk(10, nllb_top_translations_count)",
           "interval": "",
           "legendFormat": "{{source_text}} → {{translated_text}}",
           "refId": "A"
@@ -860,7 +860,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -911,7 +911,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(wayuu_translation_errors_total[5m])",
+          "expr": "rate(nllb_errors_total[5m])",
           "interval": "",
           "legendFormat": "{{error_type}} - {{model}}",
           "refId": "A"
@@ -921,7 +921,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Low quality translations metric not available",
+          "expr": "rate(nllb_low_quality_translations_total[5m])",
           "interval": "",
           "legendFormat": "Low Quality - {{source_lang}}→{{target_lang}}",
           "refId": "B"
@@ -959,7 +959,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -1010,7 +1010,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Contextual adjustments not available",
+          "expr": "rate(nllb_contextual_adjustments_total[5m])",
           "interval": "",
           "legendFormat": "Ajustes Contextuales - {{domain}}",
           "refId": "A"
@@ -1020,7 +1020,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Memory matches not available",
+          "expr": "rate(nllb_memory_matches_total[5m])",
           "interval": "",
           "legendFormat": "Coincidencias de Memoria - {{match_quality}}",
           "refId": "B"
@@ -1030,7 +1030,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "# Terminology applied not available",
+          "expr": "rate(nllb_terminology_applied_total[5m])",
           "interval": "",
           "legendFormat": "Terminología Aplicada - {{term_type}}",
           "refId": "C"

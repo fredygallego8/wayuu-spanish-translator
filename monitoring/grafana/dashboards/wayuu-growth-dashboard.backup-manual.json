@@ -82,7 +82,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -251,7 +251,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "refId": "A"
         },
         {
@@ -259,7 +259,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_spanish or last_over_time(wayuu_total_words_spanish[1h]) or last_over_time(wayuu_total_words_spanish[6h]) or last_over_time(wayuu_total_words_spanish[24h]))",
+          "expr": "wayuu_total_words_spanish",
           "refId": "B"
         },
         {
@@ -267,7 +267,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_phrases or last_over_time(wayuu_total_phrases[1h]) or last_over_time(wayuu_total_phrases[6h]) or last_over_time(wayuu_total_phrases[24h]))",
+          "expr": "wayuu_total_phrases",
           "refId": "C"
         },
         {
@@ -275,7 +275,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_files or last_over_time(wayuu_total_audio_files[1h]) or last_over_time(wayuu_total_audio_files[6h]) or last_over_time(wayuu_total_audio_files[24h]))",
+          "expr": "wayuu_total_audio_files",
           "refId": "D"
         }
       ],
@@ -338,7 +338,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "refId": "A"
         }
       ],
@@ -401,7 +401,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_spanish or last_over_time(wayuu_total_words_spanish[1h]) or last_over_time(wayuu_total_words_spanish[6h]) or last_over_time(wayuu_total_words_spanish[24h]))",
+          "expr": "wayuu_total_words_spanish",
           "refId": "A"
         }
       ],
@@ -464,7 +464,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_minutes or last_over_time(wayuu_total_audio_minutes[1h]) or last_over_time(wayuu_total_audio_minutes[6h]) or last_over_time(wayuu_total_audio_minutes[24h]))",
+          "expr": "wayuu_total_audio_minutes",
           "refId": "A"
         }
       ],
@@ -527,7 +527,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_phrases or last_over_time(wayuu_total_phrases[1h]) or last_over_time(wayuu_total_phrases[6h]) or last_over_time(wayuu_total_phrases[24h]))",
+          "expr": "wayuu_total_phrases",
           "refId": "A"
         }
       ],
@@ -656,7 +656,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_transcribed or last_over_time(wayuu_total_transcribed[1h]) or last_over_time(wayuu_total_transcribed[6h]) or last_over_time(wayuu_total_transcribed[24h]))",
+          "expr": "wayuu_total_transcribed",
           "refId": "A"
         },
         {
@@ -664,7 +664,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_dictionary_entries or last_over_time(wayuu_total_dictionary_entries[1h]) or last_over_time(wayuu_total_dictionary_entries[6h]) or last_over_time(wayuu_total_dictionary_entries[24h]))",
+          "expr": "wayuu_total_dictionary_entries",
           "refId": "B"
         },
         {
@@ -672,7 +672,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_minutes or last_over_time(wayuu_total_audio_minutes[1h]) or last_over_time(wayuu_total_audio_minutes[6h]) or last_over_time(wayuu_total_audio_minutes[24h]))",
+          "expr": "wayuu_total_audio_minutes",
           "refId": "C"
         }
       ],
@@ -735,7 +735,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_transcribed or last_over_time(wayuu_total_transcribed[1h]) or last_over_time(wayuu_total_transcribed[6h]) or last_over_time(wayuu_total_transcribed[24h]))",
+          "expr": "wayuu_total_transcribed",
           "refId": "A"
         }
       ],
@@ -798,7 +798,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_dictionary_entries or last_over_time(wayuu_total_dictionary_entries[1h]) or last_over_time(wayuu_total_dictionary_entries[6h]) or last_over_time(wayuu_total_dictionary_entries[24h]))",
+          "expr": "wayuu_total_dictionary_entries",
           "refId": "A"
         }
       ],
@@ -861,7 +861,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_files or last_over_time(wayuu_total_audio_files[1h]) or last_over_time(wayuu_total_audio_files[6h]) or last_over_time(wayuu_total_audio_files[24h]))",
+          "expr": "wayuu_total_audio_files",
           "refId": "A"
         }
       ],

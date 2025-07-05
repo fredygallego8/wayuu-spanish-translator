@@ -69,9 +69,7 @@
         "cellHeight": "sm",
         "footer": {
           "show": false,
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "countRows": false
         }
       },
@@ -82,7 +80,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -251,7 +249,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "refId": "A"
         },
         {
@@ -259,7 +257,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_spanish or last_over_time(wayuu_total_words_spanish[1h]) or last_over_time(wayuu_total_words_spanish[6h]) or last_over_time(wayuu_total_words_spanish[24h]))",
+          "expr": "wayuu_total_words_spanish",
           "refId": "B"
         },
         {
@@ -267,7 +265,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_phrases or last_over_time(wayuu_total_phrases[1h]) or last_over_time(wayuu_total_phrases[6h]) or last_over_time(wayuu_total_phrases[24h]))",
+          "expr": "wayuu_total_phrases",
           "refId": "C"
         },
         {
@@ -275,7 +273,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_files or last_over_time(wayuu_total_audio_files[1h]) or last_over_time(wayuu_total_audio_files[6h]) or last_over_time(wayuu_total_audio_files[24h]))",
+          "expr": "wayuu_total_audio_files",
           "refId": "D"
         }
       ],
@@ -324,9 +322,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -338,7 +334,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_wayuu or last_over_time(wayuu_total_words_wayuu[1h]) or last_over_time(wayuu_total_words_wayuu[6h]) or last_over_time(wayuu_total_words_wayuu[24h]))",
+          "expr": "wayuu_total_words_wayuu",
           "refId": "A"
         }
       ],
@@ -387,9 +383,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -401,7 +395,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_words_spanish or last_over_time(wayuu_total_words_spanish[1h]) or last_over_time(wayuu_total_words_spanish[6h]) or last_over_time(wayuu_total_words_spanish[24h]))",
+          "expr": "wayuu_total_words_spanish",
           "refId": "A"
         }
       ],
@@ -450,9 +444,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -464,7 +456,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_minutes or last_over_time(wayuu_total_audio_minutes[1h]) or last_over_time(wayuu_total_audio_minutes[6h]) or last_over_time(wayuu_total_audio_minutes[24h]))",
+          "expr": "wayuu_total_audio_minutes",
           "refId": "A"
         }
       ],
@@ -513,9 +505,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -527,7 +517,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_phrases or last_over_time(wayuu_total_phrases[1h]) or last_over_time(wayuu_total_phrases[6h]) or last_over_time(wayuu_total_phrases[24h]))",
+          "expr": "wayuu_total_phrases",
           "refId": "A"
         }
       ],
@@ -656,7 +646,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_transcribed or last_over_time(wayuu_total_transcribed[1h]) or last_over_time(wayuu_total_transcribed[6h]) or last_over_time(wayuu_total_transcribed[24h]))",
+          "expr": "wayuu_total_transcribed",
           "refId": "A"
         },
         {
@@ -664,7 +654,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_dictionary_entries or last_over_time(wayuu_total_dictionary_entries[1h]) or last_over_time(wayuu_total_dictionary_entries[6h]) or last_over_time(wayuu_total_dictionary_entries[24h]))",
+          "expr": "wayuu_total_dictionary_entries",
           "refId": "B"
         },
         {
@@ -672,7 +662,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_minutes or last_over_time(wayuu_total_audio_minutes[1h]) or last_over_time(wayuu_total_audio_minutes[6h]) or last_over_time(wayuu_total_audio_minutes[24h]))",
+          "expr": "wayuu_total_audio_minutes",
           "refId": "C"
         }
       ],
@@ -721,9 +711,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -735,7 +723,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_transcribed or last_over_time(wayuu_total_transcribed[1h]) or last_over_time(wayuu_total_transcribed[6h]) or last_over_time(wayuu_total_transcribed[24h]))",
+          "expr": "wayuu_total_transcribed",
           "refId": "A"
         }
       ],
@@ -784,9 +772,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -798,7 +784,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_dictionary_entries or last_over_time(wayuu_total_dictionary_entries[1h]) or last_over_time(wayuu_total_dictionary_entries[6h]) or last_over_time(wayuu_total_dictionary_entries[24h]))",
+          "expr": "wayuu_total_dictionary_entries",
           "refId": "A"
         }
       ],
@@ -847,9 +833,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -861,7 +845,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_total_audio_files or last_over_time(wayuu_total_audio_files[1h]) or last_over_time(wayuu_total_audio_files[6h]) or last_over_time(wayuu_total_audio_files[24h]))",
+          "expr": "wayuu_total_audio_files",
           "refId": "A"
         }
       ],
@@ -910,9 +894,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -955,4 +937,4 @@
   "uid": "wayuu-growth",
   "version": 1,
   "weekStart": ""
-}
+} 

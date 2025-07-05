@@ -1,0 +1,33 @@
+
+VERIFICACIÓN POST-ACTUALIZACIÓN:
+
+1. REINICIAR SERVICIOS:
+   cd monitoring && docker-compose restart grafana prometheus
+
+2. VERIFICAR DASHBOARD:
+   - Abrir: http://localhost:3001
+   - Ir a: Wayuu Growth Dashboard
+   - Verificar que las métricas se muestran correctamente
+
+3. TESTING DE RESILENCIA:
+   - Parar el backend: kill -9 $(pgrep -f "pnpm.*dev")
+   - Esperar 2-3 minutos
+   - Verificar que las métricas NO bajan a 0
+   - Reiniciar backend: cd backend && pnpm run dev
+
+4. QUERIES APLICADAS:
+   Cada métrica ahora usa:
+   (métrica_original or last_over_time(métrica[1h]) or last_over_time(métrica[6h]) or last_over_time(métrica[24h]))
+   
+   Esto significa:
+   - Primero intenta obtener el valor actual
+   - Si falla, busca el último valor en 1 hora
+   - Si falla, busca el último valor en 6 horas  
+   - Si falla, busca el último valor en 24 horas
+
+5. CONFIGURACIÓN ADICIONAL:
+   - spanNulls: true en todos los paneles
+   - Prometheus retention configurado para 7 días
+   - honor_timestamps: true para mejor precisión
+
+¡Las métricas ahora mantendrán sus valores cuando el backend esté down!

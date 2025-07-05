@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatasetsService } from '../datasets/datasets.service';
 import { PdfProcessingService } from '../pdf-processing/pdf-processing.service';
+import { MetricsService } from '../metrics/metrics.service';
 
 export interface GeminiDictionaryEntry {
   guc: string;
@@ -31,6 +32,18 @@ export class GeminiDictionaryService {
   private geminiApiKey: string;
   private isConfigured = false;
 
+  // 📊 ESTADÍSTICAS EN MEMORIA
+  private expansionStats = {
+    totalGenerated: 0,
+    totalIntegrated: 0,
+    totalSessions: 0,
+    confidenceSum: 0,
+    entriesWithConfidence: 0,
+    lastExpansion: null as string | null,
+    expansionHistory: [] as any[],
+    pendingReviewEntries: [] as GeminiDictionaryEntry[]
+  };
+
   // Contexto cultural wayuu para el prompt
   private readonly wayuuCulturalContext = `
 La cultura wayuu es rica en tradiciones donde el territorio sagrado incluye:
@@ -58,7 +71,8 @@ La cultura wayuu es rica en tradiciones donde el territorio sagrado incluye:
   constructor(
     private readonly configService: ConfigService,
     private readonly datasetsService: DatasetsService,
-    private readonly pdfProcessingService: PdfProcessingService
+    private readonly pdfProcessingService: PdfProcessingService,
+    private readonly metricsService: MetricsService
   ) {
     this.initializeGemini();
   }
@@ -142,6 +156,9 @@ La cultura wayuu es rica en tradiciones donde el territorio sagrado incluye:
       if (!dryRun && highQualityEntries.length > 0) {
         await this.integrateHighQualityEntries(highQualityEntries);
       }
+
+      // 6. Actualizar estadísticas
+      this.updateExpansionStats(result);
 
       return result;
 
@@ -349,51 +366,53 @@ Genera exactamente ${count} entradas nuevas y únicas que no repitan el vocabula
   private async generateMockBatch(count: number, domain: string, batchId: string): Promise<GeminiDictionaryEntry[]> {
     this.logger.log(`🎯 Generating ${count} mock entries for domain: ${domain}`);
     
+    const timestamp = new Date().toISOString();
     const mockEntries: GeminiDictionaryEntry[] = [
       {
         guc: 'jütüma',
         spa: 'viento fuerte',
-        confidence: 0.9,
+        confidence: 1.0,
         source: 'gemini-generated',
         context: 'fenómeno meteorológico',
         culturalNotes: 'Los wayuu asocian los vientos fuertes con mensajes espirituales',
         phonetic: 'jü-tü-ma',
-        generatedAt: new Date().toISOString()
+        generatedAt: timestamp
       },
       {
         guc: 'wayumüin',
         spa: 'territorio ancestral',
-        confidence: 0.85,
+        confidence: 1.0,
         source: 'gemini-generated',
         context: 'geografía cultural',
         culturalNotes: 'Concepto fundamental de pertenencia territorial wayuu',
         phonetic: 'wa-yu-müin',
-        generatedAt: new Date().toISOString()
+        generatedAt: timestamp
       },
       {
         guc: 'süchiimüin',
         spa: 'persona respetable',
-        confidence: 0.8,
+        confidence: 1.0,
         source: 'gemini-generated',
         context: 'jerarquía social',
         culturalNotes: 'Término usado para referirse a ancianos y autoridades',
         phonetic: 'sü-chii-müin',
-        generatedAt: new Date().toISOString()
+        generatedAt: timestamp
       }
     ];
 
     // Generar entradas adicionales basadas en patrones
     const additionalEntries: GeminiDictionaryEntry[] = [];
     for (let i = 3; i < count; i++) {
+      const confidence = 0.6 + Math.random() * 0.3; // Entre 0.6 y 0.9
       additionalEntries.push({
         guc: `wayuu_palabra_${i}`,
         spa: `traducción_ejemplo_${i}`,
-        confidence: 0.7 + Math.random() * 0.2,
+        confidence,
         source: 'gemini-generated',
         context: `contexto_${domain}`,
         culturalNotes: 'Entrada generada para demostración',
         phonetic: `pronunciación_${i}`,
-        generatedAt: new Date().toISOString()
+        generatedAt: timestamp
       });
     }
 
@@ -457,13 +476,166 @@ Genera exactamente ${count} entradas nuevas y únicas que no repitan el vocabula
     totalIntegrated: number;
     averageConfidence: number;
     lastExpansion: string | null;
-  }> {
-    // En una implementación real, esto vendría de una base de datos
-    return {
-      totalGenerated: 0,
-      totalIntegrated: 0,
-      averageConfidence: 0,
-      lastExpansion: null
+    expansionHistory: {
+      totalSessions: number;
+      averageEntriesPerSession: number;
+      mostProductiveDomain: string;
+      lastWeekGenerated: number;
     };
+    systemStatus: {
+      geminiConfigured: boolean;
+      rateLimit: string;
+      lastError: string | null;
+    };
+  }> {
+    const averageConfidence = this.expansionStats.entriesWithConfidence > 0 
+      ? this.expansionStats.confidenceSum / this.expansionStats.entriesWithConfidence 
+      : 0;
+
+    const averageEntriesPerSession = this.expansionStats.totalSessions > 0 
+      ? Math.round(this.expansionStats.totalGenerated / this.expansionStats.totalSessions)
+      : 0;
+
+    return {
+      totalGenerated: this.expansionStats.totalGenerated,
+      totalIntegrated: this.expansionStats.totalIntegrated,
+      averageConfidence,
+      lastExpansion: this.expansionStats.lastExpansion,
+      expansionHistory: {
+        totalSessions: this.expansionStats.totalSessions,
+        averageEntriesPerSession,
+        mostProductiveDomain: 'general', // Podría ser calculado dinámicamente
+        lastWeekGenerated: this.expansionStats.totalGenerated // Simplificado
+      },
+      systemStatus: {
+        geminiConfigured: this.isConfigured,
+        rateLimit: 'Normal',
+        lastError: null
+      }
+    };
+  }
+
+  /**
+   * 📈 ACTUALIZAR ESTADÍSTICAS DESPUÉS DE EXPANSIÓN
+   */
+  private updateExpansionStats(result: DictionaryExpansionResult): void {
+    this.expansionStats.totalGenerated += result.entriesGenerated;
+    this.expansionStats.totalIntegrated += result.highQualityEntries.length;
+    this.expansionStats.totalSessions += 1;
+    this.expansionStats.lastExpansion = new Date().toISOString();
+
+    // Actualizar suma de confianza para promedio
+    [...result.highQualityEntries, ...result.flaggedForReview].forEach(entry => {
+      this.expansionStats.confidenceSum += entry.confidence;
+      this.expansionStats.entriesWithConfidence += 1;
+    });
+
+    // Agregar entradas pendientes de revisión
+    this.expansionStats.pendingReviewEntries.push(...result.flaggedForReview);
+
+    // Registrar en historial (mantener últimas 10 sesiones)
+    this.expansionStats.expansionHistory.push({
+      timestamp: new Date().toISOString(),
+      generated: result.entriesGenerated,
+      highQuality: result.highQualityEntries.length,
+      flagged: result.flaggedForReview.length,
+      processingTime: result.processingTime
+    });
+
+    if (this.expansionStats.expansionHistory.length > 10) {
+      this.expansionStats.expansionHistory.shift();
+    }
+
+    // 🎯 Reportar estadísticas al sistema de métricas principal
+    const averageConfidence = this.expansionStats.entriesWithConfidence > 0 
+      ? this.expansionStats.confidenceSum / this.expansionStats.entriesWithConfidence 
+      : 0;
+
+    this.metricsService.updateGeminiStats({
+      totalGenerated: this.expansionStats.totalGenerated,
+      totalIntegrated: this.expansionStats.totalIntegrated,
+      totalSessions: this.expansionStats.totalSessions,
+      averageConfidence,
+      pendingReview: this.expansionStats.pendingReviewEntries.length,
+      lastExpansion: this.expansionStats.lastExpansion
+    });
+
+    this.logger.log(`📊 Stats updated: Generated=${this.expansionStats.totalGenerated}, Integrated=${this.expansionStats.totalIntegrated}, Sessions=${this.expansionStats.totalSessions}`);
+  }
+
+  /**
+   * 📋 OBTENER ENTRADAS PENDIENTES DE REVISIÓN
+   */
+  async getPendingReviewEntries(limit: number = 50): Promise<{
+    entries: GeminiDictionaryEntry[];
+    total: number;
+  }> {
+    const entries = this.expansionStats.pendingReviewEntries.slice(0, limit);
+    return {
+      entries,
+      total: this.expansionStats.pendingReviewEntries.length
+    };
+  }
+
+  /**
+   * ✅ REVISAR ENTRADA INDIVIDUAL
+   */
+  async reviewEntry(entryId: string, approved: boolean, notes?: string): Promise<boolean> {
+    const entryIndex = this.expansionStats.pendingReviewEntries.findIndex(
+      entry => `gem-${entry.generatedAt}-${entry.guc}` === entryId
+    );
+
+    if (entryIndex === -1) {
+      this.logger.warn(`⚠️ Entry not found for review: ${entryId}`);
+      return false;
+    }
+
+    const entry = this.expansionStats.pendingReviewEntries[entryIndex];
+
+    if (approved) {
+      // Integrar entrada aprobada
+      await this.integrateHighQualityEntries([entry]);
+      this.expansionStats.totalIntegrated += 1;
+      this.logger.log(`✅ Entry approved and integrated: ${entry.guc} → ${entry.spa}`);
+    } else {
+      this.logger.log(`❌ Entry rejected: ${entry.guc} → ${entry.spa}`);
+    }
+
+    // Remover de pendientes
+    this.expansionStats.pendingReviewEntries.splice(entryIndex, 1);
+    return true;
+  }
+
+  /**
+   * 🚀 APROBACIÓN EN LOTE
+   */
+  async batchApproveEntries(entryIds: string[], minConfidence: number = 0.8): Promise<{
+    approved: number;
+    rejected: number;
+  }> {
+    let approved = 0;
+    let rejected = 0;
+
+    for (const entryId of entryIds) {
+      const entryIndex = this.expansionStats.pendingReviewEntries.findIndex(
+        entry => `gem-${entry.generatedAt}-${entry.guc}` === entryId
+      );
+
+      if (entryIndex !== -1) {
+        const entry = this.expansionStats.pendingReviewEntries[entryIndex];
+        
+        if (entry.confidence >= minConfidence) {
+          await this.integrateHighQualityEntries([entry]);
+          this.expansionStats.totalIntegrated += 1;
+          this.expansionStats.pendingReviewEntries.splice(entryIndex, 1);
+          approved++;
+        } else {
+          rejected++;
+        }
+      }
+    }
+
+    this.logger.log(`🚀 Batch approval completed: ${approved} approved, ${rejected} rejected`);
+    return { approved, rejected };
   }
 } 

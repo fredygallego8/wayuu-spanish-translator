@@ -2,6 +2,7 @@ import { Controller, Get, Header, HttpException, HttpStatus, Post } from '@nestj
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
 import { DatasetsService } from '../datasets/datasets.service';
+import { GeminiDictionaryService } from '../translation/gemini-dictionary.service';
 import { Logger } from '@nestjs/common';
 
 @ApiTags('📊 Metrics')
@@ -21,6 +22,7 @@ export class MetricsController {
   constructor(
     private readonly metricsService: MetricsService,
     private readonly datasetsService: DatasetsService,
+    private readonly geminiDictionaryService: GeminiDictionaryService,
   ) {}
 
   @Get()
@@ -240,6 +242,20 @@ nodejs_heap_size_used_bytes 12345678`,
   })
   async updateGrowthMetrics(): Promise<any> {
     try {
+      this.logger.log('🔄 Iniciando actualización manual de métricas de crecimiento con preservación...');
+      
+      // Obtener valores actuales de las métricas desde Prometheus
+      const currentMetricsText = await this.metricsService.getMetrics();
+      const currentMetrics = {
+        wayuu_words: this.extractMetricValue(currentMetricsText, 'wayuu_total_words_wayuu'),
+        spanish_words: this.extractMetricValue(currentMetricsText, 'wayuu_total_words_spanish'),
+        audio_minutes: this.extractMetricValue(currentMetricsText, 'wayuu_total_audio_minutes'),
+        phrases: this.extractMetricValue(currentMetricsText, 'wayuu_total_phrases'),
+        transcribed: this.extractMetricValue(currentMetricsText, 'wayuu_total_transcribed'),
+        dictionary_entries: this.extractMetricValue(currentMetricsText, 'wayuu_total_dictionary_entries'),
+        audio_files: this.extractMetricValue(currentMetricsText, 'wayuu_total_audio_files'),
+      };
+
       // Obtener fuentes activas
       const activeSources = await this.datasetsService.getActiveHuggingFaceSources();
       
@@ -251,29 +267,73 @@ nodejs_heap_size_used_bytes 12345678`,
       let totalDictionaryEntries = 0;
       let totalAudioFiles = 0;
 
+      let sourcesWithData = 0;
+      let sourcesWithError = 0;
+
       // Calcular métricas agregadas de todas las fuentes activas
       for (const source of activeSources) {
         try {
           const stats = await this.datasetsService.getDatasetStats(source.name);
           
-          if (source.type === 'dictionary') {
-            totalDictionaryEntries += stats.dictionary_entries || 0;
-            totalWayuuWords += stats.wayuu_words || 0;
-            totalSpanishWords += stats.spanish_words || 0;
-            totalPhrases += stats.phrases || 0;
-          } else if (source.type === 'audio') {
-            totalAudioFiles += stats.audio_files || 0;
-            totalAudioMinutes += stats.audio_minutes || 0;
-            totalTranscribed += stats.transcribed || 0;
-            // Para audio, también añadir palabras Wayuu de las transcripciones
-            totalWayuuWords += stats.wayuu_words || 0;
-            // Y frases de las transcripciones
-            totalPhrases += stats.phrases || 0;
+          // Solo contar si hay datos válidos
+          if (stats && (stats.dictionary_entries > 0 || stats.audio_files > 0 || stats.wayuu_words > 0)) {
+            sourcesWithData++;
+            
+            if (source.type === 'dictionary') {
+              totalDictionaryEntries += stats.dictionary_entries || 0;
+              totalWayuuWords += stats.wayuu_words || 0;
+              totalSpanishWords += stats.spanish_words || 0;
+              totalPhrases += stats.phrases || 0;
+            } else if (source.type === 'audio') {
+              totalAudioFiles += stats.audio_files || 0;
+              totalAudioMinutes += stats.audio_minutes || 0;
+              totalTranscribed += stats.transcribed || 0;
+              // Para audio, también añadir palabras Wayuu de las transcripciones
+              totalWayuuWords += stats.wayuu_words || 0;
+              // Y frases de las transcripciones
+              totalPhrases += stats.phrases || 0;
+            }
           }
         } catch (error) {
-          console.warn(`Error getting stats for ${source.name}:`, error.message);
+          sourcesWithError++;
+          this.logger.warn(`Error getting stats for ${source.name}:`, error.message);
         }
       }
+
+      // Determinar si los datos son válidos
+      const hasValidData = sourcesWithData > 0 && (totalWayuuWords > 0 || totalSpanishWords > 0 || totalAudioMinutes > 0);
+      
+      if (!hasValidData) {
+        this.logger.warn(`⚠️ No hay datos válidos (fuentes con datos: ${sourcesWithData}, errores: ${sourcesWithError})`);
+        this.logger.warn('🔄 Manteniendo valores anteriores para preservar métricas de crecimiento');
+        
+        // Si no hay datos válidos, mantener los valores anteriores
+        const finalMetrics = {
+          total_wayuu_words: currentMetrics.wayuu_words || 0,
+          total_spanish_words: currentMetrics.spanish_words || 0,
+          total_audio_minutes: Math.round((currentMetrics.audio_minutes || 0) * 100) / 100,
+          total_phrases: currentMetrics.phrases || 0,
+          total_transcribed: currentMetrics.transcribed || 0,
+          total_dictionary_entries: currentMetrics.dictionary_entries || 0,
+          total_audio_files: currentMetrics.audio_files || 0,
+        };
+
+        // Actualizar timestamp de última actualización
+        this.metricsService.updateGrowthMetric('wayuu_growth_last_update_timestamp', Date.now());
+
+        return {
+          success: true,
+          message: 'Growth metrics preserved (no valid data available)',
+          timestamp: new Date().toISOString(),
+          metrics: finalMetrics,
+          preserved_values: true,
+          sources_with_data: sourcesWithData,
+          sources_with_error: sourcesWithError
+        };
+      }
+
+      // Si hay datos válidos, actualizar con los nuevos valores
+      this.logger.log(`✅ Datos válidos encontrados de ${sourcesWithData} fuentes`);
 
       // Actualizar métricas de Prometheus
       this.metricsService.updateGrowthMetric('wayuu_total_words_wayuu', totalWayuuWords);
@@ -297,7 +357,10 @@ nodejs_heap_size_used_bytes 12345678`,
           total_transcribed: totalTranscribed,
           total_dictionary_entries: totalDictionaryEntries,
           total_audio_files: totalAudioFiles,
-        }
+        },
+        preserved_values: false,
+        sources_with_data: sourcesWithData,
+        sources_with_error: sourcesWithError
       };
     } catch (error) {
       throw new HttpException(
@@ -305,6 +368,12 @@ nodejs_heap_size_used_bytes 12345678`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private extractMetricValue(metricsText: string, metricName: string): number {
+    const regex = new RegExp(`${metricName}\\s+(\\d+\\.?\\d*)`);
+    const match = metricsText.match(regex);
+    return match ? parseFloat(match[1]) : 0;
   }
 
   @Get('growth')
@@ -633,6 +702,236 @@ nodejs_heap_size_used_bytes 12345678`,
 
       // Don't cache error results, but return them
       return fallbackResult;
+    }
+  }
+
+  @Post('update-pdf-metrics')
+  @ApiOperation({
+    summary: '📊 Actualizar Métricas de PDFs',
+    description: `
+      <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); padding: 15px; border-radius: 8px; color: white; margin: 10px 0;">
+        <h4>📄 Actualizar Métricas de Procesamiento de PDFs</h4>
+        <p>Actualiza las métricas de Prometheus con los datos reales del procesamiento de PDFs.</p>
+      </div>
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Métricas de PDFs actualizadas exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'PDF metrics updated successfully' },
+        data: {
+          type: 'object',
+          properties: {
+            totalPDFs: { type: 'number', example: 4 },
+            processedPDFs: { type: 'number', example: 4 },
+            totalPages: { type: 'number', example: 568 },
+            totalWayuuPhrases: { type: 'number', example: 342 },
+            avgWayuuPercentage: { type: 'number', example: 41 },
+            processingTime: { type: 'number', example: 4431 },
+          },
+        },
+      },
+    },
+  })
+  async updatePdfMetrics(): Promise<any> {
+    try {
+      this.logger.debug('🔄 Updating PDF metrics with real data');
+      
+      // Obtener estadísticas reales de PDFs a través de HTTP
+      const response = await fetch('http://localhost:3002/api/pdf-processing/stats');
+      const pdfStats = await response.json();
+      
+      if (!pdfStats.success) {
+        throw new Error('Failed to get PDF stats');
+      }
+      
+      const data = pdfStats.data;
+      
+      // Actualizar métricas de Prometheus
+      this.metricsService.updatePdfProcessingTotalPdfs(data.totalPDFs || 0);
+      this.metricsService.updatePdfProcessingProcessedPdfs(data.processedPDFs || 0);
+      this.metricsService.updatePdfProcessingTotalPages(data.totalPages || 0);
+      this.metricsService.updatePdfProcessingWayuuPhrases(data.totalWayuuPhrases || 0);
+      this.metricsService.updatePdfProcessingWayuuPercentage(data.avgWayuuPercentage || 0);
+      this.metricsService.updatePdfProcessingTimeSeconds((data.processingTime || 0) / 1000); // Convert ms to seconds
+      
+      this.logger.log(`📊 PDF metrics updated: ${data.totalPDFs} PDFs, ${data.totalPages} pages, ${data.totalWayuuPhrases} Wayuu phrases`);
+      
+      return {
+        success: true,
+        message: 'PDF metrics updated successfully',
+        timestamp: new Date().toISOString(),
+        data: {
+          totalPDFs: data.totalPDFs,
+          processedPDFs: data.processedPDFs,
+          totalPages: data.totalPages,
+          totalWayuuPhrases: data.totalWayuuPhrases,
+          avgWayuuPercentage: data.avgWayuuPercentage,
+          processingTimeSeconds: (data.processingTime || 0) / 1000,
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Error updating PDF metrics:', error);
+      return {
+        success: false,
+        message: 'Failed to update PDF metrics',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Get('combined-stats')
+  @ApiOperation({
+    summary: '📊 Estadísticas Combinadas con Fuentes Separadas',
+    description: `
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px; color: white; margin: 10px 0;">
+        <h4>🎯 Estadísticas Combinadas por Fuente</h4>
+        <p>Este endpoint devuelve estadísticas separadas por fuente (Hugging Face, PDFs, Gemini) con totales combinados.</p>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+        <h4>📈 Fuentes Incluidas:</h4>
+        <ul>
+          <li><strong>Hugging Face:</strong> Datasets descargados automáticamente</li>
+          <li><strong>PDFs:</strong> Documentos wayuu procesados</li>
+          <li><strong>Gemini:</strong> Entradas generadas por IA</li>
+        </ul>
+      </div>
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estadísticas combinadas por fuente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        timestamp: { type: 'string', example: '2024-01-15T10:30:00.000Z' },
+        totals: {
+          type: 'object',
+          properties: {
+            dictionary_entries: { type: 'number', example: 2856 },
+            audio_entries: { type: 'number', example: 827 },
+            generated_entries: { type: 'number', example: 156 },
+            integrated_entries: { type: 'number', example: 124 },
+            total_sessions: { type: 'number', example: 8 },
+          }
+        },
+        sources: {
+          type: 'object',
+          properties: {
+            hugging_face: {
+              type: 'object',
+              properties: {
+                dictionary_entries: { type: 'number', example: 2150 },
+                audio_entries: { type: 'number', example: 827 },
+                active_datasets: { type: 'number', example: 4 },
+              }
+            },
+            pdfs: {
+              type: 'object',
+              properties: {
+                dictionary_entries: { type: 'number', example: 582 },
+                processed_documents: { type: 'number', example: 3 },
+              }
+            },
+            gemini: {
+              type: 'object',
+              properties: {
+                generated_entries: { type: 'number', example: 156 },
+                integrated_entries: { type: 'number', example: 124 },
+                pending_review: { type: 'number', example: 32 },
+                average_confidence: { type: 'number', example: 0.847 },
+                total_sessions: { type: 'number', example: 8 },
+                last_expansion: { type: 'string', example: '2024-01-15T09:45:00.000Z' },
+              }
+            }
+          }
+        }
+      },
+    },
+  })
+  async getCombinedStats(): Promise<any> {
+    try {
+      this.logger.log('🔍 Obteniendo estadísticas combinadas...');
+      
+      // Obtener estadísticas de Hugging Face
+      const huggingFaceStats = await this.datasetsService.getDictionaryStats();
+      const huggingFaceSources = await this.datasetsService.getHuggingFaceSources();
+      const activeHfSources = huggingFaceSources.filter(s => s.isActive);
+      
+      // Obtener estadísticas de PDFs
+      const pdfResponse = await fetch('http://localhost:3002/api/pdf-processing/stats');
+      const pdfResponseData = await pdfResponse.json();
+      const pdfStats = {
+        extractedEntries: pdfResponseData.data?.totalWayuuPhrases || 0,
+        processedDocuments: pdfResponseData.data?.processedPDFs || 0,
+        totalDocuments: pdfResponseData.data?.totalPDFs || 0,
+      };
+      
+      // Obtener estadísticas de Gemini (estadísticas reales)
+      const geminiStatsResponse = await this.geminiDictionaryService.getExpansionStats();
+      const geminiStats = {
+        generated_entries: geminiStatsResponse.totalGenerated,
+        integrated_entries: geminiStatsResponse.totalIntegrated,
+        pending_review: geminiStatsResponse.expansionHistory.totalSessions > 0 ? 
+          await this.geminiDictionaryService.getPendingReviewEntries(1).then(r => r.total) : 0,
+        average_confidence: geminiStatsResponse.averageConfidence,
+        total_sessions: geminiStatsResponse.expansionHistory.totalSessions,
+        last_expansion: geminiStatsResponse.lastExpansion,
+      };
+      
+      // Calcular totales combinados
+      const totalDictionaryEntries = huggingFaceStats.totalWayuuWords + (pdfStats.extractedEntries || 0);
+      const totalAudioEntries = huggingFaceStats.totalAudioMinutes || 0;
+      const totalGeneratedEntries = geminiStats.generated_entries;
+      const totalIntegratedEntries = geminiStats.integrated_entries;
+      const totalSessions = geminiStats.total_sessions;
+      
+      const result = {
+        success: true,
+        timestamp: new Date().toISOString(),
+        totals: {
+          dictionary_entries: totalDictionaryEntries,
+          audio_entries: totalAudioEntries,
+          generated_entries: totalGeneratedEntries,
+          integrated_entries: totalIntegratedEntries,
+          total_sessions: totalSessions,
+        },
+        sources: {
+          hugging_face: {
+            dictionary_entries: huggingFaceStats.totalWayuuWords,
+            audio_entries: huggingFaceStats.totalAudioMinutes || 0,
+            active_datasets: activeHfSources.length,
+            total_datasets: huggingFaceSources.length,
+          },
+          pdfs: {
+            dictionary_entries: pdfStats.extractedEntries || 0,
+            processed_documents: pdfStats.processedDocuments || 0,
+            total_documents: pdfStats.totalDocuments || 0,
+          },
+          gemini: geminiStats,
+        },
+      };
+      
+      this.logger.log(`✅ Estadísticas combinadas obtenidas: ${totalDictionaryEntries} entradas totales`);
+      return result;
+      
+    } catch (error) {
+      this.logger.error(`❌ Error obteniendo estadísticas combinadas: ${error.message}`);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error al obtener estadísticas combinadas',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

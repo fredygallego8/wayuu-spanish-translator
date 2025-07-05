@@ -8,6 +8,27 @@ export class ScheduledTasksService {
   private readonly logger = new Logger(ScheduledTasksService.name);
   private isInitialized = false;
 
+  // Cache para mantener valores anteriores de métricas
+  private previousMetricsCache: {
+    wayuu_total_words_wayuu: number;
+    wayuu_total_words_spanish: number;
+    wayuu_total_audio_minutes: number;
+    wayuu_total_phrases: number;
+    wayuu_total_transcribed: number;
+    wayuu_total_dictionary_entries: number;
+    wayuu_total_audio_files: number;
+    last_update: number;
+  } = {
+    wayuu_total_words_wayuu: 0,
+    wayuu_total_words_spanish: 0,
+    wayuu_total_audio_minutes: 0,
+    wayuu_total_phrases: 0,
+    wayuu_total_transcribed: 0,
+    wayuu_total_dictionary_entries: 0,
+    wayuu_total_audio_files: 0,
+    last_update: 0
+  };
+
   constructor(
     private readonly metricsService: MetricsService,
     private readonly datasetsService: DatasetsService,
@@ -167,6 +188,18 @@ export class ScheduledTasksService {
       this.metricsService.updateGrowthMetric('wayuu_total_audio_files', defaultMetrics.wayuu_total_audio_files);
       this.metricsService.updateGrowthMetric('wayuu_growth_last_update_timestamp', Date.now());
 
+      // Actualizar caché
+      this.previousMetricsCache = {
+        wayuu_total_words_wayuu: defaultMetrics.wayuu_total_words_wayuu,
+        wayuu_total_words_spanish: defaultMetrics.wayuu_total_words_spanish,
+        wayuu_total_audio_minutes: defaultMetrics.wayuu_total_audio_minutes,
+        wayuu_total_phrases: defaultMetrics.wayuu_total_phrases,
+        wayuu_total_transcribed: defaultMetrics.wayuu_total_transcribed,
+        wayuu_total_dictionary_entries: defaultMetrics.wayuu_total_dictionary_entries,
+        wayuu_total_audio_files: defaultMetrics.wayuu_total_audio_files,
+        last_update: Date.now()
+      };
+
       this.logger.log('✅ Valores predeterminados aplicados exitosamente');
       
     } catch (error) {
@@ -175,6 +208,8 @@ export class ScheduledTasksService {
   }
 
   private async updateGrowthMetrics() {
+    this.logger.log('🔄 Iniciando actualización de métricas de crecimiento con preservación de valores...');
+    
     // Obtener fuentes activas
     const activeSources = await this.datasetsService.getActiveHuggingFaceSources();
     
@@ -186,39 +221,100 @@ export class ScheduledTasksService {
     let totalDictionaryEntries = 0;
     let totalAudioFiles = 0;
 
+    let sourcesWithData = 0;
+    let sourcesWithError = 0;
+
     // Calcular métricas agregadas de todas las fuentes activas
     for (const source of activeSources) {
       try {
         const stats = await this.datasetsService.getDatasetStats(source.name);
         
-        if (source.type === 'dictionary') {
-          totalDictionaryEntries += stats.dictionary_entries || 0;
-          totalWayuuWords += stats.wayuu_words || 0;
-          totalSpanishWords += stats.spanish_words || 0;
-          totalPhrases += stats.phrases || 0;
-        } else if (source.type === 'audio') {
-          totalAudioFiles += stats.audio_files || 0;
-          totalAudioMinutes += stats.audio_minutes || 0;
-          totalTranscribed += stats.transcribed || 0;
-          // Para audio, también añadir palabras Wayuu de las transcripciones
-          totalWayuuWords += stats.wayuu_words || 0;
-          // Y frases de las transcripciones
-          totalPhrases += stats.phrases || 0;
+        // Solo contar si hay datos válidos
+        if (stats && (stats.dictionary_entries > 0 || stats.audio_files > 0 || stats.wayuu_words > 0)) {
+          sourcesWithData++;
+          
+          if (source.type === 'dictionary') {
+            totalDictionaryEntries += stats.dictionary_entries || 0;
+            totalWayuuWords += stats.wayuu_words || 0;
+            totalSpanishWords += stats.spanish_words || 0;
+            totalPhrases += stats.phrases || 0;
+          } else if (source.type === 'audio') {
+            totalAudioFiles += stats.audio_files || 0;
+            totalAudioMinutes += stats.audio_minutes || 0;
+            totalTranscribed += stats.transcribed || 0;
+            // Para audio, también añadir palabras Wayuu de las transcripciones
+            totalWayuuWords += stats.wayuu_words || 0;
+            // Y frases de las transcripciones
+            totalPhrases += stats.phrases || 0;
+          }
         }
       } catch (error) {
+        sourcesWithError++;
         this.logger.warn(`Error getting stats for ${source.name}:`, error.message);
       }
     }
 
+    // Determinar si los datos son válidos
+    const hasValidData = sourcesWithData > 0 && (totalWayuuWords > 0 || totalSpanishWords > 0 || totalAudioMinutes > 0);
+    
+    if (!hasValidData) {
+      this.logger.warn(`⚠️ No hay datos válidos (fuentes con datos: ${sourcesWithData}, errores: ${sourcesWithError})`);
+      this.logger.warn('🔄 Manteniendo valores anteriores para preservar métricas de crecimiento');
+      
+      // Si no hay datos válidos, mantener los valores anteriores
+      const finalMetrics = {
+        wayuu_total_words_wayuu: this.previousMetricsCache.wayuu_total_words_wayuu || 0,
+        wayuu_total_words_spanish: this.previousMetricsCache.wayuu_total_words_spanish || 0,
+        wayuu_total_audio_minutes: this.previousMetricsCache.wayuu_total_audio_minutes || 0,
+        wayuu_total_phrases: this.previousMetricsCache.wayuu_total_phrases || 0,
+        wayuu_total_transcribed: this.previousMetricsCache.wayuu_total_transcribed || 0,
+        wayuu_total_dictionary_entries: this.previousMetricsCache.wayuu_total_dictionary_entries || 0,
+        wayuu_total_audio_files: this.previousMetricsCache.wayuu_total_audio_files || 0,
+      };
+
+      // Actualizar métricas de Prometheus con valores anteriores
+      Object.entries(finalMetrics).forEach(([key, value]) => {
+        this.metricsService.updateGrowthMetric(key, value);
+      });
+      
+      this.metricsService.updateGrowthMetric('wayuu_growth_last_update_timestamp', Date.now());
+
+      return {
+        success: true,
+        message: 'Growth metrics preserved (no valid data available)',
+        timestamp: new Date().toISOString(),
+        metrics: finalMetrics,
+        preserved_values: true,
+        sources_with_data: sourcesWithData,
+        sources_with_error: sourcesWithError
+      };
+    }
+
+    // Si hay datos válidos, actualizar con los nuevos valores
+    this.logger.log(`✅ Datos válidos encontrados de ${sourcesWithData} fuentes`);
+    
+    const finalMetrics = {
+      wayuu_total_words_wayuu: totalWayuuWords,
+      wayuu_total_words_spanish: totalSpanishWords,
+      wayuu_total_audio_minutes: totalAudioMinutes,
+      wayuu_total_phrases: totalPhrases,
+      wayuu_total_transcribed: totalTranscribed,
+      wayuu_total_dictionary_entries: totalDictionaryEntries,
+      wayuu_total_audio_files: totalAudioFiles,
+    };
+
     // Actualizar métricas de Prometheus
-    this.metricsService.updateGrowthMetric('wayuu_total_words_wayuu', totalWayuuWords);
-    this.metricsService.updateGrowthMetric('wayuu_total_words_spanish', totalSpanishWords);
-    this.metricsService.updateGrowthMetric('wayuu_total_audio_minutes', totalAudioMinutes);
-    this.metricsService.updateGrowthMetric('wayuu_total_phrases', totalPhrases);
-    this.metricsService.updateGrowthMetric('wayuu_total_transcribed', totalTranscribed);
-    this.metricsService.updateGrowthMetric('wayuu_total_dictionary_entries', totalDictionaryEntries);
-    this.metricsService.updateGrowthMetric('wayuu_total_audio_files', totalAudioFiles);
+    Object.entries(finalMetrics).forEach(([key, value]) => {
+      this.metricsService.updateGrowthMetric(key, value);
+    });
+    
     this.metricsService.updateGrowthMetric('wayuu_growth_last_update_timestamp', Date.now());
+
+    // Actualizar caché con nuevos valores
+    this.previousMetricsCache = {
+      ...finalMetrics,
+      last_update: Date.now()
+    };
 
     return {
       success: true,
@@ -232,7 +328,10 @@ export class ScheduledTasksService {
         total_transcribed: totalTranscribed,
         total_dictionary_entries: totalDictionaryEntries,
         total_audio_files: totalAudioFiles,
-      }
+      },
+      preserved_values: false,
+      sources_with_data: sourcesWithData,
+      sources_with_error: sourcesWithError
     };
   }
 } 

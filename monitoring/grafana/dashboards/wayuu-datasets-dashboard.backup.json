@@ -58,7 +58,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_huggingface_sources_total or last_over_time(wayuu_huggingface_sources_total[1h]) or last_over_time(wayuu_huggingface_sources_total[6h]) or last_over_time(wayuu_huggingface_sources_total[24h]))",
+          "expr": "wayuu_huggingface_sources_total",
           "interval": "",
           "legendFormat": "{{source_type}} Sources",
           "refId": "A"
@@ -116,7 +116,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_huggingface_sources_active or last_over_time(wayuu_huggingface_sources_active[1h]) or last_over_time(wayuu_huggingface_sources_active[6h]) or last_over_time(wayuu_huggingface_sources_active[24h]))",
+          "expr": "wayuu_huggingface_sources_active",
           "interval": "",
           "legendFormat": "{{source_type}} Active",
           "refId": "A"
@@ -229,7 +229,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -276,7 +276,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_dataset_cache_size_bytes or last_over_time(wayuu_dataset_cache_size_bytes[1h]) or last_over_time(wayuu_dataset_cache_size_bytes[6h]) or last_over_time(wayuu_dataset_cache_size_bytes[24h]))",
+          "expr": "wayuu_dataset_cache_size_bytes",
           "interval": "",
           "legendFormat": "{{dataset_name}} Cache",
           "refId": "A"
@@ -334,7 +334,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(wayuu_dataset_total_entries or last_over_time(wayuu_dataset_total_entries[1h]) or last_over_time(wayuu_dataset_total_entries[6h]) or last_over_time(wayuu_dataset_total_entries[24h]))",
+          "expr": "wayuu_dataset_total_entries",
           "interval": "",
           "legendFormat": "{{dataset_name}} ({{dataset_type}})",
           "refId": "A"

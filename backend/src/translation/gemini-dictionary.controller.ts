@@ -112,20 +112,7 @@ export class GeminiDictionaryController {
       
       return {
         success: true,
-        data: {
-          ...stats,
-          expansionHistory: {
-            totalSessions: 0, // En implementación real vendría de DB
-            averageEntriesPerSession: 0,
-            mostProductiveDomain: 'general',
-            lastWeekGenerated: 0
-          },
-          systemStatus: {
-            geminiConfigured: true, // Se verificaría en el servicio
-            rateLimit: 'Normal',
-            lastError: null
-          }
-        },
+        data: stats,
         timestamp: new Date().toISOString()
       };
 
@@ -157,13 +144,9 @@ export class GeminiDictionaryController {
           type: 'boolean',
           description: 'Whether the entry is approved for integration'
         },
-        rejectionReason: {
+        notes: {
           type: 'string',
-          description: 'Reason for rejection (if approved=false)'
-        },
-        modifiedTranslation: {
-          type: 'string',
-          description: 'Modified translation (if corrections needed)'
+          description: 'Review notes or reason for rejection'
         }
       },
       required: ['entryId', 'approved']
@@ -173,20 +156,29 @@ export class GeminiDictionaryController {
     try {
       this.logger.log(`📝 Reviewing entry ${reviewData.entryId} - Approved: ${reviewData.approved}`);
       
-      // En implementación real, esto actualizaría la base de datos
-      const result = {
-        entryId: reviewData.entryId,
-        status: reviewData.approved ? 'approved' : 'rejected',
-        processedAt: new Date().toISOString(),
-        reviewedBy: 'manual-review', // En producción sería el usuario actual
-        action: reviewData.approved ? 'integrated' : 'archived'
-      };
+      const result = await this.geminiDictionaryService.reviewEntry(
+        reviewData.entryId, 
+        reviewData.approved, 
+        reviewData.notes
+      );
 
-      return {
-        success: true,
-        message: `Entry ${reviewData.approved ? 'approved and integrated' : 'rejected and archived'}`,
-        data: result
-      };
+      if (result) {
+        return {
+          success: true,
+          message: `Entry ${reviewData.approved ? 'approved and integrated' : 'rejected'}`,
+          data: {
+            entryId: reviewData.entryId,
+            status: reviewData.approved ? 'approved' : 'rejected',
+            processedAt: new Date().toISOString()
+          }
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Entry not found or already processed',
+          error: 'Entry ID not found in pending review list'
+        };
+      }
 
     } catch (error) {
       this.logger.error(`❌ Entry review failed: ${error.message}`);
@@ -203,55 +195,54 @@ export class GeminiDictionaryController {
     summary: '⏳ Get entries pending manual review',
     description: 'Retrieve list of generated entries that need manual validation'
   })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Maximum number of entries to return' })
-  @ApiQuery({ name: 'domain', required: false, type: String, description: 'Filter by domain' })
+  @ApiQuery({
+    name: 'limit',
+    type: 'number',
+    description: 'Maximum number of entries to return',
+    required: false
+  })
+  @ApiQuery({
+    name: 'domain',
+    type: 'string',
+    description: 'Filter by specific domain',
+    required: false
+  })
   async getPendingReview(
     @Query('limit') limit: number = 50,
     @Query('domain') domain?: string
   ) {
     try {
-      // En implementación real, esto consultaría la base de datos
-      const mockPendingEntries = [
-        {
-          id: 'gem-001',
-          guc: 'jütüma',
-          spa: 'viento fuerte',
-          confidence: 0.75,
-          domain: 'natural',
-          generatedAt: new Date().toISOString(),
-          culturalNotes: 'Los wayuu asocian los vientos fuertes con mensajes espirituales'
-        },
-        {
-          id: 'gem-002', 
-          guc: 'süchiimüin',
-          spa: 'persona respetable',
-          confidence: 0.72,
-          domain: 'cultural',
-          generatedAt: new Date().toISOString(),
-          culturalNotes: 'Término usado para referirse a ancianos y autoridades'
-        }
-      ];
+      const result = await this.geminiDictionaryService.getPendingReviewEntries(limit);
+      
+      // Filter by domain if specified
+      let filteredEntries = result.entries;
+      if (domain) {
+        filteredEntries = result.entries.filter(entry => 
+          entry.context?.includes(domain) || entry.culturalNotes?.includes(domain)
+        );
+      }
 
-      const filteredEntries = domain 
-        ? mockPendingEntries.filter(e => e.domain === domain)
-        : mockPendingEntries;
-
-      const limitedEntries = filteredEntries.slice(0, limit);
+      // Generate IDs for frontend
+      const entriesWithIds = filteredEntries.map(entry => ({
+        id: `gem-${entry.generatedAt}-${entry.guc}`,
+        ...entry
+      }));
 
       return {
         success: true,
         data: {
-          entries: limitedEntries,
-          total: filteredEntries.length,
-          domains: ['general', 'cultural', 'territorial', 'natural'],
-          averageConfidence: 0.74,
-          oldestPending: '2025-01-04T18:30:00.000Z'
+          entries: entriesWithIds,
+          total: result.total,
+          hasMore: result.total > limit,
+          filters: {
+            domain: domain || 'all'
+          }
         },
-        message: `Found ${limitedEntries.length} entries pending review`
+        timestamp: new Date().toISOString()
       };
 
     } catch (error) {
-      this.logger.error(`❌ Failed to get pending review entries: ${error.message}`);
+      this.logger.error(`❌ Failed to get pending entries: ${error.message}`);
       return {
         success: false,
         message: 'Failed to retrieve pending entries',
@@ -262,23 +253,25 @@ export class GeminiDictionaryController {
 
   @Post('batch-approve')
   @ApiOperation({ 
-    summary: '⚡ Batch approve multiple entries',
-    description: 'Approve multiple entries at once for faster review process'
+    summary: '🚀 Batch approve multiple entries',
+    description: 'Approve multiple entries at once based on confidence threshold'
   })
   @ApiBody({
-    description: 'Batch approval data',
+    description: 'Batch approval configuration',
     schema: {
       type: 'object',
       properties: {
         entryIds: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Array of entry IDs to approve'
+          description: 'List of entry IDs to process'
         },
         minConfidence: {
           type: 'number',
-          description: 'Minimum confidence threshold for batch approval',
-          default: 0.8
+          description: 'Minimum confidence score for approval',
+          default: 0.8,
+          minimum: 0.5,
+          maximum: 1.0
         }
       },
       required: ['entryIds']
@@ -286,28 +279,24 @@ export class GeminiDictionaryController {
   })
   async batchApprove(@Body() batchData: BatchApproveDto) {
     try {
-      const { entryIds, minConfidence = 0.8 } = batchData;
+      this.logger.log(`🚀 Batch approval for ${batchData.entryIds.length} entries with min confidence ${batchData.minConfidence}`);
       
-      this.logger.log(`⚡ Batch approving ${entryIds.length} entries with min confidence ${minConfidence}`);
-      
-      // En implementación real, esto procesaría las entradas en lote
-      const results = entryIds.map(id => ({
-        entryId: id,
-        status: 'approved',
-        confidence: 0.8 + Math.random() * 0.15, // Mock confidence
-        processedAt: new Date().toISOString()
-      }));
-
-      const approvedCount = results.filter(r => r.confidence >= minConfidence).length;
+      const result = await this.geminiDictionaryService.batchApproveEntries(
+        batchData.entryIds,
+        batchData.minConfidence || 0.8
+      );
 
       return {
         success: true,
-        message: `Batch approval completed: ${approvedCount}/${entryIds.length} entries approved`,
+        message: `Batch approval completed: ${result.approved} approved, ${result.rejected} rejected`,
         data: {
-          processed: results.length,
-          approved: approvedCount,
-          rejected: results.length - approvedCount,
-          results: results.slice(0, 10) // Mostrar los primeros 10 resultados
+          approved: result.approved,
+          rejected: result.rejected,
+          processedAt: new Date().toISOString(),
+          criteria: {
+            minConfidence: batchData.minConfidence || 0.8,
+            totalRequested: batchData.entryIds.length
+          }
         }
       };
 

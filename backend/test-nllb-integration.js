@@ -8,10 +8,10 @@
  */
 
 const axios = require('axios');
-const chalk = require('chalk');
+// Removed chalk import to avoid ESM issues
 
 const BASE_URL = 'http://localhost:3002';
-const API_BASE = `${BASE_URL}/nllb`;
+const API_BASE = `${BASE_URL}/api/nllb`;
 
 // Textos de prueba en wayuu y español
 const TEST_CASES = {
@@ -41,16 +41,16 @@ class NllbIntegrationTest {
   log(level, message, data = null) {
     const timestamp = new Date().toISOString();
     const prefix = {
-      'info': chalk.blue('ℹ️'),
-      'success': chalk.green('✅'),
-      'warning': chalk.yellow('⚠️'),
-      'error': chalk.red('❌'),
-      'test': chalk.cyan('🧪')
+      'info': 'ℹ️',
+      'success': '✅',
+      'warning': '⚠️',
+      'error': '❌',
+      'test': '🧪'
     }[level] || '📋';
 
     console.log(`${prefix} [${timestamp}] ${message}`);
     if (data) {
-      console.log(chalk.gray(JSON.stringify(data, null, 2)));
+      console.log(JSON.stringify(data, null, 2));
     }
   }
 
@@ -212,33 +212,33 @@ class NllbIntegrationTest {
 
     console.log('\n📋 DETAILED RESULTS:');
     this.results.tests.forEach((test, index) => {
-      const status = test.status === 'PASSED' ? chalk.green('✅ PASSED') : chalk.red('❌ FAILED');
+      const status = test.status === 'PASSED' ? '✅ PASSED' : '❌ FAILED';
       console.log(`${index + 1}. ${test.name}: ${status}`);
     });
 
     if (this.results.failed === 0) {
-      console.log('\n' + chalk.green.bold('🎉 ALL TESTS PASSED! NLLB INTEGRATION IS WORKING CORRECTLY!'));
-      console.log(chalk.cyan('📚 Ready to process 809 Wayuu audio files with direct translation!'));
+      console.log('\n🎉 ALL TESTS PASSED! NLLB INTEGRATION IS WORKING CORRECTLY!');
+      console.log('📚 Ready to process 809 Wayuu audio files with direct translation!');
     } else {
-      console.log('\n' + chalk.yellow.bold('⚠️  SOME TESTS FAILED - CHECK CONFIGURATION'));
-      console.log(chalk.gray('💡 Common issues:'));
-      console.log(chalk.gray('   - HUGGINGFACE_API_KEY not configured'));
-      console.log(chalk.gray('   - Backend not running on port 3002'));
-      console.log(chalk.gray('   - Network connectivity issues'));
+      console.log('\n⚠️  SOME TESTS FAILED - CHECK CONFIGURATION');
+      console.log('💡 Common issues:');
+      console.log('   - HUGGINGFACE_API_KEY not configured');
+      console.log('   - Backend not running on port 3002');
+      console.log('   - Network connectivity issues');
     }
   }
 }
 
 // Función principal
 async function main() {
-  console.log(chalk.bold.blue('\n🚀 WAYUU-SPANISH TRANSLATOR - NLLB INTEGRATION TEST\n'));
+  console.log('\n🚀 WAYUU-SPANISH TRANSLATOR - NLLB INTEGRATION TEST\n');
   
   const tester = new NllbIntegrationTest();
   
   try {
     await tester.runAllTests();
   } catch (error) {
-    console.error(chalk.red('\n💥 Test suite failed to run:'), error.message);
+    console.error('\n💥 Test suite failed to run:', error.message);
     process.exit(1);
   }
 }

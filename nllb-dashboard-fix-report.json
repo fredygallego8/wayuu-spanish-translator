@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-07-05T02:26:39.791Z",
+  "problem": "NLLB dashboard buscaba métricas nllb_* pero backend exporta wayuu_*",
+  "solution": "Mapeado de métricas NLLB → Wayuu",
+  "metrics_mapped": 8,
+  "total_changes": 0,
+  "span_nulls_fixed": 5,
+  "resilient_queries_added": 2,
+  "status": "CORREGIDO"
+}

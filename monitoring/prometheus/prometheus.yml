@@ -21,11 +21,28 @@ scrape_configs:
   # Métricas del traductor Wayuu
   - job_name: 'wayuu-translator-backend'
     static_configs:
-      - targets: ['localhost:3002']  # IP local del host
+      - targets: ['192.168.1.59:3002']  # IP local del host
     metrics_path: '/api/metrics'
     scrape_interval: 10s
-    scrape_timeout: 5s
+    scrape_timeout: 8s
     honor_labels: true
+    honor_timestamps: true
+    # Configuración para manejar mejor cuando el backend está down
+    sample_limit: 10000
+    target_limit: 100
+    label_limit: 30
+    label_name_length_limit: 200
+    label_value_length_limit: 200
+    # Reintentos cuando el target está down
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'wayuu_.*'
+        target_label: service
+        replacement: 'wayuu-backend'
+      - source_labels: [__name__]
+        regex: 'wayuu_total_.*'
+        target_label: metric_type
+        replacement: 'growth_metric'
 
   # Métricas del frontend Next.js (si las habilitamos en el futuro)
   - job_name: 'wayuu-translator-frontend'
@@ -33,7 +50,8 @@ scrape_configs:
       - targets: ['localhost:4001']  # IP local del host
     metrics_path: '/api/metrics'
     scrape_interval: 30s
-    scrape_timeout: 10s
+    scrape_timeout: 15s
+    honor_timestamps: true
     # Solo intentar si el endpoint existe
     metric_relabel_configs:
       - source_labels: [__name__]
@@ -46,6 +64,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
     scrape_interval: 30s
+    honor_timestamps: true
 
   # Métricas de Grafana
   - job_name: 'grafana'
@@ -53,6 +72,7 @@ scrape_configs:
       - targets: ['localhost:3001']
     scrape_interval: 30s
     metrics_path: '/metrics'
+    honor_timestamps: true
 
   # Métricas del sistema (node_exporter) - opcional
   - job_name: 'node-exporter'
@@ -60,8 +80,9 @@ scrape_configs:
       - targets: ['localhost:9100']
     scrape_interval: 30s
     honor_labels: true
+    honor_timestamps: true
 
-# Configuración de almacenamiento
+# Configuración de almacenamiento con mayor retención
 # Nota: Estas configuraciones se pasan como argumentos de línea de comandos
 # --storage.tsdb.retention.time=30d
 # --storage.tsdb.retention.size=10GB

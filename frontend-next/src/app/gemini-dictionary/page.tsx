@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface ExpansionStats {
@@ -33,6 +33,11 @@ export default function GeminiDictionaryPage() {
     batchSize: 25,
     minConfidence: 0.8,
   });
+
+  // Load stats automatically when component mounts
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const handleExpansion = async () => {
     setIsExpanding(true);

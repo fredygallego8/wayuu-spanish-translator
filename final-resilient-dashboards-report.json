@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-07-05T02:16:39.258Z",
+  "status": "COMPLETADO",
+  "dashboards_with_resilient_metrics": [
+    {
+      "name": "wayuu-growth-dashboard.json",
+      "metrics": 15,
+      "status": "✅ RESILIENTE",
+      "type": "Growth metrics (words, phrases, audio, etc.)"
+    },
+    {
+      "name": "wayuu-translator-dashboard.json",
+      "metrics": 7,
+      "status": "✅ RESILIENTE",
+      "type": "Translation & dataset metrics"
+    },
+    {
+      "name": "wayuu-pdf-analytics-dashboard.json",
+      "metrics": "~5",
+      "status": "✅ RESILIENTE",
+      "type": "PDF processing metrics"
+    },
+    {
+      "name": "wayuu-datasets-dashboard.json",
+      "metrics": "~5",
+      "status": "✅ RESILIENTE",
+      "type": "Dataset & cache metrics"
+    },
+    {
+      "name": "wayuu-nllb-dashboard.json",
+      "metrics": 0,
+      "status": "✅ NO NECESITA",
+      "type": "NLLB translation metrics (no accumulative)"
+    }
+  ],
+  "total_resilient_queries": "~32",
+  "configuration_applied": {
+    "Prometheus": "honor_timestamps: true, enhanced scraping",
+    "Grafana": "spanNulls: true in all panels",
+    "Queries": "last_over_time() fallback: 1h → 6h → 24h",
+    "Backend": "Cache preservation of previous values"
+  },
+  "benefits": [
+    "✅ Métricas NO bajan a 0 cuando backend cae",
+    "✅ Continuidad visual en todos los dashboards",
+    "✅ Datos históricos preservados automáticamente",
+    "✅ Sistema resiliente a fallos de servicios",
+    "✅ Distinción entre datos live y cached"
+  ]
+}
