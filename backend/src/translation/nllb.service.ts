@@ -31,7 +31,7 @@ export interface TimeoutConfig {
 export class NllbTranslationService {
   private readonly logger = new Logger(NllbTranslationService.name);
   private readonly hf: HfInference;
-  private readonly model = 'facebook/nllb-200-3.3B';
+  private readonly model = 'facebook/nllb-200-distilled-600M';
   
   // 🎯 TIMEOUT CONFIGURATION - Aligned with system timeouts
   private readonly timeouts: TimeoutConfig = {
