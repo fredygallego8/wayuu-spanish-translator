@@ -152,7 +152,7 @@ export class NllbTranslationService {
 
   /**
    * 🔄 TRADUCCIÓN CON FALLBACK INTELIGENTE Y TIMEOUTS
-   * Intenta NLLB primero, fallback a modelo más simple si falla
+   * Intenta NLLB primero, fallback a modo demo si falla
    */
   async translateWithFallback(
     text: string, 
@@ -160,80 +160,33 @@ export class NllbTranslationService {
     targetLang: 'wayuu' | 'spanish'
   ): Promise<DirectTranslationResult> {
     try {
-      // 🚀 First attempt: NLLB-200-3.3B
+      // 🚀 First attempt: NLLB-200-distilled-600M
       return await this.translateDirect(text, sourceLang, targetLang);
     } catch (error) {
-      this.logger.warn(`⚠️ NLLB-200-3.3B failed, trying fallback model: ${error.message}`);
+      this.logger.warn(`⚠️ NLLB-200-distilled-600M failed, switching to demo mode: ${error.message}`);
       
       try {
-        // 🔄 Fallback: Try smaller NLLB model
-        return await this.translateWithSmallerModel(text, sourceLang, targetLang);
+        // 🔄 Fallback: Use demo mode
+        return await this.translateDemo(text, sourceLang, targetLang);
       } catch (fallbackError) {
-        this.logger.error(`❌ All NLLB models failed: ${fallbackError.message}`);
-        throw new Error(`Translation failed: Primary (${error.message}), Fallback (${fallbackError.message})`);
+        this.logger.error(`❌ All translation methods failed: ${fallbackError.message}`);
+        throw new Error(`Translation failed: NLLB (${error.message}), Demo (${fallbackError.message})`);
       }
     }
   }
 
   /**
-   * 🔧 TRADUCCIÓN CON MODELO MÁS PEQUEÑO (FALLBACK)
+   * 🔧 TRADUCCIÓN CON MODO DEMO (FALLBACK)
+   * Método de respaldo cuando la API de Hugging Face no está disponible
    */
   private async translateWithSmallerModel(
     text: string, 
     sourceLang: 'wayuu' | 'spanish', 
     targetLang: 'wayuu' | 'spanish'
   ): Promise<DirectTranslationResult> {
-    const startTime = Date.now();
-    const abortController = new AbortController();
-    const fallbackModel = 'facebook/nllb-200-distilled-600M'; // Smaller, more available model
-    
-    const timeoutId = setTimeout(() => {
-      abortController.abort();
-    }, this.timeouts.translation);
-    
-    try {
-      const sourceCode = this.languageCodes[sourceLang];
-      const targetCode = this.languageCodes[targetLang];
-
-      this.logger.log(`🔄 Fallback translation with ${fallbackModel}`);
-
-      const result = await this.hf.translation({
-        model: fallbackModel,
-        inputs: text,
-        parameters: {
-          src_lang: sourceCode,
-          tgt_lang: targetCode,
-          max_length: 500,
-          temperature: 0.1
-        }
-      });
-
-      clearTimeout(timeoutId);
-      
-      const processingTime = Date.now() - startTime;
-      const translatedText = result.translation_text;
-      const confidence = this.calculateConfidence(text, translatedText, processingTime) * 0.9; // Slightly lower confidence for fallback
-
-      this.logger.log(`✅ Fallback translation completed in ${processingTime}ms`);
-
-      return {
-        translatedText,
-        confidence,
-        sourceLanguage: sourceLang,
-        targetLanguage: targetLang,
-        model: fallbackModel,
-        processingTime
-      };
-
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error.name === 'AbortError') {
-        throw new Error(`Fallback translation timeout after ${this.timeouts.translation}ms`);
-      }
-      
-      throw error;
-    }
+    // Redirigir al modo demo como fallback
+    this.logger.log(`🔄 Using demo translation as fallback`);
+    return await this.translateDemo(text, sourceLang, targetLang);
   }
 
   /**
