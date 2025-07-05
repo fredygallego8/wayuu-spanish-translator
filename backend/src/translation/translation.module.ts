@@ -10,19 +10,24 @@ import { LibreTranslateService } from './libre-translate.service';
 import { NllbContextService } from './nllb-context.service';
 import { NllbCacheService } from './nllb-cache.service';
 import { NllbAnalyticsService } from './nllb-analytics.service';
+import { GeminiDictionaryController } from './gemini-dictionary.controller';
+import { GeminiDictionaryService } from './gemini-dictionary.service';
 import { DatasetsModule } from '../datasets/datasets.module';
 import { MetricsModule } from '../metrics/metrics.module';
+import { PdfProcessingModule } from '../pdf-processing/pdf-processing.module';
 
 @Module({
   imports: [
     ConfigModule,
     DatasetsModule, 
-    MetricsModule
+    MetricsModule,
+    PdfProcessingModule  // 🆕 Importar PdfProcessingModule para integración
   ],
   controllers: [
     TranslationController,
     NllbController,  // 🚀 NLLB-200 con soporte nativo wayuu
-    FreeTranslationController  // 🆓 NUEVO: Servicios de traducción gratuitos
+    FreeTranslationController,  // 🆓 Servicios de traducción gratuitos
+    GeminiDictionaryController  // 🧠 NUEVO: Expansión de diccionario con Gemini AI
   ],
   providers: [
     TranslationService,
@@ -31,7 +36,8 @@ import { MetricsModule } from '../metrics/metrics.module';
     LibreTranslateService,   // 🆓 LibreTranslate open source
     NllbContextService,      // 🧠 Context-aware translation with cultural domains
     NllbCacheService,        // ⚡ Intelligent caching with TTL and LRU eviction
-    NllbAnalyticsService     // 📊 Advanced analytics and quality reporting
+    NllbAnalyticsService,    // 📊 Advanced analytics and quality reporting
+    GeminiDictionaryService  // 🧠 NUEVO: Expansión automática de diccionario
   ],
   exports: [
     TranslationService,
@@ -40,7 +46,8 @@ import { MetricsModule } from '../metrics/metrics.module';
     LibreTranslateService,
     NllbContextService,
     NllbCacheService,
-    NllbAnalyticsService
+    NllbAnalyticsService,
+    GeminiDictionaryService  // 🧠 Export para uso en otros módulos
   ],
 })
 export class TranslationModule {}

@@ -15,41 +15,82 @@ export default function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-2xl">🌟</span>
-              <span className="text-xl font-bold text-gray-800">Wayuu Translator</span>
+              <span className="text-xl font-bold text-gray-800">
+                Wayuu Translator
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               Inicio
             </Link>
-            <Link href="/nllb-translator" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/nllb-translator"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               🔤 Traductor NLLB
             </Link>
-            <Link href="/batch-translation" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/batch-translation"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               📋 Traducción por Lotes
             </Link>
-            <Link href="/translation-history" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/translation-history"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               📚 Historial
             </Link>
-            <Link href="/analytics-dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/analytics-dashboard"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               📊 Analytics
             </Link>
-            <Link href="/quality-metrics" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/quality-metrics"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               🏆 Calidad
             </Link>
-            <Link href="/cache-management" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/cache-management"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               💾 Cache
             </Link>
-            <Link href="/documentation" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/gemini-dictionary"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              🧠 Gemini Dictionary
+            </Link>
+            <Link
+              href="/pdf-analytics"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              📄 PDFs Analytics
+            </Link>
+            <Link
+              href="/documentation"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
               📚 Documentación
             </Link>
-            
+
             {isAuthenticated && (
               <>
                 {isAdmin && (
-                  <Link href="/admin-dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">
+                  <Link
+                    href="/admin-dashboard"
+                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                  >
                     🛠️ Admin
                   </Link>
                 )}
@@ -59,16 +100,18 @@ export default function Navigation() {
                     className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                   >
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {user?.name?.charAt(0) || 'U'}
+                      {user?.name?.charAt(0) || "U"}
                     </div>
                     <span className="hidden lg:block">{user?.name}</span>
                     <i className="fas fa-chevron-down text-sm"></i>
                   </button>
-                  
+
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <div className="px-4 py-2 border-b">
-                        <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {user?.name}
+                        </p>
                         <p className="text-xs text-gray-600">{user?.email}</p>
                       </div>
                       <button
@@ -91,7 +134,9 @@ export default function Navigation() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-blue-600"
             >
-              <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+              <i
+                className={`fas ${isMenuOpen ? "fa-times" : "fa-bars"} text-xl`}
+              ></i>
             </button>
           </div>
         </div>
@@ -100,68 +145,82 @@ export default function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Inicio
               </Link>
-              <Link 
-                href="/nllb-translator" 
+              <Link
+                href="/nllb-translator"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 🔤 Traductor NLLB
               </Link>
-              <Link 
-                href="/batch-translation" 
+              <Link
+                href="/batch-translation"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📋 Traducción por Lotes
               </Link>
-              <Link 
-                href="/translation-history" 
+              <Link
+                href="/translation-history"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📚 Historial
               </Link>
-              <Link 
-                href="/analytics-dashboard" 
+              <Link
+                href="/analytics-dashboard"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📊 Analytics
               </Link>
-              <Link 
-                href="/quality-metrics" 
+              <Link
+                href="/quality-metrics"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 🏆 Calidad
               </Link>
-              <Link 
-                href="/cache-management" 
+              <Link
+                href="/cache-management"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 💾 Cache
               </Link>
-              <Link 
-                href="/documentation" 
+              <Link
+                href="/gemini-dictionary"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🧠 Gemini Dictionary
+              </Link>
+              <Link
+                href="/pdf-analytics"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📄 PDFs Analytics
+              </Link>
+              <Link
+                href="/documentation"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📚 Documentación
               </Link>
-              
+
               {isAuthenticated && (
                 <>
                   {isAdmin && (
-                    <Link 
-                      href="/admin-dashboard" 
+                    <Link
+                      href="/admin-dashboard"
                       className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -170,7 +229,9 @@ export default function Navigation() {
                   )}
                   <div className="border-t pt-2">
                     <div className="px-3 py-2">
-                      <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user?.name}
+                      </p>
                       <p className="text-xs text-gray-600">{user?.email}</p>
                     </div>
                     <button
@@ -193,8 +254,8 @@ export default function Navigation() {
 
       {/* Click outside to close menu */}
       {isMenuOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
